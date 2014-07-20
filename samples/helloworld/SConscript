@@ -1,0 +1,5 @@
+Import("env_samples")
+
+build_env = env_samples.Clone()
+build_env.Program("helloworld", "helloworld.cpp")
+build_env.Program("sandbox", "sandbox.cpp")

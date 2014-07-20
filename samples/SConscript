@@ -1,0 +1,6 @@
+Import("env")
+
+env_samples = env.Clone()
+Export("env_samples")
+
+SConscript("helloworld/SConscript")
