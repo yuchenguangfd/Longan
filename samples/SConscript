@@ -3,4 +3,5 @@ Import("env")
 env_samples = env.Clone()
 Export("env_samples")
 
+SConscript("gtest/SConscript")
 SConscript("helloworld/SConscript")
