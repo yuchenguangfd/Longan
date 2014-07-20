@@ -1,0 +1,11 @@
+Import("env")
+env.Append(LIBPATH = ["#/common"])
+env.Append(LIBS=["common"])
+
+env_common = env.Clone()
+Export("env_common")
+env_common.lib_objects = []
+
+SConscript("math/SConscript")
+
+env_common.StaticLibrary("common", env_common.lib_objects)

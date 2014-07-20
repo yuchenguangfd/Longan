@@ -1,10 +1,11 @@
-Import("env_samples")
+Import("env_common")
+env_common.lib_objects.append(env_common.Object("math.cpp"))
 
-build_env = env_samples.Clone()
+build_env = env_common.Clone()
 # add gtest support
 build_env.Prepend(CPPPATH = "#/external/gtest/include")
 build_env.Prepend(LIBPATH = "#/external/gtest")
 build_env.Prepend(LIBS = "gtest")
 build_env.Prepend(LINKFLAGS = "-pthread")
 
-build_env.Program("demo_gtest", "demo_gtest.cpp")
+build_env.Program("math_unittest", ["math_unittest.cpp"])
