@@ -1,5 +1,6 @@
 Import("env_common")
 env_common.lib_objects.append(env_common.Object("math.cpp"))
+env_common.lib_objects.append(env_common.Object("statistic.cpp"))
 
 build_env = env_common.Clone()
 # add gtest support
@@ -9,3 +10,4 @@ build_env.Prepend(LIBS = "gtest")
 build_env.Prepend(LINKFLAGS = "-pthread")
 
 build_env.Program("math_unittest", ["math_unittest.cpp"])
+build_env.Program("statistic_unittest", ["statistic_unittest.cpp"])

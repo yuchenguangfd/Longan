@@ -23,6 +23,11 @@ TEST(MathTest, MaxMin) {
 	EXPECT_EQ(p, Min(p, q));
 }
 
+TEST(MathTest, Sqr) {
+	EXPECT_EQ(16, Sqr(-4));
+	EXPECT_EQ(0.25, Sqr(0.5));
+}
+
 TEST(MathTest, Factorial) {
   EXPECT_EQ(1, Math::Factorial(0));
   EXPECT_EQ(1, Math::Factorial(1));

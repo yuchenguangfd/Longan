@@ -23,8 +23,19 @@ inline const T& Min(const T &a, const T &b) {
     return (a < b)? a : b;
 }
 
+template <class T>
+inline T Sqr(T x) {
+    return x * x;
+}
+
+inline double Sqrt(double x) {
+    return ::sqrt(x);
+}
+
 int Factorial(int n);
 
-} //~ namespace math
+} //~ namespace Math
+
+} //~ namespace longan
 
 #endif // COMMON_MATH_MATH_H

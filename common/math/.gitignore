@@ -1,3 +1,6 @@
 /math_unittest
 /math_unittest.o
 /math.o
+/statistic_unittest
+/statistic_unittest.o
+/statistic.o
