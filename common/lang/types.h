@@ -1,0 +1,26 @@
+/*
+ * types.h
+ * Created on: Jul 21, 2014
+ * Author: chenguangyu
+ */
+
+#ifndef COMMON_LANG_TYPES_H
+#define COMMON_LANG_TYPES_H
+
+namespace longan {
+
+// all integer types
+typedef signed char int8;
+typedef unsigned char uint8;
+typedef short int16;
+typedef unsigned short uint16;
+typedef int int32;
+typedef unsigned int uint32;
+typedef long long int64;
+typedef unsigned long long uint64;
+
+typedef bool boolean;
+
+} //~ namespace longan
+
+#endif // COMMON_LANG_TYPES_H

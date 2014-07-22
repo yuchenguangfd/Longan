@@ -14,6 +14,11 @@ namespace longan {
 namespace Math {
 
 template <class T>
+inline T Abs(T x) {
+    return (x >= 0) ? x : -x;
+}
+
+template <class T>
 inline const T& Max(const T &a, const T &b) {
     return (a < b)? b : a;
 }
@@ -21,6 +26,10 @@ inline const T& Max(const T &a, const T &b) {
 template <class T>
 inline const T& Min(const T &a, const T &b) {
     return (a < b)? a : b;
+}
+
+inline double RelativeError(double expect, double actual) {
+    return Abs(actual - expect) / expect;
 }
 
 template <class T>
