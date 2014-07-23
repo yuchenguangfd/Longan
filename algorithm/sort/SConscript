@@ -1,0 +1,10 @@
+Import("env_algorithm")
+
+build_env = env_algorithm.Clone()
+# add gtest's head files & libs
+build_env.Prepend(CPPPATH = "#/external/gtest/include")
+build_env.Prepend(LIBPATH = "#/external/gtest")
+build_env.Prepend(LIBS = "gtest")
+build_env.Prepend(LINKFLAGS = "-pthread")
+
+build_env.Program("bubble_sort_unittest", ["bubble_sort_unittest.cpp"])

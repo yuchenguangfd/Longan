@@ -5,3 +5,4 @@ Export("env")
 
 SConscript("common/SConscript")
 SConscript("samples/SConscript")
+SConscript("algorithm/SConscript")
