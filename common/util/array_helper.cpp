@@ -5,6 +5,7 @@
  */
 
 #include "array_helper.h"
+#include "random.h"
 #include <cassert>
 
 namespace longan {
@@ -16,6 +17,14 @@ void FillRange(int *array, int n) {
     assert(n >= 0);
     for (int i = 0; i < n; ++i) {
         array[i] = i;
+    }
+}
+
+// fill double array using random number in range [0, 1)
+void FillRandom(double *array, int size) {
+    Random& rnd = Random::Instance();
+    for (int i = 0; i < size; ++i) {
+        array[i] = rnd.NextDouble();
     }
 }
 
