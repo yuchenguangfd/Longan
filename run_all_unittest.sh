@@ -18,6 +18,7 @@ cd algorithm
 
 cd sort
 ./bubble_sort_unittest
+./insertion_sort_unittest
 
 #######all test passed##
 echo "Congratulations! All test passed."
