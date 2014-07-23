@@ -89,6 +89,8 @@ void CopyArray2D(T **src, T **dst, int rows, int cols) {
 
 void FillRange(int *array, int n);
 
+void FillRandom(double *array, int size);
+
 } //~ namespace ArrayHelper
 
 } //~ namespace longan

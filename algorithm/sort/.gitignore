@@ -2,3 +2,5 @@
 /bubble_sort_unittest.o
 /insertion_sort_unittest
 /insertion_sort_unittest.o
+/merge_sort_unittest
+/merge_sort_unittest.o
