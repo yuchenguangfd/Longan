@@ -7,6 +7,7 @@ env_algorithm.Prepend(LIBPATH = ["#/algorithm"])
 env_algorithm.Prepend(LIBS = ["algorithm"])
 env_algorithm.lib_objects = []
 
+SConscript("number_theory/SConscript")
 SConscript("sort/SConscript")
 
 env_algorithm.StaticLibrary("algorithm", env_algorithm.lib_objects)
