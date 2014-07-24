@@ -4,3 +4,7 @@
 /insertion_sort_unittest.o
 /merge_sort_unittest
 /merge_sort_unittest.o
+/quick_sort_unittest
+/quick_sort_unittest.o
+/counting_sort_unittest
+/counting_sort_unittest.o
