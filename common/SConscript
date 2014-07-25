@@ -7,6 +7,7 @@ Export("env_common")
 env_common.lib_objects = []
 
 SConscript("math/SConscript")
+SConscript("time/SConscript")
 SConscript("util/SConscript")
 
 env_common.StaticLibrary("common", env_common.lib_objects)
