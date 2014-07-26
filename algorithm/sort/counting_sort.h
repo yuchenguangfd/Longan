@@ -62,4 +62,4 @@ void CountingSort::operator () (T *src, T *dst, int size, int limit, IntValConve
 
 } //~ namespace ycg
 
-#endif // COUNTINGSORTER_H
+#endif // ALGORITHM_COUNTING_SORT_H

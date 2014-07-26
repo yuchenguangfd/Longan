@@ -3,10 +3,11 @@ env.Append(LIBPATH = ["#/common"])
 env.Append(LIBS=["common"])
 
 env_common = env.Clone()
-Export("env_common")
 env_common.lib_objects = []
+Export("env_common")
 
 SConscript("math/SConscript")
+SConscript("system/SConscript")
 SConscript("time/SConscript")
 SConscript("util/SConscript")
 
