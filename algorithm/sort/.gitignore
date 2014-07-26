@@ -6,5 +6,8 @@
 /merge_sort_unittest.o
 /quick_sort_unittest
 /quick_sort_unittest.o
+<<<<<<< HEAD
 /counting_sort_unittest
 /counting_sort_unittest.o
+=======
+>>>>>>> refs/heads/master
