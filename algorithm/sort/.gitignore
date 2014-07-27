@@ -13,3 +13,5 @@
 >>>>>>> refs/heads/master
 /quick_sort_mt_unittest
 /quick_sort_mt_unittest.o
+/heap_sort_unittest
+/heap_sort_unittest.o

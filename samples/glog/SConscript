@@ -1,0 +1,9 @@
+Import("env_samples")
+
+build_env = env_samples.Clone()
+# add glog support
+build_env.Prepend(CPPPATH = "#/external/glog/include")
+build_env.Prepend(LIBPATH = "#/external/glog")
+build_env.Prepend(LIBS = "glog")
+build_env.Prepend(LINKFLAGS = "-pthread")
+build_env.Program("demo_glog", "demo_glog.cpp")

@@ -1,5 +1,5 @@
 /*
- * helloworld.cpp
+ * demo_gtest.cpp
  * Created on: Jul 20, 2014
  * Author: chenguangyu
  * Show basic usage of gtest library

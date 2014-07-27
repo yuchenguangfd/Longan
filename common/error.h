@@ -10,6 +10,7 @@
 namespace longan {
 
 const int LONGAN_SUCC = 0;
+const int LONGAN_FAIL = -1;
 
 class LonganError {
 public:
