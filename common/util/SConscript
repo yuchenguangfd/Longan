@@ -1,6 +1,7 @@
 Import("env_common")
 env_common.lib_objects.append(env_common.Object("random.cpp"))
 env_common.lib_objects.append(env_common.Object("array_helper.cpp"))
+env_common.lib_objects.append(env_common.Object("string_helper.cpp"))
 
 build_env = env_common.Clone()
 # add gtest support
@@ -10,3 +11,4 @@ build_env.Prepend(LIBS = "gtest")
 build_env.Prepend(LINKFLAGS = "-pthread")
 
 build_env.Program("random_unittest", ["random_unittest.cpp"])
+build_env.Program("string_helper_unittest", ["string_helper_unittest.cpp"])

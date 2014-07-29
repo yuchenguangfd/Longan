@@ -2,3 +2,6 @@
 /random_unittest.o
 /random.o
 /array_helper.o
+/string_helper_unittest
+/string_helper_unittest.o
+/string_helper.o
