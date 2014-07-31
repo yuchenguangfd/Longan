@@ -15,6 +15,7 @@ cd ../time
 ./stopwatch_unittest
 cd ../util
 ./random_unittest
+./string_helper_unittest
 cd ../..
 
 #######/algorithm#######
@@ -28,6 +29,7 @@ cd ../sort
 ./counting_sort_unittest
 ./quick_sort_unittest
 ./quick_sort_mt_unittest
-
+./heap_sort_unittest
+./shell_sort_unittest
 #######all test passed##
 echo "Congratulations! All test passed."

@@ -15,3 +15,5 @@
 /quick_sort_mt_unittest.o
 /heap_sort_unittest
 /heap_sort_unittest.o
+/shell_sort_unittest
+/shell_sort_unittest.o
