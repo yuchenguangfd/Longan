@@ -16,6 +16,17 @@ inline void Swap(T& a, T& b) {
     b = temp;
 }
 
+template<class RandomAccessIterator>
+void Reverse(RandomAccessIterator first, RandomAccessIterator last) {
+    if (first == last) return;
+    --last;
+    while (first < last) {
+     Swap(*first, *last);
+     ++first;
+     --last;
+   }
+}
+
 } //~ namespace longan
 
 #endif /* COMMON_UTIL_UTIL_H */
