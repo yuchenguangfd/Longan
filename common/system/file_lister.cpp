@@ -24,4 +24,4 @@ std::vector<std::string> FileLister::ListFilename() {
     return filenames;
 }
 
-} /* namespace longan */
+} //~ namespace longan
