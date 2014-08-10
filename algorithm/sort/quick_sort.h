@@ -13,7 +13,7 @@ namespace longan {
 
 class QuickSort {
 public:
-	template <class T>
+    template <class T>
     void operator() (T *array, int size);
     template <class T, class Comparator>
     void operator() (T *array, int size, Comparator cmp);
@@ -39,8 +39,8 @@ protected:
 
 template <class T>
 void QuickSort::operator () (T *array, int size) {
-	DoQuickSort(array, 0, size - 1);
-	mInsertionSort(array, size);
+    DoQuickSort(array, 0, size - 1);
+    mInsertionSort(array, size);
 }
 
 template <class T, class Comparator>

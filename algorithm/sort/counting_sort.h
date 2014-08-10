@@ -4,8 +4,8 @@
  * Author: chenguangyu
  */
 
-#ifndef ALGORITHM_COUNTING_SORT_H
-#define ALGORITHM_COUNTING_SORT_H
+#ifndef ALGORITHM_SORT_COUNTING_SORT_H
+#define ALGORITHM_SORT_COUNTING_SORT_H
 
 #include <cassert>
 
@@ -60,6 +60,6 @@ void CountingSort::operator () (T *src, T *dst, int size, int limit, IntValConve
     delete []count;
 }
 
-} //~ namespace ycg
+} //~ namespace longan
 
 #endif // ALGORITHM_COUNTING_SORT_H

@@ -14,7 +14,9 @@ namespace longan {
 
 class QuickSortMT : public QuickSort {
 public:
-    void SetThreadNum(int threadNum) { mThreadNum = threadNum; }
+    void SetThreadNum(int threadNum) {
+        mThreadNum = threadNum;
+    }
 	template <class T>
     void operator() (T *array, int size);
     template <class T, class Comparator>

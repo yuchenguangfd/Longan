@@ -30,7 +30,7 @@ TEST_F(QuickSortMTTest, SortAscent) {
     ArrayHelper::RandomShuffle(array, size);
     qsort(array, size);
     for (int i = 1; i < size; ++i) {
-        EXPECT_LE(array[i-1], array[i]);
+        EXPECT_LT(array[i-1], array[i]);
     }
 }
 
@@ -42,7 +42,7 @@ TEST_F(QuickSortMTTest, SortDescent) {
                 return b - a;
             });
     for (int i = 1; i < size; ++i) {
-        EXPECT_GE(array[i-1], array[i]);
+        EXPECT_GT(array[i-1], array[i]);
     }
 }
 
@@ -60,7 +60,7 @@ TEST_F(QuickSortMTTest, SpeedUp) {
     sw.Start();
         sort2(array, size);
     double t2 = sw.ElapsedMilliseconds();
-    EXPECT_LE(t2, t1);
+    EXPECT_LT(t2, t1);
 }
 
 int main(int argc, char **argv) {

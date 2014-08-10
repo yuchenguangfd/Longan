@@ -13,7 +13,7 @@ using namespace longan;
 class InsertionSortTest : public ::testing::Test {
 protected:
 	void SetUp() {
-		size = 4096;
+		size = 5;
 		ArrayHelper::AllocateArray1D(&array, size);
 		ArrayHelper::FillRange(array, size);
 		ArrayHelper::RandomShuffle(array, size);
@@ -27,19 +27,35 @@ protected:
 };
 
 TEST_F(InsertionSortTest, SortAscent) {
-    sort(&array[0], size);
+    sort(array, size);
     for (int i = 1; i < size; ++i) {
-        EXPECT_LE(array[i-1], array[i]);
+        EXPECT_LT(array[i-1], array[i]);
     }
 }
 
 TEST_F(InsertionSortTest, SortDescent) {
-    sort(&array[0], size,
+    sort(array, size,
     		[](int a, int b) -> int {
     			return (a < b)?1:-1;
     		});
     for (int i = 1; i < size; ++i) {
-        EXPECT_GE(array[i-1], array[i]);
+        EXPECT_GT(array[i-1], array[i]);
+    }
+}
+
+TEST_F(InsertionSortTest, SortPointerVector) {
+    std::vector<int*> pArray(size);
+    for (int i = 0; i < size; ++i) {
+        pArray[i] = new int(array[i]);
+    }
+    sort(&pArray[0], pArray.size(), [](int *a, int *b) -> int {
+        return (*a) - (*b);
+        });
+    for (int i = 1; i < size; ++i) {
+        EXPECT_LT(*pArray[i-1], *pArray[i]);
+    }
+    for (int i = 0; i < size; ++i) {
+        delete pArray[i];
     }
 }
 

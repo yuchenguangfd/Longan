@@ -30,7 +30,7 @@ protected:
 TEST_F(BubbleSortTest, SortAscent) {
     sort(&array[0], size);
     for (int i = 1; i < size; ++i) {
-        EXPECT_LE(array[i-1], array[i]);
+        EXPECT_LT(array[i-1], array[i]);
     }
 }
 
@@ -40,7 +40,7 @@ TEST_F(BubbleSortTest, SortDescent) {
     			return (a < b)?1:-1;
     		});
     for (int i = 1; i < size; ++i) {
-        EXPECT_GE(array[i-1], array[i]);
+        EXPECT_GT(array[i-1], array[i]);
     }
 }
 

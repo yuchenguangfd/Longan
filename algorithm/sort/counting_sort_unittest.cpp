@@ -32,7 +32,7 @@ TEST_F(CountingSortTest, SortInt) {
     ArrayHelper::RandomShuffle(array, size);
     sort(array, size, size, [](int val)->int { return val; });
     for (int i = 1; i < size; ++i) {
-        EXPECT_LE(array[i-1], array[i]);
+        EXPECT_LT(array[i-1], array[i]);
     }
 }
 
@@ -44,18 +44,18 @@ TEST_F(CountingSortTest, SortPair) {
     ArrayHelper::RandomShuffle(array, size);
     sort(pairArray, size, size, [](std::pair<double, int>& p)->int { return p.second;});
     for (int i = 1; i < size; ++i) {
-        EXPECT_LE(pairArray[i-1].second, pairArray[i].second);
+        EXPECT_LT(pairArray[i-1].second, pairArray[i].second);
     }
 }
 
 TEST_F(CountingSortTest, SortStable) {
     for (int i = 0; i < size; ++i) {
-       pairArray[i].first = i / size;
+       pairArray[i].first = static_cast<double>(i) / size;
        pairArray[i].second = i;
     }
     sort(pairArray, size, size, [](std::pair<double, int>& p)->int { return p.first > 0.5 ? 1 : 0;});
     for (int i = 0; i < size; ++i) {
-        EXPECT_LE(pairArray[i].second, i);
+        EXPECT_EQ(pairArray[i].second, i);
     }
 }
 

@@ -33,7 +33,7 @@ template <class T, class Comparator>
 void InsertionSort::operator() (T *array, int size, Comparator cmp) {
 	for (int j = 1; j < size; ++j) {
 		int i = j - 1;
-		T key = array[i];
+		T key = array[j];
 		while (i >= 0 && cmp(key, array[i]) < 0) {
 			array[i + 1] = array[i];
 			--i;

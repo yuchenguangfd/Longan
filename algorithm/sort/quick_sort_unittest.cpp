@@ -6,6 +6,7 @@
 
 #include "quick_sort.h"
 #include "common/util/array_helper.h"
+#include "common/time/stopwatch.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -29,7 +30,7 @@ TEST_F(QuickSortTest, SortAscent) {
     ArrayHelper::RandomShuffle(array, size);
     qsort(array, size);
     for (int i = 1; i < size; ++i) {
-        EXPECT_LE(array[i-1], array[i]);
+        EXPECT_LT(array[i-1], array[i]);
     }
 }
 
@@ -41,16 +42,16 @@ TEST_F(QuickSortTest, SortDescent) {
                 return b - a;
             });
     for (int i = 1; i < size; ++i) {
-        EXPECT_GE(array[i-1], array[i]);
+        EXPECT_GT(array[i-1], array[i]);
     }
 }
 
 TEST_F(QuickSortTest, AlreadySorted) {
     ArrayHelper::FillRange(array, size);
-    qsort(array, size);
-    for (int i = 1; i < size; ++i) {
-        EXPECT_LE(array[i-1], array[i]);
-    }
+    Stopwatch sw;
+    sw.Start();
+        qsort(array, size);
+    EXPECT_LE(sw.ElapsedMilliseconds(), 1000);
 }
 
 int main(int argc, char **argv) {

@@ -29,7 +29,7 @@ TEST_F(ShellSortTest, SortAscent) {
     ArrayHelper::RandomShuffle(array, size);
     sort(array, size);
     for (int i = 1; i < size; ++i) {
-        EXPECT_LE(array[i-1], array[i]);
+        EXPECT_LT(array[i-1], array[i]);
     }
 }
 
@@ -41,7 +41,7 @@ TEST_F(ShellSortTest, SortDescent) {
                 return b - a;
             });
     for (int i = 1; i < size; ++i) {
-        EXPECT_GE(array[i-1], array[i]);
+        EXPECT_GT(array[i-1], array[i]);
     }
 }
 
