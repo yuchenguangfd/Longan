@@ -17,3 +17,7 @@
 /heap_sort_unittest.o
 /shell_sort_unittest
 /shell_sort_unittest.o
+/count_inversion_unittest
+/count_inversion_unittest.o
+/randomized_select_unittest
+/randomized_select_unittest.o
