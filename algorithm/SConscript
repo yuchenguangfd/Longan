@@ -9,5 +9,6 @@ env_algorithm.lib_objects = []
 
 SConscript("number_theory/SConscript")
 SConscript("sort/SConscript")
+SConscript("data_structure/SConscript")
 
 env_algorithm.StaticLibrary("algorithm", env_algorithm.lib_objects)
