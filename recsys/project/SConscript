@@ -1,4 +1,6 @@
 Import("env_recsys")
 Export("env_recsys")
 
+SConscript("movielens/SConscript")
 SConscript("netflix/SConscript")
+SConscript("ocn/SConscript")
