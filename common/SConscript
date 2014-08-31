@@ -7,6 +7,7 @@ env_common.lib_objects = []
 Export("env_common")
 
 SConscript("lang/SConscript")
+SConscript("logging/SConscript")
 SConscript("math/SConscript")
 SConscript("system/SConscript")
 SConscript("time/SConscript")
