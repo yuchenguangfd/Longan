@@ -13,6 +13,20 @@ namespace longan {
 
 #define LOG_ENTER_FUNC  LOG(INFO) << "enter func " << __func__
 #define LOG_LEAVE_FUNC  LOG(INFO) << "leave func " << __func__
+#define LOG_FUNC  FuncCallTracer trcer(__func__)
+
+class FuncCallTracer {
+public:
+    FuncCallTracer(const char* str) {
+        mFuncName = str;
+        LOG(INFO) << "entering func " << mFuncName;
+    }
+    ~FuncCallTracer() {
+        LOG(INFO) << "leaving func " << mFuncName;
+    }
+private:
+    const char* mFuncName;
+};
 
 }
 
