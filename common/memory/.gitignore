@@ -1,2 +1,4 @@
 /small_memory_allocator_unittest
 /small_memory_allocator_unittest.o
+/preferred_size_allocator_unittest
+/preferred_size_allocator_unittest.o
