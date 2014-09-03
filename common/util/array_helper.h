@@ -15,7 +15,7 @@ namespace longan {
 namespace ArrayHelper {
 
 template <class T>
-void RandomShuffle(T *array, int size){
+void RandomShuffle(T *array, int size) {
     Random& rnd = Random::Instance();
     for(int i = 0; i < size; ++i) {
         int p = rnd.Uniform(i, size);

@@ -1,0 +1,8 @@
+Import("env_samples")
+
+build_env = env_samples.Clone()
+# add openmp support
+build_env.Prepend(CCFLAGS = "-fopenmp")
+build_env.Prepend(LINKFLAGS = "-fopenmp")
+
+build_env.Program("demo_openmp", ["demo_openmp.cpp"])
