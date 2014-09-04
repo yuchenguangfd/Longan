@@ -11,8 +11,5 @@ build_env.Prepend(CPPPATH = "#/external/gflags/include")
 build_env.Prepend(LIBPATH = "#/external/gflags")
 build_env.Prepend(LIBS = "gflags")
 
-# add boost library
-build_env.Append(CPPPATH = "#/external/boost/include")
-build_env.Append(LIBPATH = "#/external/boost/lib")
-build_env.Append(LIBS = ["boost_system", "boost_filesystem"])
-
+build_env.Program("movielens_preparation_longan", 
+                  ["movielens_preparation_longan.cpp", "movielens_preparation.cpp"])
