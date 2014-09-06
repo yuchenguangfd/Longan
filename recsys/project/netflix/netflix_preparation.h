@@ -10,15 +10,14 @@
 #include "recsys/util/rating_record_with_time.h"
 #include <string>
 #include <vector>
-#include <set>
 #include <map>
-
+#include <set>
 namespace longan {
 
 struct Movie {
-    std::string id;
-    std::string title;
+    int id;
     int year;
+    std::string title;
 };
 
 struct UserItemPair {
@@ -37,17 +36,17 @@ inline bool operator < (const UserItemPair& lhs, const UserItemPair& rhs) {
 class NetflixPreparation {
 public:
     NetflixPreparation(const std::string& inputPath, const std::string& outputPath);
-    void PrepareMovieData();
-    void PrepareRatingData();
+    void PrepareDataset();
 private:
-    void LoadAllRatings();
-    void LoadRatingsFromFile(const std::string& filename);
-    void SortAllRatingsByTime();
+    void ReadItemInfo();
+    void ReadAllRating();
     void GenerateUserIdMapping();
-    void GenerateTrainAndTestRatings();
-    void FreeAllRatings();
-    void LoadItemIdMapping();
-    void LoadTestRatingRecords();
+    void GenerateItemIdMapping();
+    void GenerateMovieData();
+    void GenerateRatingData();
+    void FreeRatings();
+    void ReadRatingFile(const std::string& filename);
+    void ReadTestRating();
     void SetTrainOrTestFlag();
     void GenerateTrainRatings();
     void GenerateTestRatings();
@@ -56,12 +55,16 @@ private:
 private:
     std::string mInputPath;
     std::string mOutputPath;
-    std::vector<RatingRecordWithTime*> mAllRatings;
+    int mNumUser;
+    int mNumItem;
+    int mNumRating;
+    int mNumTestRatings;
+    std::vector<Movie> mMovies;
+    std::vector<RatingRecordWithTime*> mRatings;
     std::map<int, int> mUserIdMap;
     std::map<int, int> mItemIdMap;
     std::set<UserItemPair> mTestRatingSet;
-    std::vector<bool> mAllRatingsIsTestFlag;
-    int mNumTestRatings;
+    std::vector<bool> mIsTestRatingFlags;
 };
 
 } //~ namespace longan

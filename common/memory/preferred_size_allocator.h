@@ -8,6 +8,7 @@
 #define COMMON_MEMORY_PREFERRED_SIZE_ALLOCATOR_H
 
 #include <vector>
+#include <map>
 #include <cstdlib>
 #include <cassert>
 #include <iostream>

@@ -10,18 +10,12 @@
 
 DEFINE_string(inputPath, "./Netflix", "home path of netflix dataset");
 DEFINE_string(outputPath, "./Netflix", "output path of converted data");
-DEFINE_bool(prepareMovie, true, "to prepare movie data");
-DEFINE_bool(prepareRating, true, "to prepare rating data");
 
 int main(int argc, char **argv) {
     ::google::InitGoogleLogging(argv[0]);
     ::gflags::ParseCommandLineFlags(&argc, &argv, true);
+    FLAGS_alsologtostderr = true;
     longan::NetflixPreparation preparation(FLAGS_inputPath, FLAGS_outputPath);
-    if (FLAGS_prepareMovie) {
-        preparation.PrepareMovieData();
-    }
-    if (FLAGS_prepareRating) {
-        preparation.PrepareRatingData();
-    }
+    preparation.PrepareDataset();
     return 0;
 }
