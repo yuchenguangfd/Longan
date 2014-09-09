@@ -15,7 +15,7 @@ namespace Math {
 
 template <class T>
 inline T Abs(T x) {
-    return (x >= 0) ? x : -x;
+    return (x < T()) ? -x : x;
 }
 
 template <class T>

@@ -22,6 +22,7 @@ namespace longan {
 
 NetflixPreparation::NetflixPreparation(const std::string& inputPath, const std::string& outputPath) :
     mInputPath(inputPath), mOutputPath(outputPath),
+    mNumUser(0), mNumItem(0), mNumRating(0),
     mNumTestRatings(0) { }
 
 void NetflixPreparation::PrepareDataset() {
@@ -232,7 +233,8 @@ void NetflixPreparation::GenerateTrainRatings() {
         LOG_IF(INFO, i % 10000000 == 0) << "process" << i << "/" << mRatings.size();
         if (mIsTestRatingFlags[i]) continue;
         RatingRecordWithTime& rating = *mRatings[i];
-        fout << rating.UserId() << "," << rating.ItemId() << ","
+        fout << mUserIdMap[rating.UserId()] << ","
+             << mItemIdMap[rating.ItemId()] << ","
              << rating.Rating() << "," << rating.Timestamp() << endl;
     }
 }
@@ -248,7 +250,8 @@ void NetflixPreparation::GenerateTestRatings() {
         LOG_IF(INFO, i % 10000000 == 0) << "process" << i << "/" << mRatings.size();
         if (!mIsTestRatingFlags[i]) continue;
         RatingRecordWithTime& rating = *mRatings[i];
-        fout << rating.UserId() << "," << rating.ItemId() << ","
+        fout << mUserIdMap[rating.UserId()] << ","
+             << mItemIdMap[rating.ItemId()] << ","
              << rating.Rating() << "," << rating.Timestamp() << endl;
     }
 }
