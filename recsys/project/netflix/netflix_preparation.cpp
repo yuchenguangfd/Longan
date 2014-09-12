@@ -51,7 +51,7 @@ void NetflixPreparation::ReadItemInfo() {
         Movie movie;
         movie.id = Integer::ParseInt(lineFields[0]);
         movie.year = Integer::ParseInt(lineFields[1]);
-        movie.title = Integer::ParseInt(lineFields[2]);
+        movie.title = lineFields[2];
         mMovies.push_back(movie);
     }
     // sort by movie's distribution year
