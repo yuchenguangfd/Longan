@@ -19,12 +19,24 @@ namespace longan {
 template <class T>
 class PreferredSizeAllocator {
 public:
+    typedef T value_type;
+    typedef value_type* pointer;
+    typedef const value_type* const_pointer;
+    typedef value_type& reference;
+    typedef const value_type& const_reference;
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+public:
     PreferredSizeAllocator(int preferredSize, int poolSize = 1024 * 1024 * 32 /* 32MB */);
     ~PreferredSizeAllocator();
     T* Allocate(int size);
     void Deallocate(T *p, int size);
+    void Construct(T* p, const T& val);
+    void Destroy(T *p);
     T* allocate(int size) { return Allocate(size); }
     void deallocate(T *p, int size) { Deallocate(p, size); }
+    void construct(T *p, const T& val) { Construct(p, val); }
+    void destroy(T *p) { Destroy(p); }
 protected:
     void NewMemoryPool();
 protected:
@@ -71,6 +83,16 @@ inline void PreferredSizeAllocator<T>::Deallocate(T *p, int size) {
         free((void*)p);
     }
     mAvailablePtrStack.push_back(p);
+}
+
+template <class T>
+inline void PreferredSizeAllocator<T>::Construct(T *p, const T& val) {
+    new((void*)p)T(val);
+}
+
+template <class T>
+inline void PreferredSizeAllocator<T>::Destroy(T *p) {
+    p->~T();
 }
 
 template <class T>

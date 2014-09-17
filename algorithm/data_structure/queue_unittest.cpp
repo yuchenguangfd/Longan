@@ -6,45 +6,38 @@
 
 #include "queue.h"
 #include <gtest/gtest.h>
+#include <string>
 
 using namespace longan;
+using namespace std;
 
-class QueueTest : public ::testing::Test {
-protected:
-	virtual void SetUp() {
-		q1.Enqueue(1);
-		q2.Enqueue(2);
-		q2.Enqueue(3);
-	}
-	Queue<int> q0;
-	Queue<int> q1;
-	Queue<int> q2;
-};
-
-TEST_F(QueueTest, Empty) {
-  EXPECT_TRUE(q0.Empty());
-  q0.Enqueue(123);
-  q0.Enqueue(456);
-  EXPECT_FALSE(q0.Empty());
+TEST(QueueTest, SmallCase) {
+    Queue<string> queue;
+    ASSERT_TRUE(queue.Empty());
+    queue.Enqueue("111");
+    queue.Enqueue("22");
+    queue.Enqueue("3333");
+    ASSERT_FALSE(queue.Empty());
+    ASSERT_EQ("111", queue.Front());
+    ASSERT_EQ("3333", queue.Rear());
+    ASSERT_EQ("111", queue.Dequeue());
+    ASSERT_EQ(2, queue.Size());
 }
 
-TEST_F(QueueTest, DequeueWorks) {
-	EXPECT_THROW(q0.Dequeue(), RuntimeError);
-	EXPECT_EQ(1, q1.Dequeue());
-	EXPECT_EQ(0, q1.Size());
-
-	EXPECT_EQ(2, q2.Dequeue());
-	q2.Enqueue(10);
-	EXPECT_EQ(3, q2.Dequeue());
-	EXPECT_EQ(1, q2.Size());
-	EXPECT_EQ(0, q0.Size());
-	for (int i = 0; i < 1024; ++i) {
-		EXPECT_NO_THROW(q0.Enqueue(i));
+TEST(QueueTest, LargeCase) {
+	Queue<double> queue;
+	for (int i = 0 ; i < 2048; ++i) {
+	    queue.Enqueue(i / 100);
+	    ASSERT_EQ(i+1, queue.Size());
 	}
-	for (int i = 0; i < 512; ++i) {
-		EXPECT_EQ(i, q0.Dequeue());
+	ASSERT_EQ(2048, queue.Size());
+	for (int i = 0; i < 2048; ++i) {
+	    queue.Enqueue(i * 0.618);
+	    queue.Dequeue();
+	    queue.Dequeue();
 	}
-	EXPECT_EQ(512, q0.Size());
+	ASSERT_EQ(0, queue.Size());
+	ASSERT_THROW(queue.Dequeue(), RuntimeError);
 }
 
 int main(int argc, char* argv[]) {

@@ -1,6 +1,6 @@
 /math_unittest
 /math_unittest.o
 /math.o
-/statistic_unittest
-/statistic_unittest.o
-/statistic.o
+/running_statistic_unittest
+/running_statistic_unittest.o
+/vector_unittest

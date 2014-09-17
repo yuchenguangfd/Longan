@@ -2,3 +2,5 @@
 /queue_unittest.o
 /binary_heap_unittest
 /binary_heap_unittest.o
+/stack_unittest
+/stack_unittest.o

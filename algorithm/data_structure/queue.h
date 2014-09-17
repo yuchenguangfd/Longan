@@ -10,18 +10,36 @@
 #include "common/error.h"
 #include <memory>
 #include <cassert>
-
+ 
 namespace longan {
 
 template <class T, class Alloc = std::allocator<T> >
 class Queue {
 public:
-    Queue(int capacity = DEFAULT_CAPACITY) :
-    	mCapacity(capacity), mFront(0), mRear(0), mSize(0) {
-        mData = alloc.allocate(capacity);
+    Queue(int capacity = DEFAULT_CAPACITY, Alloc* alloc = nullptr) {
+        assert(capacity > 0);
+        mFront = mRear = 0;
+        mSize = 0;
+        mCapacity= capacity;
+        if (alloc == nullptr) {
+            mAlloc = new Alloc();
+            mIsOwnAlloc = true;
+        } else {
+            mAlloc = alloc;
+            mIsOwnAlloc = false;
+        }
+        mData = mAlloc->allocate(mCapacity);
     }
     ~Queue() {
-        alloc.deallocate(mData, mCapacity);
+        for (int i = 0; i < mSize; ++i) {
+            mAlloc->destroy(&mData[mFront]);
+            ++mFront;
+            if (mFront == mCapacity) mFront = 0;
+        }
+        mAlloc->deallocate(mData, mCapacity);
+        if (mIsOwnAlloc) {
+            delete mAlloc;
+        }
     }
     bool Empty() const { 
         return mSize == 0; 
@@ -32,11 +50,18 @@ public:
     int Capacity() const { 
         return mCapacity; 
     }
+    T Front() const {
+        return mData[mFront];
+    }
+    T Rear() const {
+        return mData[mRear - 1];
+    }
     void Enqueue(const T &elem) {
     	if (Full()) {
     		Expand();
     	}
-    	mData[mRear++] = elem;
+    	mAlloc->construct(&mData[mRear], elem);
+    	++mRear;
 		if(mRear == mCapacity) mRear = 0;
 		++mSize;
     }
@@ -44,10 +69,12 @@ public:
     	if (Empty()) {
             throw RuntimeError("queue is empty.");
         }
-        const T& elem = mData[mFront++];
+        T ret = mData[mFront];
+        mAlloc->destroy(&mData[mFront]);
+        ++mFront;
         if(mFront == mCapacity) mFront = 0;
         --mSize;
-        return elem;
+        return ret;
     }
 protected:
     bool Full() const { 
@@ -56,12 +83,14 @@ protected:
     void Expand() {
     	assert(mSize == mCapacity);
     	int newCapacity = 2 * mCapacity;
-    	T *newData = alloc.allocate(newCapacity);
+    	T *newData = mAlloc->allocate(newCapacity);
     	for (int i = 0; i < mCapacity; ++i) {
-    		newData[i] = mData[mFront++];
+    		mAlloc->construct(&newData[i], mData[mFront]);
+    		mAlloc->destroy(&mData[mFront]);
+    		++mFront;
             if(mFront == mCapacity) mFront = 0;
     	}
-    	alloc.deallocate(mData, mCapacity);
+    	mAlloc->deallocate(mData, mCapacity);
     	mData = newData;
     	mFront = 0;
     	mRear = mCapacity;
@@ -70,12 +99,13 @@ protected:
     }
 protected:
     static const int DEFAULT_CAPACITY = 16;
+    Alloc* mAlloc;
+    bool mIsOwnAlloc;
     T* mData;
     int mCapacity;
     int mFront;
     int mRear;
     int mSize;
-    Alloc alloc;
 };
 
 } //~ namespace longan

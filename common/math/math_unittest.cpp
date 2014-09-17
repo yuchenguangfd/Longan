@@ -6,6 +6,7 @@
 
 #include "math.h"
 #include <gtest/gtest.h>
+#include <vector>
 #include <string>
 
 using namespace longan;
@@ -17,15 +18,34 @@ TEST(MathTest, Abs) {
 }
 
 TEST(MathTest, MaxMin) {
-	int a = -1, b = 2;
+	int a = -1, b = 2, c = 3;
 	EXPECT_EQ(b, Max(a, b));
 	EXPECT_EQ(a, Min(a, b));
-	double x = 10.2, y = 4.8;
+	EXPECT_EQ(c, Max(a, b, c));
+	EXPECT_EQ(a, Min(a, b, c));
+	double x = 10.2, y = 4.8, z = -3.2;
 	EXPECT_EQ(x, Max(x, y));
 	EXPECT_EQ(y, Min(x, y));
-	std::string p = "hello", q = "world";
+	EXPECT_EQ(x, Max(x, y, z));
+	EXPECT_EQ(z, Min(x, y, z));
+	std::string p = "hello", q = "world", w = "000";
 	EXPECT_EQ(q, Max(p, q));
 	EXPECT_EQ(p, Min(p, q));
+	EXPECT_EQ(q, Max(p, q, w));
+	EXPECT_EQ(w, Min(p, q, w));
+}
+
+TEST(MathTest, MaxMinInRange) {
+    int array[] = {123, 456, 789, -321, -67, 0};
+    int *p1;
+    ASSERT_EQ(789, MaxInRange(array, array + 6));
+    ASSERT_EQ(789, MaxInRange(array, array + 6, p1));
+    ASSERT_EQ(&array[2], p1);
+    std::vector<double> vec = {1.23, 4.56, 7.89, -3.21, -0.67, 0};
+    std::vector<double>::iterator p2;
+    ASSERT_EQ(7.89, MaxInRange(vec.begin(), vec.end()));
+    ASSERT_EQ(7.89, MaxInRange(vec.begin(), vec.end(), p2));
+    ASSERT_EQ(vec.begin() + 2, p2);
 }
 
 TEST(MathTest, RelativeError) {
