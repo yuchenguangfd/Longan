@@ -9,6 +9,8 @@
 
 #include "math.h"
 #include "algorithm/data_structure/binary_heap.h"
+#include <vector>
+#include <algorithm>
 #include <limits>
 
 namespace longan {
@@ -19,7 +21,7 @@ public:
     RunningMin() {
         mCurrentMin = std::numeric_limits<T>::max();
     }
-    void Add(T val) {
+    void Add(const T& val) {
         if (val < mCurrentMin) {
             mCurrentMin = val;
         }
@@ -40,7 +42,7 @@ public:
             mCurrentMax = std::numeric_limits<T>::min();
         }
     }
-    void Add(T val) {
+    void Add(const T& val) {
         if (mCurrentMax < val) {
             mCurrentMax = val;
         }
@@ -55,8 +57,44 @@ private:
 template <class T>
 class RunningMinK {
 public:
+    RunningMinK(int k) : mK(k), mCurrentMinHeap(k) { }
+    void Add(const T& val) {
+        if (mCurrentMinHeap.Size() < mK) {
+            mCurrentMinHeap.Add(val);
+        } else if (val < mCurrentMinHeap.Top()){
+            mCurrentMinHeap.Modify(0, val);
+        }
+    }
+    std::vector<T> CurrentMinK() const {
+        std::vector<T> minSet(mCurrentMinHeap.Begin(), mCurrentMinHeap.End());
+        std::sort(minSet.begin(), minSet.end());
+        return minSet;
+    }
 private:
-    MaxBinaryHeap<T> mCurrentMinSet;
+    int mK;
+    MaxBinaryHeap<T> mCurrentMinHeap;
+};
+
+template <class T>
+class RunningMaxK {
+public:
+    RunningMaxK(int k) : mK(k), mCurrentMaxHeap(k) { }
+    void Add(const T& val) {
+        if (mCurrentMaxHeap.Size() < mK) {
+            mCurrentMaxHeap.Add(val);
+        } else if (mCurrentMaxHeap.Top() < val) {
+            mCurrentMaxHeap.Modify(0, val);
+        }
+    }
+    std::vector<T> CurrentMaxK() const {
+        std::vector<T> maxSet(mCurrentMaxHeap.Begin(), mCurrentMaxHeap.End());
+        std::sort(maxSet.begin(), maxSet.end(),
+                [](const T& lhs, const T& rhs)->bool { return rhs < lhs; });
+        return maxSet;
+    }
+private:
+    int mK;
+    MinBinaryHeap<T> mCurrentMaxHeap;
 };
 
 template <class T>

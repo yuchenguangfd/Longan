@@ -15,7 +15,7 @@ using namespace longan;
 class BinaryHeapTest : public ::testing::Test {
 protected:
 	void SetUp() {
-		mSize = 1234;
+		mSize = 2014;
 		ArrayHelper::AllocateArray1D(&mArray, mSize);
 	}
 	void TearDown() {
@@ -30,22 +30,21 @@ TEST_F(BinaryHeapTest, MinBinaryHeap) {
 	for (int rep = 0; rep < REPEAT_TIME; ++rep) {
 		ArrayHelper::FillRange(mArray, mSize);
 		ArrayHelper::RandomShuffle(mArray, mSize);
-		MinBinaryHeap<int> heap1(mSize);
+		MinBinaryHeap<int> heap1;
 		for (int i = 0; i < mSize; ++i) {
 			heap1.Add(mArray[i]);
 		}
 		EXPECT_EQ(heap1.Size(), mSize);
-		EXPECT_EQ(heap1.Capacity(), mSize);
 		EXPECT_EQ(heap1.Min(), 0);
 		EXPECT_EQ(heap1.Top(), 0);
 		for (int i = 0; i < mSize; ++i) {
-			EXPECT_EQ(heap1.Extract(), i);
+			EXPECT_EQ(i, heap1.Extract());
 		}
 		EXPECT_EQ(heap1.Size(), 0);
-		MinBinaryHeap<int> heap2(2 * mSize, mArray, mSize);
+		MinBinaryHeap<double> heap2(mArray, mSize);
 		EXPECT_EQ(heap2.Min(), 0);
 		for (int i = 0; i < mSize; ++i) {
-			EXPECT_EQ(heap2.Extract(), i);
+			EXPECT_EQ(i, heap2.Extract());
 			heap2.Add(mSize);
 		}
 		EXPECT_EQ(heap2.Top(), mSize);
@@ -65,13 +64,13 @@ TEST_F(BinaryHeapTest, MaxBinaryHeap) {
 		EXPECT_EQ(heap1.Max(), mSize-1);
 		EXPECT_EQ(heap1.Top(), mSize-1);
 		for (int i = mSize - 1; i >= 0; --i) {
-			EXPECT_EQ(heap1.Extract(), i);
+			EXPECT_EQ(i, heap1.Extract());
 		}
 		EXPECT_EQ(heap1.Size(), 0);
-		MaxBinaryHeap<int> heap2(2 * mSize, mArray, mSize);
+		MaxBinaryHeap<float> heap2(mArray, mSize, 2*mSize);
 		EXPECT_EQ(heap2.Max(), mSize - 1);
 		for (int i = mSize - 1; i >= 0 ; --i) {
-			EXPECT_EQ(heap2.Extract(), i);
+			EXPECT_EQ(i, heap2.Extract());
 			heap2.Add(0);
 		}
 		EXPECT_EQ(heap2.Top(), 0);

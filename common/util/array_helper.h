@@ -24,12 +24,12 @@ void RandomShuffle(T *array, int size) {
 }
 
 template <class T>
-void AllocateArray1D(T **pArr1D, int size) {
+void CreateArray1D(T **pArr1D, int size) {
     *pArr1D = new T[size];
 }
 
 template <class T>
-void FreeArray1D(T **pArr1D, int size) {
+void ReleaseArray1D(T **pArr1D, int size) {
     if (*pArr1D == nullptr) return;
     delete [](*pArr1D);
     *pArr1D = nullptr;
@@ -50,7 +50,7 @@ void CopyArray1D(const T *src, T *dst, int size) {
 }
 
 template <class T>
-void AllocateArray2D(T ***pArr2D, int rows, int cols) {
+void CreateArray2D(T ***pArr2D, int rows, int cols) {
 	T **mat = new T*[rows];
 	for (int i = 0; i < rows; ++i) {
 		mat[i] = new T[cols];
@@ -59,7 +59,7 @@ void AllocateArray2D(T ***pArr2D, int rows, int cols) {
 }
 
 template <class T>
-void FreeArray2D(T ***pArr2D, int rows, int cols) {
+void ReleaseArray2D(T ***pArr2D, int rows, int cols) {
     T **mat = *pArr2D;
     if (mat == nullptr) return;
     for (int i = 0; i < rows; ++i) {

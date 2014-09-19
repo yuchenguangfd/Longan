@@ -5,6 +5,7 @@
  */
 
 #include "running_statistic.h"
+#include "common/util/array_helper.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -12,7 +13,7 @@ using namespace longan;
 TEST(RunningMaxMin, All) {
     RunningMin<int> rmin;
     RunningMax<double> rmax;
-    int numbers[] = {-1, -2, -3, -4, -5};
+    int numbers[] = {-1, -3, -2, -4, -5};
     for (int n : numbers) {
         rmin.Add(n);
         rmax.Add(n);
@@ -25,6 +26,35 @@ TEST(RunningMaxMin, All) {
     }
     ASSERT_EQ(-5, rmin.CurrentMin());
     ASSERT_EQ(5, rmax.CurrentMax());
+}
+
+TEST(RunningMaxMinK, All) {
+    int k = 32;
+    int size = 65535;
+    int *numbers;
+    ArrayHelper::CreateArray1D(&numbers, size);
+    ArrayHelper::FillRange(numbers, size);
+    ArrayHelper::RandomShuffle(numbers, size);
+    RunningMinK<int> rmink(k);
+    RunningMaxK<int> rmaxk(k);
+    for (int i = 0; i < size; ++i) {
+        rmink.Add(numbers[i]);
+        rmaxk.Add(numbers[i]);
+    }
+    auto res1 = rmink.CurrentMinK();
+    auto res2 = rmaxk.CurrentMaxK();
+    ASSERT_EQ(k, res1.size());
+    ASSERT_EQ(k, res2.size());
+    for (int i = 0; i < k; ++i) {
+        ASSERT_EQ(i, res1[i]);
+        ASSERT_EQ(size - 1 - i, res2[i]);
+    }
+    RunningMaxK<std::string> rmaxk2(2);
+    rmaxk2.Add("110"); rmaxk2.Add("119"); rmaxk2.Add("hello");
+    rmaxk2.Add("world"); rmaxk2.Add("122");
+    auto res3 = rmaxk2.CurrentMaxK();
+    ASSERT_EQ("world",res3[0]);
+    ASSERT_EQ("hello", res3[1]);
 }
 
 TEST(RunningAverage, All) {
