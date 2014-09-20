@@ -36,7 +36,7 @@ one movie each line, sort by year
 rating_train.txt
 ===
 **format**
-Line_1: #ratings
+Line_1: #ratings,#users,#items
 Line_i: user ID(mapped), item ID(mapped), rating, timestamp
 user ID is from 0 to #users-1, item ID is from 0 to #movies-1
 **sample**

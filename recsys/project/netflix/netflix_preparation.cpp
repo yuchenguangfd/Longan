@@ -228,7 +228,9 @@ void NetflixPreparation::GenerateTrainRatings() {
     ofstream fout(filename.c_str());
     assert(!fout.fail());
     int numTrainRatings = mNumRating - mNumTestRatings;
-    fout << numTrainRatings << endl;
+    fout << numTrainRatings << ","
+         << mNumUser << ","
+         << mNumItem << endl;
     for (int i = 0; i < mRatings.size(); ++i) {
         LOG_IF(INFO, i % 10000000 == 0) << "process" << i << "/" << mRatings.size();
         if (mIsTestRatingFlags[i]) continue;
@@ -245,7 +247,9 @@ void NetflixPreparation::GenerateTestRatings() {
     string filename = mOutputPath + "/rating_test.txt";
     ofstream fout(filename.c_str());
     assert(!fout.fail());
-    fout << mNumTestRatings << endl;
+    fout << mNumTestRatings << ","
+         << mNumUser << ","
+         << mNumItem << endl;;
     for (int i = 0; i < mRatings.size(); ++i) {
         LOG_IF(INFO, i % 10000000 == 0) << "process" << i << "/" << mRatings.size();
         if (!mIsTestRatingFlags[i]) continue;

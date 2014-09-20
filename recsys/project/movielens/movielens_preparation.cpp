@@ -329,7 +329,9 @@ void MovielensPreparation::GenerateRatingData() {
             return lhs->Timestamp() < rhs->Timestamp();
         });
     int numTrainRatings = splitPos;
-    fout1 << numTrainRatings << endl;
+    fout1 << numTrainRatings << ","
+          << mNumUser << ","
+          << mNumItem << endl;
     for (int i = 0; i < splitPos; ++i) {
         RatingRecordWithTime& rating = *mRatings[i];
         fout1 << mUserIdMap[rating.UserId()] << "," 
@@ -347,7 +349,9 @@ void MovielensPreparation::GenerateRatingData() {
             return lhs->Timestamp() < rhs->Timestamp();
         });
     int numTestRatings = mRatings.size() - numTrainRatings;
-    fout2 << numTestRatings << endl;
+    fout2 << numTestRatings << ","
+          << mNumUser << ","
+          << mNumItem << endl;
     for (int i = splitPos; i < mRatings.size(); ++i) {
         RatingRecordWithTime& rating = *mRatings[i];
         fout2 << mUserIdMap[rating.UserId()] << "," 

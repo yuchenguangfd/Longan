@@ -1,3 +1,6 @@
 /file_lister_unittest
 /file_lister_unittest.o
 /file_lister.o
+/file_util_unittest
+/file_util_unittest.o
+/file_util.o
