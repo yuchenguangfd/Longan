@@ -104,7 +104,7 @@ public:
         mCount = 0;
         mSum = initSum;
     }
-    void Add(T val) {
+    void Add(const T& val) {
         ++mCount;
         mSum += val;
     }
@@ -127,7 +127,7 @@ public:
         mSum = initSum;
         mSqrSum = initSum;
     }
-    void Add(T val) {
+    void Add(const T& val) {
         ++mCount;
         mSum += val;
         mSqrSum += val * val;
