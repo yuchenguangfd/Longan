@@ -1,0 +1,21 @@
+Import("env_recsys")
+
+build_env = env_recsys.Clone()
+# add glog support
+build_env.Prepend(CPPPATH = "#/external/glog/include")
+build_env.Prepend(LIBPATH = "#/external/glog")
+build_env.Prepend(LIBS = "glog")
+build_env.Prepend(LINKFLAGS = "-pthread")
+# add gflags support
+build_env.Prepend(CPPPATH = "#/external/gflags/include")
+build_env.Prepend(LIBPATH = "#/external/gflags")
+build_env.Prepend(LIBS = "gflags")
+# add jsoncpp support
+build_env.Prepend(CPPPATH = "#/external/jsoncpp/include")
+build_env.Prepend(LIBPATH = "#/external/jsoncpp")
+build_env.Prepend(LIBS = "json")
+
+build_env.Program("pop_train_longan", 
+                  ["pop_train_longan.cpp", "pop_train.cpp"])
+build_env.Program("pop_evaluate_longan",
+                  ["pop_evaluate_longan.cpp", "pop_evaluate.cpp", "pop_predict.cpp"])

@@ -16,10 +16,10 @@ class BinaryHeapTest : public ::testing::Test {
 protected:
 	void SetUp() {
 		mSize = 2014;
-		ArrayHelper::AllocateArray1D(&mArray, mSize);
+		ArrayHelper::CreateArray1D(&mArray, mSize);
 	}
 	void TearDown() {
-		ArrayHelper::FreeArray1D(&mArray, mSize);
+		ArrayHelper::ReleaseArray1D(&mArray, mSize);
 	}
 	int* mArray;
 	int mSize;
