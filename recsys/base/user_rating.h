@@ -12,7 +12,7 @@ namespace longan {
 class UserRating {
 public:
 	UserRating() : mUserId(0), mRating(0.0) { }
-	UserRating(int userId, double rating) : mUserId(userId), mRating(rating) { }
+	UserRating(int userId, float rating) : mUserId(userId), mRating(rating) { }
 	int UserId() const {
 	    return mUserId;
 	}
@@ -32,4 +32,4 @@ protected:
 
 } //~ namespace longan
 
-#endif /* RECSYS_UTIL_USER_PREFERENCE_H */
+#endif /* RECSYS_UTIL_USER_RATING_H */

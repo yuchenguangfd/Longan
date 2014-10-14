@@ -22,8 +22,16 @@ public:
     virtual ~SmallMemoryAllocator();
     T* Allocate(int size);
     void Deallocate(T *p, int size);
+    void Construct(T *p, const T& val) {
+        new((void*)p)T(val);
+    }
+    void Destroy(T *p) {
+        p->~T();
+    }
     T* allocate(int size) { return Allocate(size); }
     void deallocate(T *p, int size) { Deallocate(p, size); }
+    void construct(T *p, const T& val) { Construct(p, val); }
+    void destroy(T *p) { Destroy(p); }
 private:
     const int mObjectSize;
     const int mPoolSize;

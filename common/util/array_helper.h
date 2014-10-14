@@ -36,9 +36,9 @@ void ReleaseArray1D(T **pArr1D, int size) {
 }
 
 template <class T>
-void InitArray1D(T *arr1D, int size) {
+void InitArray1D(T *arr1D, int size, T initVal = T()) {
     for (int i = 0; i < size; ++i) {
-        arr1D[i] = T();
+        arr1D[i] = initVal;
     }
 }
 
@@ -70,10 +70,10 @@ void ReleaseArray2D(T ***pArr2D, int rows, int cols) {
 }
 
 template <class T>
-void InitArray2D(T **arr2D, int rows, int cols) {
+void InitArray2D(T **arr2D, int rows, int cols, T initVal = T()) {
 	for (int i = 0; i < rows; ++i) {
 		for (int j = 0; j < cols; ++j) {
-			arr2D[i][j] = T();
+			arr2D[i][j] = initVal;
 		}
 	}
 }

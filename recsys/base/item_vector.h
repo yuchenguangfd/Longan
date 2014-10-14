@@ -1,0 +1,54 @@
+/*
+ * item_vector.h
+ * Created on: Oct 4, 2014
+ * Author: chenguangyu
+ */
+
+#ifndef RECSYS_BASE_ITEM_VECTOR_H
+#define RECSYS_BASE_ITEM_VECTOR_H
+
+#include "user_rating.h"
+#include "rating_record.h"
+#include <memory>
+
+namespace longan {
+
+// all users' ratings for one item
+template <class Alloc = std::allocator<UserRating> >
+class ItemVector {
+public:
+    ItemVector();
+    ItemVector(int itemId, const RatingRecord *data, int size);
+    ~ItemVector();
+protected:
+    int mItemId;
+    UserRating *mData;
+    int mSize;
+};
+
+template <class Alloc>
+ItemVector<Alloc>::ItemVector() :
+    mItemId(0),
+    mData(nullptr),
+    mSize(0) { }
+
+template <class Alloc>
+ItemVector<Alloc>::ItemVector(int itemId, const RatingRecord *data, int size) {
+    mItemId = itemId;
+    mSize = size;
+    Alloc alloc;
+    mData = alloc.allocate(mSize);
+    for (int i = 0; i < size; ++i) {
+        alloc.construct(&mData[i], UserRating(data[i].UserId(), data[i].Rating()));
+    }
+}
+
+template <class Alloc>
+ItemVector<Alloc>::~ItemVector() {
+    Alloc alloc;
+    alloc.deallocate(mData, mSize);
+}
+
+} //~ namespace longan
+
+#endif /* RECSYS_BASE_ITEM_VECTOR_H */

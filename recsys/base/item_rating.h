@@ -19,7 +19,9 @@ public:
 	void SetItemId(int itemId) {
 	    mItemId = itemId;
 	}
-	float Rating() const { return mRating; }
+	float Rating() const {
+	    return mRating;
+	}
 	void SetRating(float rating) {
 	    mRating = rating;
 	}

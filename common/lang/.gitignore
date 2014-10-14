@@ -1,3 +1,6 @@
 /integer_unittest
 /integer_unittest.o
 /integer.o
+/double_unittest
+/double_unittest.o
+/double.o
