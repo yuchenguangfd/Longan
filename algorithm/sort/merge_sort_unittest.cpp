@@ -14,11 +14,11 @@ class MergeSortTest : public ::testing::Test {
 protected:
 	void SetUp() {
 		size = 65536;
-		ArrayHelper::AllocateArray1D(&array, size);
+		ArrayHelper::CreateArray1D(&array, size);
 		ArrayHelper::FillRandom(array, size);
 	}
 	void TearDown() {
-		ArrayHelper::FreeArray1D(&array, size);
+		ArrayHelper::ReleaseArray1D(&array, size);
 	}
 	double *array;
 	int size;

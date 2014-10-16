@@ -28,7 +28,7 @@ RatingList RatingListLoader::Load(const std::string& ratingFilename) {
         ratingList.Add(RatingRecord(userId, itemId, rating));
     }
 
-    return ratingList;
+    return std::move(ratingList);
 }
 
 } //~ namespace longan

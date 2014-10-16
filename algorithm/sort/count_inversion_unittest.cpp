@@ -14,12 +14,12 @@ class CountInversionTest : public ::testing::Test {
 protected:
 	void SetUp() {
 		size = 1997;
-		ArrayHelper::AllocateArray1D(&array, size);
-		ArrayHelper::AllocateArray1D(&arrayCopy, size);
+		ArrayHelper::CreateArray1D(&array, size);
+		ArrayHelper::CreateArray1D(&arrayCopy, size);
 	}
 	void TearDown() {
-		ArrayHelper::FreeArray1D(&array, size);
-		ArrayHelper::FreeArray1D(&arrayCopy, size);
+		ArrayHelper::ReleaseArray1D(&array, size);
+		ArrayHelper::ReleaseArray1D(&arrayCopy, size);
 	}
 	int *array;
 	int *arrayCopy;

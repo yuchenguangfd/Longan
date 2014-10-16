@@ -15,11 +15,11 @@ class CountingSortTest : public ::testing::Test {
 protected:
     void SetUp() {
         size = 600000;
-        ArrayHelper::AllocateArray1D(&array, size);
-        ArrayHelper::AllocateArray1D(&pairArray, size);
+        ArrayHelper::CreateArray1D(&array, size);
+        ArrayHelper::CreateArray1D(&pairArray, size);
     }
     void TearDown() {
-        ArrayHelper::FreeArray1D(&array, size);
+        ArrayHelper::ReleaseArray1D(&array, size);
     }
     int *array;
     std::pair<double, int> *pairArray;

@@ -35,6 +35,9 @@ public:
     int NumRating() const {
         return mRatingRecords.size();
     }
+    int Size() const {
+        return mRatingRecords.size();
+    }
     const RatingRecord& operator[] (int i) const {
         return mRatingRecords[i];
     }

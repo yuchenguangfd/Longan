@@ -14,10 +14,10 @@ class ShellSortTest : public ::testing::Test {
 protected:
     void SetUp() {
         size = 1000000;
-        ArrayHelper::AllocateArray1D(&array, size);
+        ArrayHelper::CreateArray1D(&array, size);
     }
     void TearDown() {
-        ArrayHelper::FreeArray1D(&array, size);
+        ArrayHelper::ReleaseArray1D(&array, size);
     }
     int *array;
     int size;
