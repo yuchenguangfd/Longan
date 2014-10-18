@@ -5,7 +5,6 @@
  */
 
 #include "rating_list.h"
-
 namespace longan {
 
 RatingList::RatingList(int numUser, int numItem) :

@@ -19,7 +19,17 @@ class UserVector {
 public:
     UserVector();
     UserVector(int userId, const RatingRecord *data, int size);
+    UserVector(const UserVector<Alloc>&) = delete;
+    UserVector(UserVector<Alloc>&& orig) noexcept;
     ~UserVector();
+    UserVector<Alloc>& operator= (const UserVector<Alloc>& rhs) = delete;
+    UserVector<Alloc>& operator= (UserVector<Alloc>&& rhs) noexcept;
+    const ItemRating* Begin() const {
+        return mData;
+    }
+    const ItemRating* End() const {
+        return mData + mSize;
+    }
 protected:
     int mUserId;
     ItemRating *mData;
@@ -44,9 +54,35 @@ UserVector<Alloc>::UserVector(int userId, const RatingRecord *data, int size) {
 }
 
 template <class Alloc>
+UserVector<Alloc>::UserVector(UserVector<Alloc>&& orig) noexcept :
+    mUserId(orig.mUserId),
+    mData(orig.mData),
+    mSize(orig.mSize) {
+    orig.mUserId = 0;
+    orig.mData = nullptr;
+    orig.mSize = 0;
+}
+
+template <class Alloc>
 UserVector<Alloc>::~UserVector() {
     Alloc alloc;
     alloc.deallocate(mData, mSize);
+}
+
+template <class Alloc>
+UserVector<Alloc>& UserVector<Alloc>::operator = (UserVector<Alloc>&& rhs) noexcept {
+    if (this == &rhs) return *this;
+    if (mData != nullptr) {
+        Alloc alloc;
+        alloc.deallocate(mData, mSize);
+    }
+    mUserId = rhs.mUserId;
+    mData = rhs.mData;
+    mSize = rhs.mSize;
+    rhs.mUserId = 0;
+    rhs.mData = nullptr;
+    rhs.mSize = 0;
+    return *this;
 }
 
 } //~ namespace longan

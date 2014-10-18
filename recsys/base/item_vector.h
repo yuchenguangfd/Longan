@@ -54,7 +54,7 @@ ItemVector<Alloc>::ItemVector(int itemId, const RatingRecord *data, int size) {
 }
 
 template <class Alloc>
-ItemVector<Alloc>::ItemVector(ItemVector&& orig) noexcept :
+ItemVector<Alloc>::ItemVector(ItemVector<Alloc>&& orig) noexcept :
     mItemId(orig.mItemId),
     mData(orig.mData),
     mSize(orig.mSize) {
