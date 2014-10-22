@@ -4,3 +4,10 @@
 /rating_list_loader_unittest
 /rating_list_loader_unittest.o
 /rating_list_loader.o
+/rating_matrix_as_items_unittest
+/rating_matrix_as_items_unittest.o
+/rating_matrix_as_users_unittest
+/rating_matrix_as_users_unittest.o
+/rating_trait_unittest
+/rating_trait_unittest.o
+/rating_trait.o
