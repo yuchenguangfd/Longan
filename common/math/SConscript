@@ -10,4 +10,4 @@ build_env.Prepend(LINKFLAGS = "-pthread")
 
 build_env.Program("math_unittest", ["math_unittest.cpp"])
 build_env.Program("running_statistic_unittest", ["running_statistic_unittest.cpp"])
-# build_env.Program("vector_unittest", ["vector_unittest.cpp"])
+build_env.Program("vector_unittest", ["vector_unittest.cpp"])

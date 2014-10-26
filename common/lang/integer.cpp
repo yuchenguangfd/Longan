@@ -6,7 +6,7 @@
 
 #include "integer.h"
 #include "character.h"
-#include "common/util/util.h"
+#include "common/base/algorithm.h"
 
 namespace longan {
 
@@ -36,7 +36,7 @@ std::string Integer::ToString(int num) {
     if (sign < 0) {
         buff[len++] = '-';
     }
-    Reverse(buff, buff+len);
+    Reverse(buff, len);
     return std::string(buff, buff + len);
 }
 

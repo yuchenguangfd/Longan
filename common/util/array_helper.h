@@ -8,7 +8,7 @@
 #define COMMON_UTIL_ARRAY_HELPER_H
 
 #include "common/util/random.h"
-#include "common/util/util.h"
+#include "common/base/algorithm.h"
 
 namespace longan {
 

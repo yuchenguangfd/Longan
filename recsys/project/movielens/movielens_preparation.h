@@ -7,7 +7,7 @@
 #ifndef RECSYS_PROJECT_MOVIELENS_MOVIELENS_PREPARATION_H
 #define RECSYS_PROJECT_MOVIELENS_MOVIELENS_PREPARATION_H
 
-#include "recsys/util/rating_record_with_time.h"
+#include "recsys/base/rating_record_with_time.h"
 #include <string>
 #include <vector>
 #include <map>

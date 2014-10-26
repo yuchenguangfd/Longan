@@ -5,7 +5,7 @@
  */
 
 #include "number_theory.h"
-#include "common/util/util.h"
+#include "common/base/algorithm.h"
 #include "common/math/math.h"
 
 namespace longan {

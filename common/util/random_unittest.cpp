@@ -6,7 +6,7 @@
 
 #include "random.h"
 #include "common/math/math.h"
-#include "common/math/statistic.h"
+#include "common/math/running_statistic.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -36,12 +36,12 @@ TEST(RandomTest, UniformInt) {
 	int a = 10, b = 200;
 	double mean = (a + b)/2;
 	double var = Math::Sqr(a - b)/12;
-	RunningStatistic stat;
+	RunningStd<double> runningStd;
 	for (int i = 0; i < BIG; ++i) {
-		stat.Accumulate(rnd.Uniform(a, b));
+		runningStd.Add(rnd.Uniform(a, b));
 	}
-	EXPECT_LT(Math::RelativeError(mean, stat.GetMean()), 0.01);
-	EXPECT_LT(Math::RelativeError(var, stat.GetVariance()), 0.01);
+	EXPECT_LT(Math::RelativeError(mean, runningStd.CurrentMean()), 0.01);
+	EXPECT_LT(Math::RelativeError(var, runningStd.CurrentVar()), 0.01);
 }
 
 TEST(RandomTest, UniformDouble) {
@@ -49,34 +49,34 @@ TEST(RandomTest, UniformDouble) {
 	double a = 1.0, b = 20.0;
 	double mean = (a + b) / 2;
 	double var = Math::Sqr(a - b) / 12;
-	RunningStatistic stat;
+	RunningStd<double> runningStd;
 	for (int i = 0; i < BIG; ++i) {
-		stat.Accumulate(rnd.Uniform(a, b));
+		runningStd.Add(rnd.Uniform(a, b));
 	}
-	EXPECT_LT(Math::RelativeError(mean, stat.GetMean()),  0.01);
-	EXPECT_LT(Math::RelativeError(var, stat.GetVariance()), 0.01);
+	EXPECT_LT(Math::RelativeError(mean, runningStd.CurrentMean()),  0.01);
+	EXPECT_LT(Math::RelativeError(var, runningStd.CurrentVar()), 0.01);
 }
 
 TEST(Random, GaussStandard) {
 	Random& rnd = Random::Instance();
-	RunningStatistic stat;
+	RunningStd<double> runningStd;
 	for (int i = 0; i < BIG; ++i) {
-		stat.Accumulate(rnd.Gauss());
+		runningStd.Add(rnd.Gauss());
 	}
-    EXPECT_LE(Math::Abs(stat.GetMean()), 0.01);
-    EXPECT_LE(Math::RelativeError(1.0, stat.GetStandardDeviation()), 0.01);
+    EXPECT_LE(Math::Abs(runningStd.CurrentMean()), 0.01);
+    EXPECT_LE(Math::RelativeError(1.0, runningStd.CurrentStd()), 0.01);
 }
 
 TEST(Random, Gauss) {
 	Random& rnd = Random::Instance();
 	double mean = 10.0;
 	double std = 2.0;
-	RunningStatistic stat;
+	RunningStd<double> runningStd;
 	for (int i = 0; i < BIG; ++i) {
-	    stat.Accumulate(rnd.Gauss(mean, std));
+	    runningStd.Add(rnd.Gauss(mean, std));
 	}
-    EXPECT_LT(Math::RelativeError(mean, stat.GetMean()), 0.01);
-    EXPECT_LT(Math::RelativeError(std, stat.GetStandardDeviation()), 0.01);
+    EXPECT_LT(Math::RelativeError(mean, runningStd.CurrentMean()), 0.01);
+    EXPECT_LT(Math::RelativeError(std, runningStd.CurrentStd()), 0.01);
 }
 
 int main(int argc, char **argv) {

@@ -94,6 +94,10 @@ inline double Sqrt(double x) {
     return ::sqrt(x);
 }
 
+inline double Sqrt(float x) {
+    return ::sqrtf(x);
+}
+
 int Factorial(int n);
 
 } //~ namespace Math

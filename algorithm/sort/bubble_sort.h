@@ -7,7 +7,7 @@
 #ifndef ALGORITHM_SORT_BUBBLE_SORT_H
 #define ALGORITHM_SORT_BUBBLE_SORT_H
 
-#include "common/util/util.h"
+#include "common/base/algorithm.h"
 
 namespace longan {
 
