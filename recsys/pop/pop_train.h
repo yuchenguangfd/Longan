@@ -8,7 +8,7 @@
 #define RECSYS_POP_POP_TRAIN_H
 
 #include "recsys/base/rating_record.h"
-#include "common/math/running_statistic.h"
+#include "common/util/running_statistic.h"
 #include <string>
 
 namespace longan {

@@ -5,7 +5,7 @@
  */
 
 #include "rating_trait.h"
-#include "common/math/running_statistic.h"
+#include "common/util/running_statistic.h"
 
 namespace longan {
 
@@ -13,10 +13,10 @@ RatingTrait::RatingTrait() :
     mNumRating(0),
     mNumUser(0),
     mNumItem(0),
-    mMinRating(0.0f),
-    mMaxRating(0.0f),
-    mAverageRating(0.0f),
-    mStdRating(0.0f) { }
+    mMin(0.0f),
+    mMax(0.0f),
+    mAverage(0.0f),
+    mStd(0.0f) { }
 
 void RatingTrait::Init(const RatingList& rlist) {
     mNumRating = rlist.Size();
@@ -43,29 +43,29 @@ void RatingTrait::Init(const RatingList& rlist) {
         userRunningStds[record.UserId()].Add(record.Rating());
         itemRunningStds[record.ItemId()].Add(record.Rating());
     }
-    mMinRating = runningAllMin.CurrentMin();
-    mMaxRating = runningAllMax.CurrentMax();
-    mAverageRating = runningAllStd.CurrentMean();
-    mStdRating = runningAllStd.CurrentStd();
-    mUserMinRatings.resize(mNumUser);
-    mUserMaxRatings.resize(mNumUser);
-    mUserAverageRatings.resize(mNumUser);
-    mUserStdRatings.resize(mNumUser);
+    mMin = runningAllMin.CurrentMin();
+    mMax = runningAllMax.CurrentMax();
+    mAverage = runningAllStd.CurrentMean();
+    mStd = runningAllStd.CurrentStd();
+    mUserMins.resize(mNumUser);
+    mUserMaxs.resize(mNumUser);
+    mUserAverages.resize(mNumUser);
+    mUserStds.resize(mNumUser);
     for (int uid = 0; uid < mNumUser; ++uid) {
-        mUserMinRatings[uid] = userRunningMins[uid].CurrentMin();
-        mUserMaxRatings[uid] = userRunningMaxs[uid].CurrentMax();
-        mUserAverageRatings[uid] = userRunningStds[uid].CurrentMean();
-        mUserStdRatings[uid] = userRunningStds[uid].CurrentStd();
+        mUserMins[uid] = userRunningMins[uid].CurrentMin();
+        mUserMaxs[uid] = userRunningMaxs[uid].CurrentMax();
+        mUserAverages[uid] = userRunningStds[uid].CurrentMean();
+        mUserStds[uid] = userRunningStds[uid].CurrentStd();
     }
-    mItemMinRatings.resize(mNumItem);
-    mItemMaxRatings.resize(mNumItem);
-    mItemAverageRatings.resize(mNumItem);
-    mItemStdRatings.resize(mNumItem);
+    mItemMins.resize(mNumItem);
+    mItemMaxs.resize(mNumItem);
+    mItemAverages.resize(mNumItem);
+    mItemStds.resize(mNumItem);
     for (int iid = 0; iid < mNumItem; ++iid) {
-        mItemMinRatings[iid] = itemRunningMins[iid].CurrentMin();
-        mItemMaxRatings[iid] = itemRunningMaxs[iid].CurrentMax();
-        mItemAverageRatings[iid] = itemRunningStds[iid].CurrentMean();
-        mItemStdRatings[iid] = itemRunningStds[iid].CurrentStd();
+        mItemMins[iid] = itemRunningMins[iid].CurrentMin();
+        mItemMaxs[iid] = itemRunningMaxs[iid].CurrentMax();
+        mItemAverages[iid] = itemRunningStds[iid].CurrentMean();
+        mItemStds[iid] = itemRunningStds[iid].CurrentStd();
     }
 }
 

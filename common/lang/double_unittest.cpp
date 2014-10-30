@@ -9,7 +9,7 @@
 
 using namespace longan;
 
-TEST(DoubleTest, Dbl) {
+TEST(DoubleTest, DblBlablaOK) {
     ASSERT_EQ(0, Double::DblCmp(0.0, 0.01));
     ASSERT_EQ(0, Double::DblCmp(0.0001, 0.01));
     ASSERT_EQ(0, Double::DblCmp(-0.0001, 0.01));

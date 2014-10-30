@@ -31,59 +31,59 @@ protected:
 TEST_F(RatingTraitTest, ComputeMinAndMaxRatingOK) {
     RatingTrait rtrait;
     rtrait.Init(CreateRatingList());
-    ASSERT_FLOAT_EQ(1.0f, rtrait.MinRating());
-    ASSERT_FLOAT_EQ(9.0f, rtrait.MaxRating());
+    ASSERT_FLOAT_EQ(1.0f, rtrait.Min());
+    ASSERT_FLOAT_EQ(9.0f, rtrait.Max());
 }
 
 TEST_F(RatingTraitTest, ComputeMinAndMaxRatingEveryUserOK) {
     RatingTrait rtrait;
     rtrait.Init(CreateRatingList());
-    ASSERT_FLOAT_EQ(1.0f, rtrait.UserMinRating(0));
-    ASSERT_FLOAT_EQ(4.0f, rtrait.UserMinRating(1));
-    ASSERT_FLOAT_EQ(7.0f, rtrait.UserMinRating(2));
-    ASSERT_FLOAT_EQ(3.0f, rtrait.UserMaxRating(0));
-    ASSERT_FLOAT_EQ(6.0f, rtrait.UserMaxRating(1));
-    ASSERT_FLOAT_EQ(9.0f, rtrait.UserMaxRating(2));
+    ASSERT_FLOAT_EQ(1.0f, rtrait.UserMin(0));
+    ASSERT_FLOAT_EQ(4.0f, rtrait.UserMin(1));
+    ASSERT_FLOAT_EQ(7.0f, rtrait.UserMin(2));
+    ASSERT_FLOAT_EQ(3.0f, rtrait.UserMax(0));
+    ASSERT_FLOAT_EQ(6.0f, rtrait.UserMax(1));
+    ASSERT_FLOAT_EQ(9.0f, rtrait.UserMax(2));
 }
 
 TEST_F(RatingTraitTest, ComputeMinAndMaxRatingEveryItemOK) {
     RatingTrait rtrait;
     rtrait.Init(CreateRatingList());
-    ASSERT_FLOAT_EQ(1.0f, rtrait.ItemMinRating(0));
-    ASSERT_FLOAT_EQ(2.0f, rtrait.ItemMinRating(1));
-    ASSERT_FLOAT_EQ(3.0f, rtrait.ItemMinRating(2));
-    ASSERT_FLOAT_EQ(7.0f, rtrait.ItemMaxRating(0));
-    ASSERT_FLOAT_EQ(8.0f, rtrait.ItemMaxRating(1));
-    ASSERT_FLOAT_EQ(9.0f, rtrait.ItemMaxRating(2));
+    ASSERT_FLOAT_EQ(1.0f, rtrait.ItemMin(0));
+    ASSERT_FLOAT_EQ(2.0f, rtrait.ItemMin(1));
+    ASSERT_FLOAT_EQ(3.0f, rtrait.ItemMin(2));
+    ASSERT_FLOAT_EQ(7.0f, rtrait.ItemMax(0));
+    ASSERT_FLOAT_EQ(8.0f, rtrait.ItemMax(1));
+    ASSERT_FLOAT_EQ(9.0f, rtrait.ItemMax(2));
 }
 
 TEST_F(RatingTraitTest, ComputeAverageAndStdRatingOK) {
     RatingTrait rtrait;
     rtrait.Init(CreateRatingList());
-    ASSERT_FLOAT_EQ(5.0f, rtrait.AverageRating());
-    ASSERT_FLOAT_EQ(sqrt(60.0/9), rtrait.StdRating());
+    ASSERT_FLOAT_EQ(5.0f, rtrait.Average());
+    ASSERT_FLOAT_EQ(sqrt(60.0/9), rtrait.Std());
 }
 
 TEST_F(RatingTraitTest, ComputeAverageAndStdRatingEveryUserOK) {
     RatingTrait rtrait;
     rtrait.Init(CreateRatingList());
-    ASSERT_FLOAT_EQ(2.0f, rtrait.UserAverageRating(0));
-    ASSERT_FLOAT_EQ(5.0f, rtrait.UserAverageRating(1));
-    ASSERT_FLOAT_EQ(8.0f, rtrait.UserAverageRating(2));
-    ASSERT_TRUE(Math::Abs(sqrt(2.0f/3) - rtrait.UserStdRating(0)) < 1e-5);
-    ASSERT_TRUE(Math::Abs(sqrt(2.0f/3) - rtrait.UserStdRating(1)) < 1e-5);
-    ASSERT_TRUE(Math::Abs(sqrt(2.0f/3) - rtrait.UserStdRating(2)) < 1e-5);
+    ASSERT_FLOAT_EQ(2.0f, rtrait.UserAverage(0));
+    ASSERT_FLOAT_EQ(5.0f, rtrait.UserAverage(1));
+    ASSERT_FLOAT_EQ(8.0f, rtrait.UserAverage(2));
+    ASSERT_TRUE(Math::Abs(sqrt(2.0f/3) - rtrait.UserStd(0)) < 1e-5);
+    ASSERT_TRUE(Math::Abs(sqrt(2.0f/3) - rtrait.UserStd(1)) < 1e-5);
+    ASSERT_TRUE(Math::Abs(sqrt(2.0f/3) - rtrait.UserStd(2)) < 1e-5);
 }
 
 TEST_F(RatingTraitTest, ComputeAverageAndStdRatingEveryItemOK) {
     RatingTrait rtrait;
     rtrait.Init(CreateRatingList());
-    ASSERT_FLOAT_EQ(4.0f, rtrait.ItemAverageRating(0));
-    ASSERT_FLOAT_EQ(5.0f, rtrait.ItemAverageRating(1));
-    ASSERT_FLOAT_EQ(6.0f, rtrait.ItemAverageRating(2));
-    ASSERT_TRUE(Math::Abs(sqrt(6.0f) - rtrait.ItemStdRating(0)) < 1e-5);
-    ASSERT_TRUE(Math::Abs(sqrt(6.0f) - rtrait.ItemStdRating(1)) < 1e-5);
-    ASSERT_TRUE(Math::Abs(sqrt(6.0f) - rtrait.ItemStdRating(2)) < 1e-5);
+    ASSERT_FLOAT_EQ(4.0f, rtrait.ItemAverage(0));
+    ASSERT_FLOAT_EQ(5.0f, rtrait.ItemAverage(1));
+    ASSERT_FLOAT_EQ(6.0f, rtrait.ItemAverage(2));
+    ASSERT_TRUE(Math::Abs(sqrt(6.0f) - rtrait.ItemStd(0)) < 1e-5);
+    ASSERT_TRUE(Math::Abs(sqrt(6.0f) - rtrait.ItemStd(1)) < 1e-5);
+    ASSERT_TRUE(Math::Abs(sqrt(6.0f) - rtrait.ItemStd(2)) < 1e-5);
 
 }
 

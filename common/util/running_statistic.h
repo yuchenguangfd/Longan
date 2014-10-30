@@ -7,8 +7,8 @@
 #ifndef COMMON_MATH_RUNNING_STATISTIC_H
 #define COMMON_MATH_RUNNING_STATISTIC_H
 
-#include "math.h"
 #include "algorithm/data_structure/binary_heap.h"
+#include "common/math/math.h"
 #include <vector>
 #include <algorithm>
 #include <limits>

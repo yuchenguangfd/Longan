@@ -6,7 +6,7 @@
 
 #include "random.h"
 #include "common/math/math.h"
-#include "common/math/running_statistic.h"
+#include "common/util/running_statistic.h"
 #include <gtest/gtest.h>
 
 using namespace longan;

@@ -25,13 +25,6 @@ void Reverse(T *array, int size) {
     }
 }
 
-//template<class _InIt,   class _Fn1> inline
-//void _For_each(_InIt _First, _InIt _Last, _Fn1& _Func) {
-//    for (; _First != _Last; ++_First)
-//        _Func(*_First);
-//}
-
-
 } //~ namespace longan
 
 #endif /* COMMON_BASE_ALGORITHM_H */

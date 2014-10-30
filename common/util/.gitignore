@@ -5,3 +5,5 @@
 /string_helper_unittest
 /string_helper_unittest.o
 /string_helper.o
+/running_statistic_unittest
+/running_statistic_unittest.o

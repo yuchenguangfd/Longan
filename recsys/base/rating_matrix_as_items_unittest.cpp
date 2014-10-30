@@ -64,7 +64,7 @@ TEST_F(RatingMatrixAsItemsTest, Init_From_RatingList_OK) {
     double checkResult2 = 0.0;
     for (int itemId = 0; itemId < rmat.NumItem(); ++itemId) {
         auto& ivec = rmat.GetItemVector(itemId);
-        for (auto iter = ivec.Begin(), end = ivec.End(); iter != end; ++iter) {
+        for (auto iter = ivec.Data(), end = ivec.Data()+ivec.Size(); iter != end; ++iter) {
             checkResult2 += iter->UserId() - itemId + iter->Rating();
         }
     }

@@ -11,7 +11,7 @@
 using namespace longan;
 using namespace std;
 
-TEST(IntegerTest, ParseInt) {
+TEST(IntegerTest, ParseIntOK) {
     string s1 = "-12034";
     string s2 = "01234";
     string s3 = "  +012hello ";
@@ -20,7 +20,7 @@ TEST(IntegerTest, ParseInt) {
     EXPECT_EQ(12, Integer::ParseInt(s3));
 }
 
-TEST(IntegerTest, ToString) {
+TEST(IntegerTest, ToStringOK) {
     int i1 = 1234;
     int i2 = -4321;
     int i3 = +2147483647;

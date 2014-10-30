@@ -12,3 +12,4 @@ build_env.Prepend(LINKFLAGS = "-pthread")
 
 build_env.Program("random_unittest", ["random_unittest.cpp"])
 build_env.Program("string_helper_unittest", ["string_helper_unittest.cpp"])
+build_env.Program("running_statistic_unittest", ["running_statistic_unittest.cpp"])

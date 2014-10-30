@@ -24,11 +24,14 @@ public:
     ~ItemVector();
     ItemVector<Alloc>& operator= (const ItemVector<Alloc>& rhs) = delete;
     ItemVector<Alloc>& operator= (ItemVector<Alloc>&& rhs) noexcept;
-    const UserRating* Begin() const {
+    const UserRating* Data() const {
         return mData;
     }
-    const UserRating* End() const {
-        return mData + mSize;
+    UserRating* Data() {
+        return mData;
+    }
+    int Size() const {
+        return mSize;
     }
 protected:
     int mItemId;

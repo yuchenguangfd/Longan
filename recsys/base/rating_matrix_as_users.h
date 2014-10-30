@@ -32,6 +32,10 @@ public:
         assert(userId >= 0 && userId < mNumUser);
         return mUserVectors[userId];
     }
+    UserVector<UserVectorAlloc>& GetUserVector(int userId) {
+        assert(userId >= 0 && userId < mNumUser);
+        return mUserVectors[userId];
+    }
 protected:
     int mNumUser;
     int mNumItem;

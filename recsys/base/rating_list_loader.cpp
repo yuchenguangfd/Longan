@@ -27,7 +27,7 @@ RatingList RatingListLoader::Load(const std::string& ratingFilename) {
         assert(rtn == 4);
         ratingList.Add(RatingRecord(userId, itemId, rating));
     }
-
+    fclose(fp);
     return std::move(ratingList);
 }
 

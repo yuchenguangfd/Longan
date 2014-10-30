@@ -5,7 +5,7 @@ import sys
 import os
 
 def run_command(cmd):
-    print "run command:", cmd
+    print "--run command:", cmd
     exit_status = os.system(cmd)
     if (exit_status != 0):
         print "command failed."

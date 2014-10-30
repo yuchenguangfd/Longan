@@ -17,68 +17,68 @@ class RatingTrait {
 public:
     RatingTrait();
     void Init(const RatingList& rlist);
-    float MinRating() const {
-        return mMinRating;
+    float Min() const {
+        return mMin;
     }
-    float MaxRating() const {
-        return mMaxRating;
+    float Max() const {
+        return mMax;
     }
-    float UserMinRating(int userId) const {
-        assert(userId >= 0 && userId < mUserMinRatings.size());
-        return mUserMinRatings[userId];
+    float UserMin(int userId) const {
+        assert(userId >= 0 && userId < mUserMins.size());
+        return mUserMins[userId];
     }
-    float UserMaxRating(int userId) const {
-        assert(userId >= 0 && userId < mUserMaxRatings.size());
-        return mUserMaxRatings[userId];
+    float UserMax(int userId) const {
+        assert(userId >= 0 && userId < mUserMaxs.size());
+        return mUserMaxs[userId];
     }
-    float ItemMinRating(int itemId) const {
-        assert(itemId >= 0 && itemId < mItemMinRatings.size());
-        return mItemMinRatings[itemId];
+    float ItemMin(int itemId) const {
+        assert(itemId >= 0 && itemId < mItemMins.size());
+        return mItemMins[itemId];
     }
-    float ItemMaxRating(int itemId) const {
-        assert(itemId >= 0 && itemId < mItemMaxRatings.size());
-        return mItemMaxRatings[itemId];
+    float ItemMax(int itemId) const {
+        assert(itemId >= 0 && itemId < mItemMaxs.size());
+        return mItemMaxs[itemId];
     }
-    float AverageRating() const {
-        return mAverageRating;
+    float Average() const {
+        return mAverage;
     }
-    float StdRating() const {
-        return mStdRating;
+    float Std() const {
+        return mStd;
     }
-    float UserAverageRating(int userId) const {
-        assert(userId >= 0 && userId < mUserAverageRatings.size());
-        return mUserAverageRatings[userId];
+    float UserAverage(int userId) const {
+        assert(userId >= 0 && userId < mUserAverages.size());
+        return mUserAverages[userId];
     }
-    float UserStdRating(int userId) const {
-        assert(userId >= 0 && userId < mUserStdRatings.size());
-        return mUserStdRatings[userId];
+    float UserStd(int userId) const {
+        assert(userId >= 0 && userId < mUserStds.size());
+        return mUserStds[userId];
     }
-    float ItemAverageRating(int itemId) const {
-        assert(itemId >= 0 && itemId < mItemAverageRatings.size());
-        return mItemAverageRatings[itemId];
+    float ItemAverage(int itemId) const {
+        assert(itemId >= 0 && itemId < mItemAverages.size());
+        return mItemAverages[itemId];
     }
-    float ItemStdRating(int itemId) const {
-        assert(itemId >= 0 && itemId < mItemStdRatings.size());
-        return mItemStdRatings[itemId];
+    float ItemStd(int itemId) const {
+        assert(itemId >= 0 && itemId < mItemStds.size());
+        return mItemStds[itemId];
     }
 private:
     int mNumRating;
     int mNumUser;
     int mNumItem;
 
-    float mMinRating;
-    float mMaxRating;
-    std::vector<float> mUserMinRatings;
-    std::vector<float> mUserMaxRatings;
-    std::vector<float> mItemMinRatings;
-    std::vector<float> mItemMaxRatings;
+    float mMin;
+    float mMax;
+    std::vector<float> mUserMins;
+    std::vector<float> mUserMaxs;
+    std::vector<float> mItemMins;
+    std::vector<float> mItemMaxs;
 
-    float mAverageRating;
-    float mStdRating;
-    std::vector<float> mUserAverageRatings;
-    std::vector<float> mItemAverageRatings;
-    std::vector<float> mUserStdRatings;
-    std::vector<float> mItemStdRatings;
+    float mAverage;
+    float mStd;
+    std::vector<float> mUserAverages;
+    std::vector<float> mItemAverages;
+    std::vector<float> mUserStds;
+    std::vector<float> mItemStds;
 };
 
 } //~ namespace longan

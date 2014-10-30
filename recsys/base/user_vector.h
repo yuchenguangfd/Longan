@@ -24,11 +24,14 @@ public:
     ~UserVector();
     UserVector<Alloc>& operator= (const UserVector<Alloc>& rhs) = delete;
     UserVector<Alloc>& operator= (UserVector<Alloc>&& rhs) noexcept;
-    const ItemRating* Begin() const {
+    const ItemRating* Data() const {
         return mData;
     }
-    const ItemRating* End() const {
-        return mData + mSize;
+    ItemRating* Data() {
+        return mData;
+    }
+    int Size() const {
+        return mSize;
     }
 protected:
     int mUserId;
