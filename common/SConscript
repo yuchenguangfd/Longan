@@ -11,6 +11,7 @@ SConscript("logging/SConscript")
 SConscript("math/SConscript")
 SConscript("memory/SConscript")
 SConscript("system/SConscript")
+SConscript("threading/SConscript")
 SConscript("time/SConscript")
 SConscript("util/SConscript")
 
