@@ -4,3 +4,6 @@
 /file_util_unittest
 /file_util_unittest.o
 /file_util.o
+/system_info_unittest
+/system_info_unittest.o
+/system_info.o

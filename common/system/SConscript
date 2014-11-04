@@ -3,6 +3,7 @@ Import("env_common")
 env_common.lib_objects.append(env_common.Object("file_lister.cpp", 
                 CPPPATH = "#/external/boost/include"))
 env_common.lib_objects.append(env_common.Object("file_util.cpp"))
+env_common.lib_objects.append(env_common.Object("system_info.cpp"))
 
 build_env = env_common.Clone()
 # add gtest support
@@ -17,3 +18,4 @@ build_env.Append(LIBS = ["boost_system", "boost_filesystem"])
 
 build_env.Program("file_lister_unittest", ["file_lister_unittest.cpp"])
 build_env.Program("file_util_unittest", ["file_util_unittest.cpp"])
+build_env.Program("system_info_unittest", ["system_info_unittest.cpp"])
