@@ -57,44 +57,56 @@ private:
 template <class T>
 class RunningMinK {
 public:
-    RunningMinK(int k) : mK(k), mCurrentMinHeap(k) { }
+    RunningMinK(int k) : mK(k), mCurrentMinK(k) { }
     void Add(const T& val) {
-        if (mCurrentMinHeap.Size() < mK) {
-            mCurrentMinHeap.Add(val);
-        } else if (val < mCurrentMinHeap.Top()){
-            mCurrentMinHeap.Modify(0, val);
+        if (mCurrentMinK.Size() < mK) {
+            mCurrentMinK.Add(val);
+        } else if (val < mCurrentMinK.Top()){
+            mCurrentMinK.Modify(0, val);
         }
     }
     std::vector<T> CurrentMinK() const {
-        std::vector<T> minSet(mCurrentMinHeap.Begin(), mCurrentMinHeap.End());
+        std::vector<T> minSet(mCurrentMinK.Begin(), mCurrentMinK.End());
         std::sort(minSet.begin(), minSet.end());
         return minSet;
     }
+    const T* CurrentMinKBegin() const {
+        return mCurrentMinK.Begin();
+    }
+    const T* CurrentMinKEnd() const {
+        return mCurrentMinK.End();
+    }
 private:
     int mK;
-    MaxBinaryHeap<T> mCurrentMinHeap;
+    MaxBinaryHeap<T> mCurrentMinK;
 };
 
 template <class T>
 class RunningMaxK {
 public:
-    RunningMaxK(int k) : mK(k), mCurrentMaxHeap(k) { }
+    RunningMaxK(int k) : mK(k), mCurrentMaxK(k) { }
     void Add(const T& val) {
-        if (mCurrentMaxHeap.Size() < mK) {
-            mCurrentMaxHeap.Add(val);
-        } else if (mCurrentMaxHeap.Top() < val) {
-            mCurrentMaxHeap.Modify(0, val);
+        if (mCurrentMaxK.Size() < mK) {
+            mCurrentMaxK.Add(val);
+        } else if (mCurrentMaxK.Top() < val) {
+            mCurrentMaxK.Modify(0, val);
         }
     }
     std::vector<T> CurrentMaxK() const {
-        std::vector<T> maxSet(mCurrentMaxHeap.Begin(), mCurrentMaxHeap.End());
+        std::vector<T> maxSet(mCurrentMaxK.Begin(), mCurrentMaxK.End());
         std::sort(maxSet.begin(), maxSet.end(),
                 [](const T& lhs, const T& rhs)->bool { return rhs < lhs; });
         return maxSet;
     }
+    const T* CurrentMaxKBegin() const {
+        return mCurrentMaxK.Begin();
+    }
+    const T* CurrentMaxKEnd() const {
+        return mCurrentMaxK.End();
+    }
 private:
     int mK;
-    MinBinaryHeap<T> mCurrentMaxHeap;
+    MinBinaryHeap<T> mCurrentMaxK;
 };
 
 template <class T>

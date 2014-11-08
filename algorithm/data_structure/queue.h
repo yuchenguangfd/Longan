@@ -67,7 +67,7 @@ public:
     }
     T Dequeue() {
     	if (Empty()) {
-            throw RuntimeError("queue is empty.");
+            throw LonganRuntimeError("queue is empty.");
         }
         T ret = mData[mFront];
         mAlloc->destroy(&mData[mFront]);

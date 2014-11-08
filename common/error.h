@@ -30,9 +30,9 @@ protected:
     const char* const mMessage;
 };
 
-class RuntimeError : public LonganError {
+class LonganRuntimeError : public LonganError {
 public:
-	RuntimeError(const char* const message = "Runtime Error") :
+	LonganRuntimeError(const char* const message = "Runtime Error") :
 		LonganError(message) { }
 };
 

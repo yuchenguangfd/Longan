@@ -16,80 +16,94 @@ namespace longan {
 template <class T, class Alloc = std::allocator<T> >
 class BinaryHeap {
 public:
-    BinaryHeap(int capacity = DEFAULT_CAPACITY, Alloc *alloc = nullptr);
+    BinaryHeap(int capacity = DEFAULT_CAPACITY);
     template <class Iterator>
-    BinaryHeap(Iterator begin, int size, int capacity = DEFAULT_CAPACITY, Alloc *alloc = nullptr);
+    BinaryHeap(Iterator begin, int size, int capacity = DEFAULT_CAPACITY);
+    BinaryHeap(const BinaryHeap<T, Alloc>& orig) = delete;
+    BinaryHeap(BinaryHeap<T, Alloc>&& orig);
     virtual ~BinaryHeap();
-    bool Empty() const { return mSize == 0; }
+    bool Empty() const {
+        return mSize == 0;
+    }
     void Add(const T& val);
     T Extract();
-    const T& Top() const { return mHeap[0]; }
-    int Size() const { return mSize; }
-    int Capacity() const { return mCapacity; }
-    void Clear() { mSize = 0; }
+    const T& Top() const {
+        return mHeap[0];
+    }
+    int Size() const {
+        return mSize;
+    }
+    int Capacity() const {
+        return mCapacity;
+    }
+    void Clear() {
+        mSize = 0;
+    }
     void Modify(int pos, const T &val);
-    T* Begin() { return mHeap; }
-    const T* Begin() const { return mHeap; }
-    T* End() { return mHeap + mSize; }
-    const T* End() const { return mHeap + mSize; }
+    T* Begin() {
+        return mHeap;
+    }
+    const T* Begin() const {
+        return mHeap;
+    }
+    T* End() {
+        return mHeap + mSize;
+    }
+    const T* End() const {
+        return mHeap + mSize;
+    }
 private:
-    bool Full() const { return mSize >= mCapacity; }
+    bool Full() const {
+        return mSize >= mCapacity;
+    }
     void Expand();
 protected:
     virtual void ShiftUp(int pos) = 0;
     virtual void ShiftDown(int pos) = 0;
 protected:
     static const int DEFAULT_CAPACITY = 16;
-    Alloc* mAlloc;
-    bool mIsOwnAlloc;
     int mCapacity;
     int mSize;
     T* mHeap;
 };
 
 template <class T, class Alloc>
-BinaryHeap<T, Alloc>::BinaryHeap(int capacity, Alloc *alloc) {
-    assert(capacity > 0);
-    mSize = 0;
-    mCapacity = capacity;
-    if (alloc == nullptr) {
-        mAlloc = new Alloc();
-        mIsOwnAlloc = true;
-    } else {
-        mAlloc = alloc;
-        mIsOwnAlloc = false;
-    }
-    mHeap = mAlloc->allocate(mCapacity);
+BinaryHeap<T, Alloc>::BinaryHeap(int capacity) :
+    mSize(0),
+    mCapacity(capacity) {
+    Alloc alloc;
+    mHeap = alloc.allocate(mCapacity);
 }
 
 template <class T, class Alloc>
 template <class Iterator>
-BinaryHeap<T, Alloc>::BinaryHeap(Iterator begin, int size, int capacity, Alloc *alloc) {
-    assert(capacity > 0);
+BinaryHeap<T, Alloc>::BinaryHeap(Iterator begin, int size, int capacity) {
     mCapacity = (size > capacity)? size : capacity;
     mSize = size;
-    if (alloc == nullptr) {
-        mAlloc = new Alloc();
-        mIsOwnAlloc = true;
-    } else {
-        mAlloc = alloc;
-        mIsOwnAlloc = false;
-    }
-    mHeap = mAlloc->allocate(mCapacity);
+    Alloc alloc;
+    mHeap = alloc.allocate(mCapacity);
     for (int i = 0; i < size; ++i) {
-      mAlloc->construct(&mHeap[i], *begin++);
+      alloc.construct(&mHeap[i], *begin++);
     }
 }
 
 template <class T, class Alloc>
+BinaryHeap<T, Alloc>::BinaryHeap(BinaryHeap<T, Alloc>&& orig) :
+    mCapacity(orig.mCapacity),
+    mSize(orig.mSize),
+    mHeap(orig.mHeap) {
+    orig.mCapacity = 0;
+    orig.mSize = 0;
+    orig.mHeap = 0;
+}
+
+template <class T, class Alloc>
 BinaryHeap<T, Alloc>::~BinaryHeap() {
-  for (int i = 0; i < mSize; ++i) {
-      mAlloc->destroy(&mHeap[i]);
-  }
-  mAlloc->deallocate(mHeap, mCapacity);
-  if (mIsOwnAlloc) {
-      delete mAlloc;
-  }
+    Alloc alloc;
+    for (int i = 0; i < mSize; ++i) {
+        alloc.destroy(&mHeap[i]);
+    }
+    alloc.deallocate(mHeap, mCapacity);
 }
 
 template <class T, class Alloc>
@@ -97,7 +111,8 @@ void BinaryHeap<T, Alloc>::Add(const T &val) {
     if (Full()) {
         Expand();
     }
-    mAlloc->construct(&mHeap[mSize], val);
+    Alloc alloc;
+    alloc.construct(&mHeap[mSize], val);
     ShiftUp(mSize);
     ++mSize;
 }
@@ -105,21 +120,23 @@ void BinaryHeap<T, Alloc>::Add(const T &val) {
 template <class T, class Alloc>
 T BinaryHeap<T, Alloc>::Extract() {
     if (Empty()) {
-        throw RuntimeError("binary heap is empty.");
+        throw LonganRuntimeError("binary heap is empty.");
     }
     T top = mHeap[0];
-    mAlloc->destroy(&mHeap[0]);
+    Alloc alloc;
+    alloc.destroy(&mHeap[0]);
     --mSize;
-    mAlloc->construct(&mHeap[0], mHeap[mSize]);
-    mAlloc->destroy(&mHeap[mSize]);
+    alloc.construct(&mHeap[0], mHeap[mSize]);
+    alloc.destroy(&mHeap[mSize]);
     ShiftDown(0);
     return top;
 }
 
 template <class T, class Alloc>
 void BinaryHeap<T, Alloc>::Modify(int pos, const T &val) {
-    mAlloc->destroy(&mHeap[pos]);
-    mAlloc->construct(&mHeap[pos], val);
+    Alloc alloc;
+    alloc.destroy(&mHeap[pos]);
+    alloc.construct(&mHeap[pos], val);
     ShiftUp(pos);
     ShiftDown(pos);
 }
@@ -128,12 +145,13 @@ template <class T, class Alloc>
 void BinaryHeap<T, Alloc>::Expand() {
     assert(mSize == mCapacity);
     int newCapacity = 2 * mCapacity;
-    T *newHeap = mAlloc->allocate(newCapacity);
+    Alloc alloc;
+    T *newHeap = alloc.allocate(newCapacity);
     for (int i = 0; i < mCapacity; ++i) {
-        mAlloc->construct(&newHeap[i], mHeap[i]);
-        mAlloc->destroy(&mHeap[i]);
+        alloc.construct(&newHeap[i], mHeap[i]);
+        alloc.destroy(&mHeap[i]);
     }
-    mAlloc->deallocate(mHeap, mCapacity);
+    alloc.deallocate(mHeap, mCapacity);
     mHeap = newHeap;
     mSize = mCapacity;
     mCapacity = newCapacity;
@@ -142,11 +160,13 @@ void BinaryHeap<T, Alloc>::Expand() {
 template <class T, class Alloc = std::allocator<T> >
 class MaxBinaryHeap : public BinaryHeap<T, Alloc> {
 public:
-    MaxBinaryHeap(int capacity = BinaryHeap<T, Alloc>::DEFAULT_CAPACITY, Alloc *alloc = nullptr) :
-        BinaryHeap<T, Alloc>(capacity, alloc) { }
+    MaxBinaryHeap(int capacity = BinaryHeap<T, Alloc>::DEFAULT_CAPACITY) :
+        BinaryHeap<T, Alloc>(capacity) { }
     template <class Iterator>
-    MaxBinaryHeap(Iterator begin, int size, int capacity = BinaryHeap<T, Alloc>::DEFAULT_CAPACITY, Alloc *alloc = nullptr);
-    const T& Max() const  { return this->Top(); }
+    MaxBinaryHeap(Iterator begin, int size, int capacity = BinaryHeap<T, Alloc>::DEFAULT_CAPACITY);
+    const T& Max() const  {
+        return this->Top();
+    }
 protected:
     void ShiftUp(int pos);
     void ShiftDown(int pos);
@@ -154,8 +174,8 @@ protected:
 
 template <class T, class Alloc>
 template <class Iterator>
-MaxBinaryHeap<T, Alloc>::MaxBinaryHeap(Iterator begin, int size, int capacity, Alloc *alloc) :
-    BinaryHeap<T, Alloc>(begin, size, capacity, alloc) {
+MaxBinaryHeap<T, Alloc>::MaxBinaryHeap(Iterator begin, int size, int capacity) :
+    BinaryHeap<T, Alloc>(begin, size, capacity) {
     for (int i = size / 2 - 1; i >= 0; --i) {
         ShiftDown(i);
     }
@@ -197,10 +217,10 @@ void MaxBinaryHeap<T, Alloc>::ShiftDown(int pos) {
 template <class T, class Alloc = std::allocator<T> >
 class MinBinaryHeap : public BinaryHeap<T, Alloc> {
 public:
-    MinBinaryHeap(int capacity = BinaryHeap<T, Alloc>::DEFAULT_CAPACITY, Alloc *alloc = nullptr) :
-        BinaryHeap<T, Alloc>(capacity, alloc) { }
+    MinBinaryHeap(int capacity = BinaryHeap<T, Alloc>::DEFAULT_CAPACITY) :
+        BinaryHeap<T, Alloc>(capacity) { }
     template <class Iterator>
-    MinBinaryHeap(Iterator begin, int size, int capacity = BinaryHeap<T, Alloc>::DEFAULT_CAPACITY, Alloc *alloc = nullptr);
+    MinBinaryHeap(Iterator begin, int size, int capacity = BinaryHeap<T, Alloc>::DEFAULT_CAPACITY);
     const T& Min() const { return this->Top(); }
 protected:
     void ShiftUp(int pos);
@@ -209,8 +229,8 @@ protected:
 
 template <class T, class Alloc>
 template <class Iterator>
-MinBinaryHeap<T, Alloc>::MinBinaryHeap(Iterator begin, int size, int capacity, Alloc *alloc) :
-	BinaryHeap<T, Alloc>(begin, size, capacity, alloc) {
+MinBinaryHeap<T, Alloc>::MinBinaryHeap(Iterator begin, int size, int capacity) :
+	BinaryHeap<T, Alloc>(begin, size, capacity) {
 	for (int i = size / 2 - 1; i >= 0; --i) {
 		ShiftDown(i);
 	}

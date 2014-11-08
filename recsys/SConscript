@@ -8,6 +8,7 @@ env_recsys.Prepend(LIBS=["librecsys.a"])
 env_recsys.lib_objects = []
 
 SConscript("base/SConscript")
+SConscript("neighbor/SConscript")
 SConscript("pop/SConscript")
 SConscript("svd/SConscript")
 SConscript("project/SConscript")

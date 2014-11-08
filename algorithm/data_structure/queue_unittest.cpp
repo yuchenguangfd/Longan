@@ -37,7 +37,7 @@ TEST(QueueTest, LargeCase) {
 	    queue.Dequeue();
 	}
 	ASSERT_EQ(0, queue.Size());
-	ASSERT_THROW(queue.Dequeue(), RuntimeError);
+	ASSERT_THROW(queue.Dequeue(), LonganRuntimeError);
 }
 
 int main(int argc, char* argv[]) {

@@ -56,7 +56,7 @@ public:
     }
     T Pop() {
         if (Empty()) {
-            throw RuntimeError("stack is empty.");
+            throw LonganRuntimeError("stack is empty.");
         }
         T ret = mData[--mSize];
         mAlloc->destroy(&mData[mSize]);

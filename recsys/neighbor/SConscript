@@ -1,0 +1,29 @@
+Import("env_recsys")
+
+build_env = env_recsys.Clone()
+# add gtest support
+build_env.Prepend(CPPPATH = "#/external/gtest/include")
+build_env.Prepend(LIBPATH = "#/external/gtest")
+build_env.Prepend(LIBS = "gtest")
+build_env.Prepend(LINKFLAGS = "-pthread")
+# add glog support
+build_env.Prepend(CPPPATH = "#/external/glog/include")
+build_env.Prepend(LIBPATH = "#/external/glog")
+build_env.Prepend(LIBS = "glog")
+# add gflags support
+build_env.Prepend(CPPPATH = "#/external/gflags/include")
+build_env.Prepend(LIBPATH = "#/external/gflags")
+build_env.Prepend(LIBS = "gflags")
+# add jsoncpp support
+build_env.Prepend(CPPPATH = "#/external/jsoncpp/include")
+build_env.Prepend(LIBPATH = "#/external/jsoncpp")
+build_env.Prepend(LIBS = "json")
+
+build_env.Program("item_based_model_unittest",
+                  ["item_based_model_unittest.cpp", "item_based_model.cpp"])
+# build_env.Program("item_based_train_unittest", 
+#                   ["item_based_train_unittest.cpp", "item_based_train.cpp", "item_based_model.cpp"])
+# build_env.Program("item_based_train_longan", 
+#                   ["item_based_train_longan.cpp", "item_based_train.cpp", "item_based_model.cpp"])
+# build_env.Program("user_based_train_longan",
+#                   ["user_based_train_longan.cpp", "user_based_train.cpp"])

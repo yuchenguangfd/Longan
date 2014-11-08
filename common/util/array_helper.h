@@ -9,6 +9,7 @@
 
 #include "common/util/random.h"
 #include "common/base/algorithm.h"
+#include <cassert>
 
 namespace longan {
 
@@ -25,12 +26,15 @@ void RandomShuffle(T *array, int size) {
 
 template <class T>
 void CreateArray1D(T **pArr1D, int size) {
+    assert(pArr1D != nullptr);
+    assert(size > 0);
     *pArr1D = new T[size];
 }
 
 template <class T>
 void ReleaseArray1D(T **pArr1D, int size) {
-    if (*pArr1D == nullptr) return;
+    assert(pArr1D != nullptr);
+    assert(size > 0);
     delete [](*pArr1D);
     *pArr1D = nullptr;
 }
@@ -87,7 +91,7 @@ void CopyArray2D(T **src, T **dst, int rows, int cols) {
     }
 }
 
-void FillRange(int *array, int n);
+void FillRange(int *array, int size);
 
 void FillRandom(double *array, int size);
 

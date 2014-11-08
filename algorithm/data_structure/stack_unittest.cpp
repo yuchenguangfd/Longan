@@ -22,7 +22,7 @@ TEST(StackTest, SmallCase) {
     stack.Pop();
     ASSERT_EQ("bb", stack.Pop());
     stack.Pop();
-    ASSERT_THROW(stack.Pop(), RuntimeError);
+    ASSERT_THROW(stack.Pop(), LonganRuntimeError);
     stack.Push("dd");
     ASSERT_EQ("dd", stack.Top());
 }
