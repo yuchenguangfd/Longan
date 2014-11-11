@@ -21,8 +21,15 @@ build_env.Prepend(LIBS = "json")
 
 build_env.Program("item_based_model_unittest",
                   ["item_based_model_unittest.cpp", "item_based_model.cpp"])
-# build_env.Program("item_based_train_unittest", 
-#                   ["item_based_train_unittest.cpp", "item_based_train.cpp", "item_based_model.cpp"])
+build_env.Program("item_based_model_computation_unittest",
+                  ["item_based_model_computation_unittest.cpp", 
+                   "item_based_model.cpp",
+                   "item_based_model_computation.cpp"])
+build_env.Program("item_based_train_unittest", 
+                  ["item_based_train_unittest.cpp", 
+                   "item_based_train.cpp", 
+                   "item_based_model.cpp",
+                   "item_based_model_computation.cpp"])
 # build_env.Program("item_based_train_longan", 
 #                   ["item_based_train_longan.cpp", "item_based_train.cpp", "item_based_model.cpp"])
 # build_env.Program("user_based_train_longan",

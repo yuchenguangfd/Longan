@@ -10,7 +10,8 @@ env_recsys.lib_objects = []
 SConscript("base/SConscript")
 SConscript("neighbor/SConscript")
 SConscript("pop/SConscript")
-SConscript("svd/SConscript")
 SConscript("project/SConscript")
+SConscript("svd/SConscript")
+SConscript("util/SConscript")
 
 env_recsys.StaticLibrary("recsys", env_recsys.lib_objects)

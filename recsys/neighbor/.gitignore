@@ -6,3 +6,9 @@
 /user_based_train_longan
 /user_based_train_longan.o
 /user_based_train.o
+/item_based_model_computation_unittest
+/item_based_model_computation_unittest.o
+/item_based_model_computation.o
+/item_based_model_unittest
+/item_based_model_unittest.o
+/item_based_model.o

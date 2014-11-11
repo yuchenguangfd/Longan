@@ -1,0 +1,5 @@
+Import("env_recsys")
+
+env_recsys.lib_objects.append(env_recsys.Object("recsys_test_helper.cpp"));
+
+build_env = env_recsys.Clone()

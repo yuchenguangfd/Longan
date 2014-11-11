@@ -21,6 +21,8 @@ template <class ItemVectorAlloc = std::allocator<UserRating> >
 class RatingMatrixAsItems {
 public:
     RatingMatrixAsItems();
+    RatingMatrixAsItems(const RatingMatrixAsItems<ItemVectorAlloc>& orig) = delete;
+    RatingMatrixAsItems(RatingMatrixAsItems<ItemVectorAlloc>&& orig) noexcept;
     void Init(RatingList& ratingList);
     int NumUser() const {
         return mNumUser;
@@ -45,6 +47,15 @@ protected:
 template <class ItemVectorAlloc>
 RatingMatrixAsItems<ItemVectorAlloc>::RatingMatrixAsItems() :
     mNumUser(0), mNumItem(0) { }
+
+template <class ItemVectorAlloc>
+RatingMatrixAsItems<ItemVectorAlloc>::RatingMatrixAsItems(RatingMatrixAsItems<ItemVectorAlloc>&& orig) noexcept:
+    mNumUser(orig.mNumUser),
+    mNumItem(orig.mNumItem),
+    mItemVectors(std::move(orig.mItemVectors)) {
+    orig.mNumUser = 0;
+    orig.mNumItem = 0;
+}
 
 template <class ItemVectorAlloc>
 void RatingMatrixAsItems<ItemVectorAlloc>::Init(RatingList& ratingList) {

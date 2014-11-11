@@ -5,7 +5,7 @@
  */
 
 #include "rating_matrix_as_items.h"
-#include "common/util/array_helper.h"
+#include "recsys/util/recsys_test_helper.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -14,33 +14,6 @@ using namespace std;
 
 class RatingMatrixAsItemsTest : public ::testing::Test {
 protected:
-    RatingList GenerateRatingList() {
-        mNumRating = 1000;
-        mNumUser = 50;
-        mNumItem = 60;
-        int **mat;
-        ArrayHelper::CreateArray2D(&mat, mNumUser, mNumItem);
-        ArrayHelper::InitArray2D(mat, mNumUser, mNumItem, -1);
-        for (int i = 0; i < mNumRating; ++i) {
-            while (true) {
-                int r = Random::Instance().Uniform(0, mNumUser);
-                int c = Random::Instance().Uniform(0, mNumItem);
-                if (mat[r][c] == -1) {
-                    mat[r][c] = Random::Instance().Uniform(1, 6);
-                    break;
-                }
-            }
-        }
-        RatingList rlist(mNumUser, mNumItem, mNumRating);
-        for (int i = 0; i < mNumUser; ++i) {
-            for (int j = 0; j < mNumItem; ++j) {
-                if (mat[i][j] != -1) {
-                    rlist.Add(RatingRecord(i, j, mat[i][j]));
-                }
-            }
-        }
-        return std::move(rlist);
-    }
 protected:
     int mNumRating;
     int mNumUser;
@@ -48,7 +21,7 @@ protected:
 };
 
 TEST_F(RatingMatrixAsItemsTest, Init_From_RatingList_OK) {
-    RatingList rlist = GenerateRatingList();
+    RatingList rlist = RecsysTestHelper::CreateRandomRatingList(50, 60, 1000);
     double checkResult1 = 0.0;
     for (int i = 0; i < rlist.Size(); ++i) {
         checkResult1 += rlist[i].UserId() - rlist[i].ItemId() + rlist[i].Rating();

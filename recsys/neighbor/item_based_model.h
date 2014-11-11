@@ -42,7 +42,6 @@ public:
     virtual const NeighborItem* NeighborEnd(int itemId) const = 0;
     void Load(const std::string& filename);
     void Save(const std::string& filename);
-
 };
 
 class FixedNeighborSizeModel : public Model {
