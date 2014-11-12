@@ -72,7 +72,7 @@ void SimpleModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, M
         const auto& iv1 = ratingMatrix->GetItemVector(i);
         for (int j = i + 1; j < numItem; ++j) {
             const auto& iv2 = ratingMatrix->GetItemVector(j);
-            model->Update(i, j, ComputeSimilarity(iv1, iv2));
+            model->AddPairSimilarity(i, j, ComputeSimilarity(iv1, iv2));
         }
     }
 }
@@ -111,7 +111,7 @@ void StaticScheduledModelComputation::DoWork(int taskIdBegin, int taskIdEnd) {
         float similarity = ComputeSimilarity(iv1, iv2);
         mUpdateModelMutexs[iid1]->lock();
         mUpdateModelMutexs[iid2]->lock();
-        mModel->Update(iid1, iid2, similarity);
+        mModel->AddPairSimilarity(iid1, iid2, similarity);
         mUpdateModelMutexs[iid2]->unlock();
         mUpdateModelMutexs[iid1]->unlock();
     }
@@ -234,7 +234,7 @@ void DynamicScheduledModelComputation::DoUpdateModelWork() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            mModel->Update(task.firstItemId, task.secondItemId, task.similarity);
+            mModel->AddPairSimilarity(task.firstItemId, task.secondItemId, task.similarity);
         }
         delete currentBundle;
     }

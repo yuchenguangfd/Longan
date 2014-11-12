@@ -5,13 +5,15 @@
  */
 
 #include "item_based_model.h"
+#include <cstdio>
 #include <cassert>
 
 namespace longan {
 
 namespace item_based {
 
-Model::Model() { }
+Model::Model(int numItem) :
+    mNumItem(numItem) { }
 
 Model::~Model() { }
 
@@ -20,20 +22,41 @@ void Model::Load(const std::string& filename) {
 }
 
 void Model::Save(const std::string& filename) {
-    // TODO
-    // Model File Format:
-    // numItem|
-    // numItem_1_Neighbor|iid|sim|iid|sim|
-    // numItem_2_neighbot|iid|sim....
+    /*
+     * Model File (Binary) Format:
+     * numItem|
+     * numItem_0's_Neighbor|iid|sim|iid|sim|...
+     * numItem_1's_neighbor|iid|sim|...
+     * ...
+     * numItem_n-1's_neighbor|iid|sim|...
+     * all number are 32bit-int or 32bit-float
+     */
+    int rtn;
     FILE* fp = fopen(filename.c_str(), "wb");
-//    int numItem = mRatingMatrix.NumItem();
-//    fwrite(&numItem, sizeof(numItem), 1, fp);
-    fclose(fp);
-
+    assert(fp != nullptr);
+    rtn = fwrite(&mNumItem, sizeof(mNumItem), 1, fp);
+    assert(rtn == 1);
+    for (int itemId = 0; itemId < mNumItem; ++itemId) {
+        const NeighborItem* begin = NeighborBegin(itemId);
+        const NeighborItem* end = NeighborEnd(itemId);
+        int numNeighbor = end - begin;
+        rtn = fwrite(&numNeighbor, sizeof(numNeighbor), 1, fp);
+        assert(rtn == 1);
+        for (int i = 0; i < numNeighbor; ++i) {
+            int iid = begin[i].ItemId();
+            float sim = begin[i].Similarity();
+            rtn = fwrite(&iid, sizeof(iid), 1, fp);
+            assert(rtn == 1);
+            rtn = fwrite(&sim, sizeof(sim), 1, fp);
+            assert(rtn == 1);
+        }
+    }
+    rtn = fclose(fp);
+    assert(rtn == 0);
 }
 
 FixedNeighborSizeModel::FixedNeighborSizeModel(int numItem, int neighborSize) :
-    Model() {
+    Model(numItem) {
     assert(numItem > 0);
     assert(neighborSize > 0 && neighborSize < numItem);
     mNeighborItemList.reserve(numItem);
@@ -42,7 +65,7 @@ FixedNeighborSizeModel::FixedNeighborSizeModel(int numItem, int neighborSize) :
     }
 }
 
-void FixedNeighborSizeModel::Update(int firstItemId, int secondItemId, float similarity) {
+void FixedNeighborSizeModel::AddPairSimilarity(int firstItemId, int secondItemId, float similarity) {
     assert(firstItemId >= 0 && firstItemId < mNeighborItemList.size());
     assert(secondItemId >= 0 && secondItemId < mNeighborItemList.size());
     mNeighborItemList[firstItemId].Add(NeighborItem(secondItemId, similarity));
@@ -60,14 +83,14 @@ const NeighborItem* FixedNeighborSizeModel::NeighborEnd(int itemId) const {
 }
 
 FixedSimilarityThresholdModel::FixedSimilarityThresholdModel(int numItem, float threshold) :
-    Model(),
+    Model(numItem),
     mThreshold(threshold) {
     assert(numItem > 0);
     assert(threshold >= -1.0f && threshold <= 1.0f);
     mNeighborItemList.resize(numItem);
 }
 
-void FixedSimilarityThresholdModel::Update(int firstItemId, int secondItemId, float similarity) {
+void FixedSimilarityThresholdModel::AddPairSimilarity(int firstItemId, int secondItemId, float similarity) {
     assert(firstItemId >= 0 && firstItemId < mNeighborItemList.size());
     assert(secondItemId >= 0 && secondItemId < mNeighborItemList.size());
     assert(similarity >= -1.0f && similarity <= 1.0f);

@@ -26,8 +26,8 @@ TEST(FixedNeighborSizeModelTest, UpdateOK) {
     ArrayHelper::FillRange(array, numItem);
     ArrayHelper::RandomShuffle(array, numItem);
     for (int i = 0; i < numItem; ++i) {
-        model->Update(0, array[i], (float)array[i]);
-        model->Update(1, array[i], (float)(-array[i]));
+        model->AddPairSimilarity(0, array[i], (float)array[i]);
+        model->AddPairSimilarity(1, array[i], (float)(-array[i]));
     }
     for (const NeighborItem *begin = model->NeighborBegin(0), *end = model->NeighborEnd(0); begin != end; ++begin) {
         ASSERT_TRUE(begin->ItemId() >= numItem - neighborSize && begin->ItemId() < numItem);
@@ -47,7 +47,7 @@ TEST(FixedSimilarityThresholdModelTest, UpdateOK) {
     ArrayHelper::CreateArray1D(&array, numItem);
     ArrayHelper::FillRandom(array, numItem);
     for (int i = 0; i < numItem; ++i) {
-        model->Update(42, i, (float)array[i]);
+        model->AddPairSimilarity(42, i, (float)array[i]);
     }
     for (const NeighborItem *begin = model->NeighborBegin(42), *end = model->NeighborEnd(42); begin != end; ++begin) {
         ASSERT_TRUE(begin->ItemId() >= 0 && begin->ItemId() < numItem);

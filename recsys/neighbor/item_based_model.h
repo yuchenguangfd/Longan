@@ -35,19 +35,21 @@ inline bool operator < (const NeighborItem& lhs, const NeighborItem& rhs) {
 
 class Model {
 public:
-    Model();
+    Model(int numItem);
     virtual ~Model();
-    virtual void Update(int firstItemId, int secondItemId, float similarity) = 0;
+    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity) = 0;
     virtual const NeighborItem* NeighborBegin(int itemId) const = 0;
     virtual const NeighborItem* NeighborEnd(int itemId) const = 0;
     void Load(const std::string& filename);
     void Save(const std::string& filename);
+protected:
+    int mNumItem;
 };
 
 class FixedNeighborSizeModel : public Model {
 public:
     FixedNeighborSizeModel(int numItem, int neighborSize);
-    virtual void Update(int firstItemId, int secondItemId, float similarity);
+    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity);
     virtual const NeighborItem* NeighborBegin(int itemId) const;
     virtual const NeighborItem* NeighborEnd(int itemId) const;
 private:
@@ -57,7 +59,7 @@ private:
 class FixedSimilarityThresholdModel : public Model {
 public:
     FixedSimilarityThresholdModel(int numItem, float threshold);
-    virtual void Update(int firstItemId, int secondItemId, float similarity);
+    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity);
     virtual const NeighborItem* NeighborBegin(int itemId) const;
     virtual const NeighborItem* NeighborEnd(int itemId) const;
 private:
