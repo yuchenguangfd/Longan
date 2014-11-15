@@ -1,4 +1,6 @@
 Import("env_common")
+env_common.lib_objects.append(env_common.Object("binary_output_stream.cpp"))
+env_common.lib_objects.append(env_common.Object("binary_input_stream.cpp"))
 env_common.lib_objects.append(env_common.Object("integer.cpp"))
 env_common.lib_objects.append(env_common.Object("double.cpp"))
 

@@ -66,7 +66,7 @@ float ModelComputation::ComputeSimilarity(const ItemVector<>& firstItemVector, c
     return (float)(sum / denominator);
 }
 
-void SimpleModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, Model *model) {
+void SimpleModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) {
     int numItem = ratingMatrix->NumItem();
     for (int i = 0; i < numItem; ++i) {
         const auto& iv1 = ratingMatrix->GetItemVector(i);
@@ -77,7 +77,7 @@ void SimpleModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, M
     }
 }
 
-void StaticScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, Model *model) {
+void StaticScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) {
     mRatingMatrix = ratingMatrix;
     mModel = model;
     int numItem = mRatingMatrix->NumItem();
@@ -175,7 +175,7 @@ void DynamicScheduledModelComputation::Scheduler::UpdateModelDone() {
     assert(rtn == LONGAN_SUCC);
 }
 
-void DynamicScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, Model *model) {
+void DynamicScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) {
     mRatingMatrix = ratingMatrix;
     mModel = model;
     mScheduler = new Scheduler();

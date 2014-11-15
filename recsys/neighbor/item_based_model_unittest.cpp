@@ -6,7 +6,9 @@
 
 #include "item_based_model.h"
 #include "common/util/array_helper.h"
+#include "common/lang/binary_output_stream.h"
 #include <gtest/gtest.h>
+#include <cstdio>
 
 using namespace longan;
 using namespace longan::item_based;
@@ -20,7 +22,7 @@ TEST (NeighborItemTest, ObjectCompareOK) {
 TEST(FixedNeighborSizeModelTest, UpdateOK) {
     int numItem = 100;
     int neighborSize = 5;
-    Model *model = new FixedNeighborSizeModel(numItem, neighborSize);
+    ModelTrain *model = new FixedNeighborSizeModel(numItem, neighborSize);
     int *array;
     ArrayHelper::CreateArray1D(&array, numItem);
     ArrayHelper::FillRange(array, numItem);
@@ -42,7 +44,7 @@ TEST(FixedNeighborSizeModelTest, UpdateOK) {
 TEST(FixedSimilarityThresholdModelTest, UpdateOK) {
     int numItem = 100;
     float threshold = 0.5f;
-    Model *model = new FixedSimilarityThresholdModel(numItem, threshold);
+    ModelTrain *model = new FixedSimilarityThresholdModel(numItem, threshold);
     double *array;
     ArrayHelper::CreateArray1D(&array, numItem);
     ArrayHelper::FillRandom(array, numItem);
@@ -55,6 +57,36 @@ TEST(FixedSimilarityThresholdModelTest, UpdateOK) {
     }
     delete model;
     ArrayHelper::ReleaseArray1D(&array, numItem);
+}
+
+TEST(ModelPredictTest, NeighborShouldSortedByItemId) {
+    BinaryOutputStream bos("model.tmp");
+    int numItem = 10;
+    bos << numItem;
+    for (int i = 0; i < numItem; ++i) {
+        int numNeighbor = Random::Instance().Uniform(100, 200);
+        bos << numNeighbor;
+        for (int j = 0; j < numNeighbor; ++j) {
+            int iid = Random::Instance().Uniform(0, 1000);
+            float sim = (float)Random::Instance().NextDouble();
+            bos << iid << sim;
+        }
+    }
+    bos.Close();
+
+    ModelPredict model;
+    model.Load("model.tmp");
+    for (int i = 0; i < numItem; ++i) {
+        auto* begin = model.NeighborBegin(i);
+        auto* end = model.NeighborEnd(i);
+        int size = end - begin;
+        for (int j = 1; j < size; ++j) {
+            ASSERT_LE(begin[j-1].ItemId(), begin[j].ItemId());
+        }
+    }
+
+    int rtn = remove("model.tmp");
+    ASSERT_TRUE(rtn == 0);
 }
 
 int main(int argc, char **argv) {

@@ -25,6 +25,10 @@ typedef unsigned int uint;
 typedef long long int64;
 typedef unsigned long long uint64;
 
+// all floating types
+typedef float float32;
+typedef double float64;
+
 typedef bool boolean;
 
 } //~ namespace longan

@@ -4,3 +4,5 @@
 /double_unittest
 /double_unittest.o
 /double.o
+/binary_output_stream.o
+/binary_input_stream.o

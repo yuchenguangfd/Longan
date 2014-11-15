@@ -38,7 +38,7 @@ protected:
     Json::Value mTrainConfig;
     RatingMatrixAsItems<> *mRatingMatrix;
     RatingTrait *mRatingTrait;
-    item_based::Model *mModel;
+    item_based::ModelTrain *mModel;
     item_based::ModelComputation *mModelComputationDelegate;
 };
 

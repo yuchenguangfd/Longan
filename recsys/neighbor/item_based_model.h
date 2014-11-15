@@ -33,20 +33,19 @@ inline bool operator < (const NeighborItem& lhs, const NeighborItem& rhs) {
     return lhs.Similarity() < rhs.Similarity();
 }
 
-class Model {
+class ModelTrain {
 public:
-    Model(int numItem);
-    virtual ~Model();
+    ModelTrain(int numItem);
+    virtual ~ModelTrain();
     virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity) = 0;
     virtual const NeighborItem* NeighborBegin(int itemId) const = 0;
     virtual const NeighborItem* NeighborEnd(int itemId) const = 0;
-    void Load(const std::string& filename);
     void Save(const std::string& filename);
 protected:
     int mNumItem;
 };
 
-class FixedNeighborSizeModel : public Model {
+class FixedNeighborSizeModel : public ModelTrain {
 public:
     FixedNeighborSizeModel(int numItem, int neighborSize);
     virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity);
@@ -56,7 +55,7 @@ private:
     std::vector<RunningMaxK<NeighborItem> > mNeighborItemList;
 };
 
-class FixedSimilarityThresholdModel : public Model {
+class FixedSimilarityThresholdModel : public ModelTrain {
 public:
     FixedSimilarityThresholdModel(int numItem, float threshold);
     virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity);
@@ -64,6 +63,18 @@ public:
     virtual const NeighborItem* NeighborEnd(int itemId) const;
 private:
     float mThreshold;
+    std::vector<std::vector<NeighborItem> > mNeighborItemList;
+};
+
+class ModelPredict {
+public:
+    ModelPredict();
+    ~ModelPredict();
+    const NeighborItem* NeighborBegin(int itemId) const;
+    const NeighborItem* NeighborEnd(int itemId) const;
+    void Load(const std::string& filename);
+private:
+    int mNumItem;
     std::vector<std::vector<NeighborItem> > mNeighborItemList;
 };
 

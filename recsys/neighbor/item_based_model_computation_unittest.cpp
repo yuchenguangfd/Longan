@@ -15,7 +15,7 @@ using namespace longan::item_based;
 
 class ModelComputationTest : public ::testing::Test, public ModelComputation {
 public:
-    void ComputeModel(RatingMatrixAsItems<>*, Model*) { }
+    void ComputeModel(RatingMatrixAsItems<>*, ModelTrain*) { }
 };
 
 TEST_F(ModelComputationTest, ComputeSimilarityOK) {

@@ -30,52 +30,22 @@ protected:
     const char* const mMessage;
 };
 
-class LonganRuntimeError : public LonganError {
-public:
-	LonganRuntimeError(const char* const message = "Runtime Error") :
-		LonganError(message) { }
-};
+#define DECLARE_LONGAN_ERROR(ErrorName, DefaultMessage) \
+    class ErrorName : public LonganError { \
+    public: \
+        ErrorName(const char* const message = DefaultMessage) : LonganError(message) { } \
+    };
 
-class LonganFileOpenError : public LonganError {
-public:
-	LonganFileOpenError(const char* const message = "File Open Error") :
-		LonganError(message) { }
-};
+DECLARE_LONGAN_ERROR(LonganRuntimeError, "Runtime Error");
+DECLARE_LONGAN_ERROR(LonganConfigError, "Config Error");
 
-class LonganFileReadError : public LonganError {
-public:
-	LonganFileReadError(const char* const message = "File Read Error") :
-		LonganError(message) { }
-};
+DECLARE_LONGAN_ERROR(LonganFileOpenError, "File Open Error");
+DECLARE_LONGAN_ERROR(LonganFileReadError, "File Read Error");
+DECLARE_LONGAN_ERROR(LonganFileWriteError, "File Write Error");
+DECLARE_LONGAN_ERROR(LonganFileDeleteError, "File Delete Error");
+DECLARE_LONGAN_ERROR(LonganFileFormatError, "File Format Error");
 
-class LonganFileWriteError : public LonganError {
-public:
-	LonganFileWriteError(const char* const message = "File Write Error") :
-		LonganError(message) { }
-};
-
-class LonganFileDeleteError : public LonganError {
-public:
-	LonganFileDeleteError(const char* const message = "File Delete Error") :
-		LonganError(message) { }
-};
-
-class LonganFileFormatError : public LonganError {
-public:
-    LonganFileFormatError(const char* const message = "File Format Error") :
-        LonganError(message) { }
-};
-
-class LonganConfigError : public LonganError {
-public:
-    LonganConfigError(const char* const message = "Config Error") :
-        LonganError(message) { }
-};
-
-class LonganNotSupportError : public LonganError {
-public: LonganNotSupportError(const char* const message = "Not Support Error") :
-    LonganError(message) {}
-};
+DECLARE_LONGAN_ERROR(LonganNotSupportError, "Not Support Error");
 
 }  // namespace longan
 

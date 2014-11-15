@@ -39,7 +39,7 @@ void ItemBasedTrain::Train() {
 }
 
 void ItemBasedTrain::LoadConfig() {
-    Log::I("recsys", "LoadConfig");
+    Log::I("recsys", "ItemBasedTrain::LoadConfig");
     Log::I("recsys", "config file = " + mTrainConfigFilepath);
     std::string content = FileUtil::LoadFileContent(mTrainConfigFilepath);
     Json::Reader reader;

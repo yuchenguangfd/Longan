@@ -22,31 +22,31 @@ class ModelComputation {
 public:
     ModelComputation();
     virtual ~ModelComputation();
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, Model *model) = 0;
+    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) = 0;
 protected:
     float ComputeSimilarity(const ItemVector<>& firstItemVector, const ItemVector<>& secondItemVector);
 };
 
 class SimpleModelComputation : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, Model *model);
+    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
 };
 
 class StaticScheduledModelComputation : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, Model *model);
+    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
 protected:
     void DoWork(int taskIdBegin, int taskIdEnd);
 protected:
     RatingMatrixAsItems<> *mRatingMatrix;
-    Model *mModel;
+    ModelTrain *mModel;
     std::vector<std::mutex*> mUpdateModelMutexs;
     std::mutex mtx;
 };
 
 class DynamicScheduledModelComputation : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, Model *model);
+    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
 protected:
     void DoGeneratePairWork();
     void DoComputeSimilarityWork();
@@ -94,7 +94,7 @@ protected:
     };
 protected:
     RatingMatrixAsItems<> *mRatingMatrix;
-    Model *mModel;
+    ModelTrain *mModel;
     Scheduler *mScheduler;
 };
 

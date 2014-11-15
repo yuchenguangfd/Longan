@@ -5,6 +5,9 @@
  */
 
 #include "item_based_model.h"
+#include "common/lang/binary_input_stream.h"
+#include "common/lang/binary_output_stream.h"
+#include <algorithm>
 #include <cstdio>
 #include <cassert>
 
@@ -12,51 +15,38 @@ namespace longan {
 
 namespace item_based {
 
-Model::Model(int numItem) :
+ModelTrain::ModelTrain(int numItem) :
     mNumItem(numItem) { }
 
-Model::~Model() { }
+ModelTrain::~ModelTrain() { }
 
-void Model::Load(const std::string& filename) {
-    // TODO
-}
-
-void Model::Save(const std::string& filename) {
-    /*
-     * Model File (Binary) Format:
-     * numItem|
-     * numItem_0's_Neighbor|iid|sim|iid|sim|...
-     * numItem_1's_neighbor|iid|sim|...
-     * ...
-     * numItem_n-1's_neighbor|iid|sim|...
-     * all number are 32bit-int or 32bit-float
-     */
-    int rtn;
-    FILE* fp = fopen(filename.c_str(), "wb");
-    assert(fp != nullptr);
-    rtn = fwrite(&mNumItem, sizeof(mNumItem), 1, fp);
-    assert(rtn == 1);
+/*
+ * Model File (Binary) Format:
+ * numItem|
+ * numItem_0's_Neighbor|iid|sim|iid|sim|...
+ * numItem_1's_neighbor|iid|sim|...
+ * ...
+ * numItem_n-1's_neighbor|iid|sim|...
+ * all number are 32bit-int or 32bit-float
+ */
+void ModelTrain::Save(const std::string& filename) {
+    BinaryOutputStream bos(filename);
+    bos << mNumItem;
     for (int itemId = 0; itemId < mNumItem; ++itemId) {
         const NeighborItem* begin = NeighborBegin(itemId);
         const NeighborItem* end = NeighborEnd(itemId);
         int numNeighbor = end - begin;
-        rtn = fwrite(&numNeighbor, sizeof(numNeighbor), 1, fp);
-        assert(rtn == 1);
+        bos << numNeighbor;
         for (int i = 0; i < numNeighbor; ++i) {
             int iid = begin[i].ItemId();
             float sim = begin[i].Similarity();
-            rtn = fwrite(&iid, sizeof(iid), 1, fp);
-            assert(rtn == 1);
-            rtn = fwrite(&sim, sizeof(sim), 1, fp);
-            assert(rtn == 1);
+            bos << iid << sim;
         }
     }
-    rtn = fclose(fp);
-    assert(rtn == 0);
 }
 
 FixedNeighborSizeModel::FixedNeighborSizeModel(int numItem, int neighborSize) :
-    Model(numItem) {
+    ModelTrain(numItem) {
     assert(numItem > 0);
     assert(neighborSize > 0 && neighborSize < numItem);
     mNeighborItemList.reserve(numItem);
@@ -83,7 +73,7 @@ const NeighborItem* FixedNeighborSizeModel::NeighborEnd(int itemId) const {
 }
 
 FixedSimilarityThresholdModel::FixedSimilarityThresholdModel(int numItem, float threshold) :
-    Model(numItem),
+    ModelTrain(numItem),
     mThreshold(threshold) {
     assert(numItem > 0);
     assert(threshold >= -1.0f && threshold <= 1.0f);
@@ -110,7 +100,44 @@ const NeighborItem* FixedSimilarityThresholdModel::NeighborEnd(int itemId) const
     return mNeighborItemList[itemId].data() + mNeighborItemList[itemId].size();
 }
 
+ModelPredict::ModelPredict() :
+    mNumItem(0) { }
+
+ModelPredict::~ModelPredict() { }
+
+const NeighborItem* ModelPredict::NeighborBegin(int itemId) const {
+    assert(itemId >= 0 && itemId < mNeighborItemList.size());
+    return mNeighborItemList[itemId].data();
+}
+
+const NeighborItem* ModelPredict::NeighborEnd(int itemId) const {
+    assert(itemId >= 0 && itemId < mNeighborItemList.size());
+    return mNeighborItemList[itemId].data() + mNeighborItemList[itemId].size();
+}
+
+void ModelPredict::Load(const std::string& filename) {
+    BinaryInputStream bis(filename);
+    bis >> mNumItem;
+    mNeighborItemList.reserve(mNumItem);
+    for (int itemId = 0; itemId < mNumItem; ++itemId) {
+        int numNeighbor;
+        bis >> numNeighbor;
+        std::vector<NeighborItem> neighbors;
+        neighbors.reserve(numNeighbor);
+        for (int i = 0; i < numNeighbor; ++i) {
+            int iid;
+            float sim;
+            bis >> iid >> sim;
+            neighbors.push_back(NeighborItem(iid, sim));
+        }
+        std::sort(neighbors.begin(), neighbors.end(),
+                [](const NeighborItem& lhs, const NeighborItem& rhs)->bool {
+                    return lhs.ItemId() < rhs.ItemId();
+        });
+        mNeighborItemList.push_back(std::move(neighbors));
+    }
+}
+
 } //~ namespace item_based
 
 } //~ namespace longan
-
