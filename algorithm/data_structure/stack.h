@@ -16,27 +16,19 @@ namespace longan {
 template <class T, class Alloc = std::allocator<T> >
 class Stack {
 public:
-    explicit Stack(int capacity = DEFAULT_CAPACITY, Alloc* alloc = nullptr) {
+    explicit Stack(int capacity = DEFAULT_CAPACITY) {
         assert(capacity > 0);
         mSize = 0;
         mCapacity = capacity;
-        if (alloc == nullptr) {
-            mAlloc = new Alloc();
-            mIsOwnAlloc = true;
-        } else {
-            mAlloc = alloc;
-            mIsOwnAlloc = false;
-        }
-        mData = mAlloc->allocate(mCapacity);
+        Alloc alloc;
+        mData = alloc.allocate(mCapacity);
     }
     ~Stack() {
+        Alloc alloc;
         for (int i = 0; i < mSize; ++i) {
-            mAlloc->destroy(&mData[i]);
+            alloc.destroy(&mData[i]);
         }
-        mAlloc->deallocate(mData, mCapacity);
-        if (mIsOwnAlloc) {
-            delete mAlloc;
-        }
+        alloc.deallocate(mData, mCapacity);
     }
     bool Empty() const { 
         return mSize == 0;
@@ -51,7 +43,8 @@ public:
         if (Full()) {
             Expand();
         }
-        mAlloc->construct(&mData[mSize], elem);
+        Alloc alloc;
+        alloc.construct(&mData[mSize], elem);
         ++mSize;
     }
     T Pop() {
@@ -59,7 +52,8 @@ public:
             throw LonganRuntimeError("stack is empty.");
         }
         T ret = mData[--mSize];
-        mAlloc->destroy(&mData[mSize]);
+        Alloc alloc;
+        alloc.destroy(&mData[mSize]);
         return ret;
     }
     const T& Top() const {
@@ -75,19 +69,18 @@ private:
     void Expand() {
         assert(mSize == mCapacity);
         int newCapacity = mCapacity * 2;
-        T* newData = mAlloc->allocate(newCapacity);
+        Alloc alloc;
+        T* newData = alloc.allocate(newCapacity);
         for(int i = 0; i < mCapacity; ++i) {
-            mAlloc->construct(&newData[i], mData[i]);
-            mAlloc->destroy(&mData[i]);
+            alloc.construct(&newData[i], mData[i]);
+            alloc.destroy(&mData[i]);
         }
-        mAlloc->deallocate(mData, mCapacity);
+        alloc.deallocate(mData, mCapacity);
         mCapacity = newCapacity;
         mData = newData;
     }
 private:
     static const int DEFAULT_CAPACITY = 16;
-    Alloc* mAlloc;
-    bool mIsOwnAlloc;
     T* mData;
     int mSize;
     int mCapacity;

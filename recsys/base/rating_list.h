@@ -12,16 +12,17 @@
 #include <string>
 #include <vector>
 
+#include "common/lang/defines.h"
+
 namespace longan {
 
 class RatingList {
 public:
+    RatingList();
     RatingList(int numUser, int numItem);
     RatingList(int numUser, int numItem, int reservedCapacity);
-    RatingList(const RatingList& orig) = delete;
     RatingList(RatingList&& orig) noexcept;
     ~RatingList();
-    RatingList& operator= (const RatingList& rhs) = delete;
     RatingList& operator= (RatingList&& rhs) noexcept;
     void Add(const RatingRecord& record) {
         mRatingRecords.push_back(record);
@@ -48,6 +49,7 @@ private:
     int mNumUser;
     int mNumItem;
     std::vector<RatingRecord> mRatingRecords;
+    DISALLOW_COPY_AND_ASSIGN(RatingList);
 };
 
 } //~ namespace longan

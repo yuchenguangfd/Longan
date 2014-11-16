@@ -16,30 +16,22 @@ namespace longan {
 template <class T, class Alloc = std::allocator<T> >
 class Queue {
 public:
-    Queue(int capacity = DEFAULT_CAPACITY, Alloc* alloc = nullptr) {
+    explicit Queue(int capacity = DEFAULT_CAPACITY) {
         assert(capacity > 0);
         mFront = mRear = 0;
         mSize = 0;
         mCapacity= capacity;
-        if (alloc == nullptr) {
-            mAlloc = new Alloc();
-            mIsOwnAlloc = true;
-        } else {
-            mAlloc = alloc;
-            mIsOwnAlloc = false;
-        }
-        mData = mAlloc->allocate(mCapacity);
+        Alloc alloc;
+        mData = alloc.allocate(mCapacity);
     }
     ~Queue() {
+        Alloc alloc;
         for (int i = 0; i < mSize; ++i) {
-            mAlloc->destroy(&mData[mFront]);
+            alloc.destroy(&mData[mFront]);
             ++mFront;
             if (mFront == mCapacity) mFront = 0;
         }
-        mAlloc->deallocate(mData, mCapacity);
-        if (mIsOwnAlloc) {
-            delete mAlloc;
-        }
+        alloc.deallocate(mData, mCapacity);
     }
     bool Empty() const { 
         return mSize == 0; 
@@ -60,7 +52,8 @@ public:
     	if (Full()) {
     		Expand();
     	}
-    	mAlloc->construct(&mData[mRear], elem);
+    	Alloc alloc;
+    	alloc.construct(&mData[mRear], elem);
     	++mRear;
 		if(mRear == mCapacity) mRear = 0;
 		++mSize;
@@ -70,7 +63,8 @@ public:
             throw LonganRuntimeError("queue is empty.");
         }
         T ret = mData[mFront];
-        mAlloc->destroy(&mData[mFront]);
+        Alloc alloc;
+        alloc.destroy(&mData[mFront]);
         ++mFront;
         if(mFront == mCapacity) mFront = 0;
         --mSize;
@@ -83,14 +77,15 @@ protected:
     void Expand() {
     	assert(mSize == mCapacity);
     	int newCapacity = 2 * mCapacity;
-    	T *newData = mAlloc->allocate(newCapacity);
+    	Alloc alloc;
+    	T *newData = alloc.allocate(newCapacity);
     	for (int i = 0; i < mCapacity; ++i) {
-    		mAlloc->construct(&newData[i], mData[mFront]);
-    		mAlloc->destroy(&mData[mFront]);
+    		alloc.construct(&newData[i], mData[mFront]);
+    		alloc.destroy(&mData[mFront]);
     		++mFront;
             if(mFront == mCapacity) mFront = 0;
     	}
-    	mAlloc->deallocate(mData, mCapacity);
+    	alloc.deallocate(mData, mCapacity);
     	mData = newData;
     	mFront = 0;
     	mRear = mCapacity;
@@ -99,8 +94,6 @@ protected:
     }
 protected:
     static const int DEFAULT_CAPACITY = 16;
-    Alloc* mAlloc;
-    bool mIsOwnAlloc;
     T* mData;
     int mCapacity;
     int mFront;

@@ -76,6 +76,9 @@ public:
     const T* CurrentMinKEnd() const {
         return mCurrentMinK.End();
     }
+    int CurrentMinKSize() const {
+        return mCurrentMinK.Size();
+    }
 private:
     int mK;
     MaxBinaryHeap<T> mCurrentMinK;
@@ -103,6 +106,9 @@ public:
     }
     const T* CurrentMaxKEnd() const {
         return mCurrentMaxK.End();
+    }
+    int CurrentMaxKSize() const {
+        return mCurrentMaxK.Size();
     }
 private:
     int mK;

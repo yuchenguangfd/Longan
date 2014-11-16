@@ -30,5 +30,10 @@ build_env.Program("item_based_train_longan",
                    "item_based_train.cpp", 
                    "item_based_model.cpp",
                    "item_based_model_computation.cpp"])
+build_env.Program("item_based_evaluate_longan",
+                  ["item_based_evaluate_longan.cpp",
+                   "item_based_evaluate.cpp",
+                   "item_based_predict.cpp",
+                   "item_based_model.cpp"])
 # build_env.Program("user_based_train_longan",
 #                   ["user_based_train_longan.cpp", "user_based_train.cpp"])

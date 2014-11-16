@@ -40,12 +40,14 @@ inline BinaryInputStream& operator >> (BinaryInputStream& bis, float32& f) {
     if (fread((void*)&f, sizeof(float32), 1, bis.mStream) != 1) {
         throw LonganFileReadError();
     }
+    return bis;
 }
 
 inline BinaryInputStream& operator >> (BinaryInputStream& bis, float64& f) {
     if (fread((void*)&f, sizeof(float64), 1, bis.mStream) != 1) {
         throw LonganFileReadError();
     }
+    return bis;
 }
 
 } //~ namespace longan

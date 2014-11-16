@@ -40,6 +40,7 @@ public:
     virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity) = 0;
     virtual const NeighborItem* NeighborBegin(int itemId) const = 0;
     virtual const NeighborItem* NeighborEnd(int itemId) const = 0;
+    virtual int NeighborSize(int itemId) const = 0;
     void Save(const std::string& filename);
 protected:
     int mNumItem;
@@ -51,6 +52,7 @@ public:
     virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity);
     virtual const NeighborItem* NeighborBegin(int itemId) const;
     virtual const NeighborItem* NeighborEnd(int itemId) const;
+    virtual int NeighborSize(int itemId) const;
 private:
     std::vector<RunningMaxK<NeighborItem> > mNeighborItemList;
 };
@@ -61,6 +63,7 @@ public:
     virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity);
     virtual const NeighborItem* NeighborBegin(int itemId) const;
     virtual const NeighborItem* NeighborEnd(int itemId) const;
+    virtual int NeighborSize(int itemId) const;
 private:
     float mThreshold;
     std::vector<std::vector<NeighborItem> > mNeighborItemList;
@@ -72,6 +75,7 @@ public:
     ~ModelPredict();
     const NeighborItem* NeighborBegin(int itemId) const;
     const NeighborItem* NeighborEnd(int itemId) const;
+    int NeighborSize(int itemId) const;
     void Load(const std::string& filename);
 private:
     int mNumItem;

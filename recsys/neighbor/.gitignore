@@ -12,3 +12,7 @@
 /item_based_model_unittest
 /item_based_model_unittest.o
 /item_based_model.o
+/item_based_evaluate_longan
+/item_based_evaluate_longan.o
+/item_based_evaluate.o
+/item_based_predict.o

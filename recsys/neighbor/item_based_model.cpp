@@ -72,6 +72,11 @@ const NeighborItem* FixedNeighborSizeModel::NeighborEnd(int itemId) const {
     return mNeighborItemList[itemId].CurrentMaxKEnd();
 }
 
+int FixedNeighborSizeModel::NeighborSize(int itemId) const {
+    assert(itemId >= 0 && itemId < mNeighborItemList.size());
+    return mNeighborItemList[itemId].CurrentMaxKSize();
+}
+
 FixedSimilarityThresholdModel::FixedSimilarityThresholdModel(int numItem, float threshold) :
     ModelTrain(numItem),
     mThreshold(threshold) {
@@ -100,6 +105,11 @@ const NeighborItem* FixedSimilarityThresholdModel::NeighborEnd(int itemId) const
     return mNeighborItemList[itemId].data() + mNeighborItemList[itemId].size();
 }
 
+int FixedSimilarityThresholdModel::NeighborSize(int itemId) const {
+    assert(itemId >= 0 && itemId < mNeighborItemList.size());
+    return mNeighborItemList[itemId].size();
+}
+
 ModelPredict::ModelPredict() :
     mNumItem(0) { }
 
@@ -113,6 +123,11 @@ const NeighborItem* ModelPredict::NeighborBegin(int itemId) const {
 const NeighborItem* ModelPredict::NeighborEnd(int itemId) const {
     assert(itemId >= 0 && itemId < mNeighborItemList.size());
     return mNeighborItemList[itemId].data() + mNeighborItemList[itemId].size();
+}
+
+int ModelPredict::NeighborSize(int itemId) const {
+    assert(itemId >= 0 && itemId < mNeighborItemList.size());
+    return mNeighborItemList[itemId].size();
 }
 
 void ModelPredict::Load(const std::string& filename) {

@@ -9,9 +9,9 @@
 
 #define DISALLOW_COPY_AND_ASSIGN(ClassName) \
     ClassName(const ClassName&) = delete; \
-    void operator=(const ClassName&) = delete;
+    void operator= (const ClassName&) = delete;
 
-#define forever  for (;;)
-#define dprint(expr)  printf(#expr " = %g\n", expr)
+#define forever for (;;)
+#define dprint(expr) printf(#expr " = %g\n", expr)
 
 #endif // COMMON_LANG_DEFINES_H

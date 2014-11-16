@@ -7,6 +7,10 @@
 #include "rating_list.h"
 namespace longan {
 
+RatingList::RatingList() :
+    mNumUser(0),
+    mNumItem(0) { }
+
 RatingList::RatingList(int numUser, int numItem) :
     mNumUser(numUser),
     mNumItem(numItem) { }

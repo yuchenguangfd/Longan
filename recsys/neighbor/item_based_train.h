@@ -18,7 +18,7 @@ namespace longan {
 
 class ItemBasedTrain {
 public:
-    ItemBasedTrain(const std::string& trainRatingFilepath, const std::string& trainConfigFilepath,
+    ItemBasedTrain(const std::string& trainRatingFilepath, const std::string& configFilepath,
             const std::string& modelFilepath);
     ~ItemBasedTrain();
     void Train();
@@ -33,7 +33,7 @@ protected:
     void SaveModel();
 protected:
     std::string mTrainRatingFilepath;
-    std::string mTrainConfigFilepath;
+    std::string mConfigFilepath;
     std::string mModelFilepath;
     Json::Value mTrainConfig;
     RatingMatrixAsItems<> *mRatingMatrix;

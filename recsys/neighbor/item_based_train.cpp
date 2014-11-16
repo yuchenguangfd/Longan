@@ -13,9 +13,9 @@
 namespace longan {
 
 ItemBasedTrain::ItemBasedTrain(const std::string& trainRatingFilepath,
-        const std::string& trainConfigFilepath, const std::string& modelFilepath) :
+        const std::string& configFilepath, const std::string& modelFilepath) :
     mTrainRatingFilepath(trainRatingFilepath),
-    mTrainConfigFilepath(trainConfigFilepath),
+    mConfigFilepath(configFilepath),
     mModelFilepath(modelFilepath),
     mRatingMatrix(nullptr),
     mRatingTrait(nullptr),
@@ -40,8 +40,8 @@ void ItemBasedTrain::Train() {
 
 void ItemBasedTrain::LoadConfig() {
     Log::I("recsys", "ItemBasedTrain::LoadConfig");
-    Log::I("recsys", "config file = " + mTrainConfigFilepath);
-    std::string content = FileUtil::LoadFileContent(mTrainConfigFilepath);
+    Log::I("recsys", "config file = " + mConfigFilepath);
+    std::string content = FileUtil::LoadFileContent(mConfigFilepath);
     Json::Reader reader;
     if (!reader.parse(content, mTrainConfig)) {
         throw LonganFileFormatError();

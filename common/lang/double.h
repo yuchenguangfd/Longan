@@ -13,6 +13,7 @@ namespace longan {
 
 class Double {
 public:
+    static const double EPS;
     static const double INF;
 public:
 	static double ParseDouble(const std::string& s);

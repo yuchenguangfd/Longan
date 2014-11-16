@@ -28,8 +28,7 @@ TEST(StackTest, SmallCase) {
 }
 
 TEST(StackTest, LargeCase) {
-    std::allocator<int> alloc;
-    Stack<int> stack(10, &alloc);
+    Stack<int> stack(10);
     for (int i = 0; i < 1024; ++i) {
         stack.Push(i);
         ASSERT_EQ(i, stack.Top());
