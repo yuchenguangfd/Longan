@@ -6,6 +6,7 @@ env_common = env.Clone()
 env_common.lib_objects = []
 Export("env_common")
 
+SConscript("base/SConscript")
 SConscript("lang/SConscript")
 SConscript("logging/SConscript")
 SConscript("math/SConscript")

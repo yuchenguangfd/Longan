@@ -25,6 +25,40 @@ void Reverse(T *array, int size) {
     }
 }
 
+template <class T1, class T2>
+int BSearch(const T1& key, const T2 *array, int size) {
+    int left = 0;
+    int right = size - 1;
+    while(left <= right) {
+        int mid = left + (right - left) / 2;
+        if(array[mid] == key) {
+            return mid;
+        } else if(array[mid] < key) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+   }
+   return -1;
+}
+
+template <class T1, class T2, class Comparator>
+int BSearch(const T1& key, const T2 *array, int size, Comparator cmp) {
+    int left = 0;
+    int right = size - 1;
+    while(left <= right) {
+        int mid = left + (right - left) / 2;
+        if(cmp(key, array[mid]) == 0) {
+            return mid;
+        } else if(cmp(key, array[mid]) > 0) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+   }
+   return -1;
+}
+
 } //~ namespace longan
 
 #endif /* COMMON_BASE_ALGORITHM_H */
