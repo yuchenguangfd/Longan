@@ -1,61 +1,61 @@
 /*
- * item_based_mdoel_computation.h
- * Created on: Nov 9, 2014
+ * user_based_mdoel_computation.h
+ * Created on: Nov 17, 2014
  * Author: chenguangyu
  */
 
-#ifndef RECSYS_NEIGHBOR_ITEM_BASED_MODEL_COMPUTATION_H
-#define RECSYS_NEIGHBOR_ITEM_BASED_MODEL_COMPUTATION_H
+#ifndef RECSYS_NEIGHBOR_USER_BASED_MODEL_COMPUTATION_H
+#define RECSYS_NEIGHBOR_USER_BASED_MODEL_COMPUTATION_H
 
-#include "item_based_model.h"
-#include "recsys/base/rating_matrix_as_items.h"
+#include "user_based_model.h"
+#include "recsys/base/rating_matrix_as_users.h"
 #include "common/threading/object_buffer.h"
 #include "common/lang/types.h"
 
 namespace longan {
 
-namespace item_based {
+namespace user_based {
 
 class ModelComputation {
 public:
     ModelComputation();
     virtual ~ModelComputation();
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) = 0;
+    virtual void ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) = 0;
 protected:
-    float ComputeSimilarity(const ItemVector<>& firstItemVector, const ItemVector<>& secondItemVector);
+    float ComputeSimilarity(const UserVector<>& firstUserVector, const UserVector<>& secondUserVector);
 };
 
 class SimpleModelComputation : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
+    virtual void ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model);
 };
 
 class StaticScheduledModelComputation : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
+    virtual void ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model);
 protected:
     void DoWork(int64 taskIdBegin, int64 taskIdEnd);
 protected:
-    RatingMatrixAsItems<> *mRatingMatrix;
+    RatingMatrixAsUsers<> *mRatingMatrix;
     ModelTrain *mModel;
     std::vector<std::mutex*> mUpdateModelMutexs;
 };
 
 class DynamicScheduledModelComputation : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
+    virtual void ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model);
 protected:
     void DoGeneratePairWork();
     void DoComputeSimilarityWork();
     void DoUpdateModelWork();
 protected:
     struct Task {
-        int firstItemId;
-        int secondItemId;
+        int firstUserId;
+        int secondUserId;
         float similarity;
-        Task(int iid1, int iid2) :
-            firstItemId(iid1),
-            secondItemId(iid2),
+        Task(int uid1, int uid2) :
+            firstUserId(uid1),
+            secondUserId(uid2),
             similarity(0.0f) { }
     };
     static const int TASK_BUNDLE_SIZE = 16384;
@@ -90,13 +90,13 @@ protected:
         ObjectBuffer<TaskBundle*> *mObjectBuffer2;
     };
 protected:
-    RatingMatrixAsItems<> *mRatingMatrix;
+    RatingMatrixAsUsers<> *mRatingMatrix;
     ModelTrain *mModel;
     Scheduler *mScheduler;
 };
 
-} //~ namespace item_based
+} //~ namespace user_based
 
 } //~ namespace longan
 
-#endif /* RECSYS_NEIGHBOR_ITEM_BASED_MODEL_COMPUTATION_H */
+#endif /* RECSYS_NEIGHBOR_USER_BASED_MODEL_COMPUTATION_H */

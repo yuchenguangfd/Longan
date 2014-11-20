@@ -1,10 +1,10 @@
 /*
- * item_based_model_computation.cpp
- * Created on: Nov 9, 2014
+ * user_based_model_computation.cpp
+ * Created on: Nov 17, 2014
  * Author: chenguangyu
  */
 
-#include "item_based_model_computation.h"
+#include "user_based_model_computation.h"
 #include "common/lang/double.h"
 #include "common/system/system_info.h"
 #include "common/error.h"
@@ -15,25 +15,25 @@
 
 namespace longan {
 
-namespace item_based {
+namespace user_based {
 
 ModelComputation::ModelComputation() { }
 
 ModelComputation::~ModelComputation() { }
 
-float ModelComputation::ComputeSimilarity(const ItemVector<>& firstItemVector, const ItemVector<>& secondItemVector) {
-    int size1 = firstItemVector.Size();
+float ModelComputation::ComputeSimilarity(const UserVector<>& firstUserVector, const UserVector<>& secondUserVector) {
+    int size1 = firstUserVector.Size();
     if (size1 == 0) return 0.0f;
-    int size2 = secondItemVector.Size();
+    int size2 = secondUserVector.Size();
     if (size2 == 0) return 0.0f;
-    const UserRating* data1 = firstItemVector.Data();
-    const UserRating* data2 = secondItemVector.Data();
+    const ItemRating* data1 = firstUserVector.Data();
+    const ItemRating* data2 = secondUserVector.Data();
     double sum = 0.0;
     double norm1 = 0.0;
     double norm2 = 0.0;
     int i = 0, j = 0;
-    int uid1 = data1[i].UserId();
-    int uid2 = data2[j].UserId();
+    int uid1 = data1[i].ItemId();
+    int uid2 = data2[j].ItemId();
     double rating1 = data1[i].Rating();
     double rating2 = data2[j].Rating();
     while (true) {
@@ -43,19 +43,19 @@ float ModelComputation::ComputeSimilarity(const ItemVector<>& firstItemVector, c
             norm2 += rating2 * rating2;
             ++i; ++j;
             if (i == size1 || j == size2) break;
-            uid1 = data1[i].UserId();
+            uid1 = data1[i].ItemId();
             rating1 = data1[i].Rating();
-            uid2 = data2[j].UserId();
+            uid2 = data2[j].ItemId();
             rating2 = data2[j].Rating();
         } else if (uid1 < uid2) {
             ++i;
             if (i == size1) break;
-            uid1 = data1[i].UserId();
+            uid1 = data1[i].ItemId();
             rating1 = data1[i].Rating();
         } else if (uid1 > uid2) {
             ++j;
             if (j == size2) break;
-            uid2 = data2[j].UserId();
+            uid2 = data2[j].ItemId();
             rating2 = data2[j].Rating();
         }
     }
@@ -66,26 +66,26 @@ float ModelComputation::ComputeSimilarity(const ItemVector<>& firstItemVector, c
     return (float)(sum / denominator);
 }
 
-void SimpleModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) {
-    int numItem = ratingMatrix->NumItem();
-    for (int iid1 = 0; iid1 < numItem; ++iid1) {
-        const auto& iv1 = ratingMatrix->GetItemVector(iid1);
-        for (int iid2 = iid1 + 1; iid2 < numItem; ++iid2) {
-            const auto& iv2 = ratingMatrix->GetItemVector(iid2);
-            model->AddPairSimilarity(iid1, iid2, ComputeSimilarity(iv1, iv2));
+void SimpleModelComputation::ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) {
+    int numUser = ratingMatrix->NumUser();
+    for (int uid1 = 0; uid1 < numUser; ++uid1) {
+        const auto& uv1 = ratingMatrix->GetUserVector(uid1);
+        for (int uid2 = uid1 + 1; uid2 < numUser; ++uid2) {
+            const auto& uv2 = ratingMatrix->GetUserVector(uid2);
+            model->AddPairSimilarity(uid1, uid2, ComputeSimilarity(uv1, uv2));
         }
     }
 }
 
-void StaticScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) {
+void StaticScheduledModelComputation::ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) {
     mRatingMatrix = ratingMatrix;
     mModel = model;
-    int numItem = mRatingMatrix->NumItem();
+    int numUser = mRatingMatrix->NumUser();
     mUpdateModelMutexs.clear();
-    for (int i = 0; i < numItem; ++i) {
+    for (int i = 0; i < numUser; ++i) {
         mUpdateModelMutexs.push_back(new std::mutex);
     }
-    int64 numTaskTotal = (int64)numItem * (numItem - 1) / 2;
+    int64 numTaskTotal = (int64)numUser * (numUser - 1) / 2;
     int numThread = SystemInfo::GetNumCPUCore();
     int64 numTaskPerThread = numTaskTotal / numThread;
     std::vector<std::thread> workers;
@@ -97,23 +97,23 @@ void StaticScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *rating
     for (std::thread& t : workers) {
        t.join();
     }
-    for (int i = 0; i < numItem; ++i) {
+    for (int i = 0; i < numUser; ++i) {
         delete mUpdateModelMutexs[i];
     }
 }
 
 void StaticScheduledModelComputation::DoWork(int64 taskIdBegin, int64 taskIdEnd) {
-    for (int taskId = taskIdBegin; taskId < taskIdEnd; ++taskId) {
-        int iid1 = static_cast<int>((sqrt(8.0*taskId+1)+1)/2);
-        int iid2 = taskId - iid1*(iid1-1)/2;
-        const auto& iv1 = mRatingMatrix->GetItemVector(iid1);
-        const auto& iv2 = mRatingMatrix->GetItemVector(iid2);
+    for (int64 taskId = taskIdBegin; taskId < taskIdEnd; ++taskId) {
+        int uid1 = static_cast<int>((sqrt(8.0*taskId+1)+1)/2);
+        int uid2 = taskId - (int64)uid1*(uid1-1)/2;
+        const auto& iv1 = mRatingMatrix->GetUserVector(uid1);
+        const auto& iv2 = mRatingMatrix->GetUserVector(uid2);
         float similarity = ComputeSimilarity(iv1, iv2);
-        mUpdateModelMutexs[iid1]->lock();
-        mUpdateModelMutexs[iid2]->lock();
-        mModel->AddPairSimilarity(iid1, iid2, similarity);
-        mUpdateModelMutexs[iid2]->unlock();
-        mUpdateModelMutexs[iid1]->unlock();
+        mUpdateModelMutexs[uid1]->lock();
+        mUpdateModelMutexs[uid2]->lock();
+        mModel->AddPairSimilarity(uid1, uid2, similarity);
+        mUpdateModelMutexs[uid2]->unlock();
+        mUpdateModelMutexs[uid1]->unlock();
     }
 }
 
@@ -175,7 +175,7 @@ void DynamicScheduledModelComputation::Scheduler::UpdateModelDone() {
     assert(rtn == LONGAN_SUCC);
 }
 
-void DynamicScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) {
+void DynamicScheduledModelComputation::ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) {
     mRatingMatrix = ratingMatrix;
     mModel = model;
     mScheduler = new Scheduler();
@@ -196,17 +196,17 @@ void DynamicScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *ratin
 }
 
 void DynamicScheduledModelComputation::DoGeneratePairWork() {
-    int numItem = mRatingMatrix->NumItem();
+    int numUser = mRatingMatrix->NumUser();
     TaskBundle *currentBundle = new TaskBundle();
     currentBundle->reserve(TASK_BUNDLE_SIZE);
-    for (int firstItemId = 0; firstItemId < numItem; ++firstItemId)  {
-        for (int secondItemId = firstItemId + 1; secondItemId < numItem; ++secondItemId) {
+    for (int firstUserId = 0; firstUserId < numUser; ++firstUserId)  {
+        for (int secondUserId = firstUserId + 1; secondUserId < numUser; ++secondUserId) {
             if (currentBundle->size() == TASK_BUNDLE_SIZE) {
                 mScheduler->PutComputeSimilarityWork(currentBundle);
                 currentBundle = new TaskBundle();
                 currentBundle->reserve(TASK_BUNDLE_SIZE);
             }
-            currentBundle->push_back(Task(firstItemId, secondItemId));
+            currentBundle->push_back(Task(firstUserId, secondUserId));
         }
     }
     mScheduler->PutComputeSimilarityWork(currentBundle);
@@ -219,8 +219,8 @@ void DynamicScheduledModelComputation::DoComputeSimilarityWork() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            auto& iv1 = mRatingMatrix->GetItemVector(task.firstItemId);
-            auto& iv2 = mRatingMatrix->GetItemVector(task.secondItemId);
+            auto& iv1 = mRatingMatrix->GetUserVector(task.firstUserId);
+            auto& iv2 = mRatingMatrix->GetUserVector(task.secondUserId);
             task.similarity = ComputeSimilarity(iv1, iv2);
         }
         mScheduler->PutUpdateModelWork(currentBundle);
@@ -234,13 +234,13 @@ void DynamicScheduledModelComputation::DoUpdateModelWork() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            mModel->AddPairSimilarity(task.firstItemId, task.secondItemId, task.similarity);
+            mModel->AddPairSimilarity(task.firstUserId, task.secondUserId, task.similarity);
         }
         delete currentBundle;
     }
     mScheduler->UpdateModelDone();
 }
 
-} //~ namespace item_based
+} //~ namespace user_based
 
 } //~ namespace longan

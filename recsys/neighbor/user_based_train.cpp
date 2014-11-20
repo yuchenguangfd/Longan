@@ -1,10 +1,10 @@
 /*
- * item_based_train.cpp
- * Created on: Oct 18, 2014
+ * user_based_train.cpp
+ * Created on: Nov 18, 2014
  * Author: chenguangyu
  */
 
-#include "item_based_train.h"
+#include "user_based_train.h"
 #include "recsys/base/rating_list_loader.h"
 #include "common/system/file_util.h"
 #include "common/logging/logging.h"
@@ -12,7 +12,7 @@
 
 namespace longan {
 
-ItemBasedTrain::ItemBasedTrain(const std::string& trainRatingFilepath,
+UserBasedTrain::UserBasedTrain(const std::string& trainRatingFilepath,
         const std::string& configFilepath, const std::string& modelFilepath) :
     mTrainRatingFilepath(trainRatingFilepath),
     mConfigFilepath(configFilepath),
@@ -22,9 +22,9 @@ ItemBasedTrain::ItemBasedTrain(const std::string& trainRatingFilepath,
     mModel(nullptr),
     mModelComputationDelegate(nullptr) { }
 
-ItemBasedTrain::~ItemBasedTrain() { }
+UserBasedTrain::~UserBasedTrain() { }
 
-void ItemBasedTrain::Train() {
+void UserBasedTrain::Train() {
     LoadConfig();
     LoadRatings();
     AdjustRating();
@@ -34,8 +34,8 @@ void ItemBasedTrain::Train() {
     Cleanup();
 }
 
-void ItemBasedTrain::LoadConfig() {
-    Log::I("recsys", "ItemBasedTrain::LoadConfig()");
+void UserBasedTrain::LoadConfig() {
+    Log::I("recsys", "UserBasedTrain::LoadConfig()");
     Log::I("recsys", "config file = " + mConfigFilepath);
     std::string content = FileUtil::LoadFileContent(mConfigFilepath);
     Json::Reader reader;
@@ -44,83 +44,83 @@ void ItemBasedTrain::LoadConfig() {
     }
 }
 
-void ItemBasedTrain::LoadRatings() {
+void UserBasedTrain::LoadRatings() {
     Log::I("recsys", "LoadRatings()");
     Log::I("recsys", "rating file = " + mTrainRatingFilepath);
     RatingList rlist = RatingListLoader::Load(mTrainRatingFilepath);
     Log::I("recsys", "create rating matrix");
-    mRatingMatrix = new RatingMatrixAsItems<>();
+    mRatingMatrix = new RatingMatrixAsUsers<>();
     mRatingMatrix->Init(rlist);
     Log::I("recsys", "create rating trait");
     mRatingTrait = new RatingTrait();
     mRatingTrait->Init(rlist);
 }
 
-void ItemBasedTrain::AdjustRating() {
+void UserBasedTrain::AdjustRating() {
     if (mConfig["similarityType"].asString() == "adjustedCosine") {
-        AdjustRatingByMinusUserAverage();
-    } else if (mConfig["similarityType"].asString() == "correlation") {
         AdjustRatingByMinusItemAverage();
+    } else if (mConfig["similarityType"].asString() == "correlation") {
+        AdjustRatingByMinusUserAverage();
     }
 }
 
-void ItemBasedTrain::AdjustRatingByMinusItemAverage() {
+void UserBasedTrain::AdjustRatingByMinusItemAverage() {
     Log::I("recsys", "AdjustRatingByMinusItemAverage()");
-    for (int iid = 0; iid < mRatingMatrix->NumItem(); ++iid) {
-        auto& ivec = mRatingMatrix->GetItemVector(iid);
-        float iavg = mRatingTrait->ItemAverage(iid);
-        for (int i = 0; i < ivec.Size(); ++i) {
-            auto& ur = ivec.Data()[i];
+    for (int uid = 0; uid < mRatingMatrix->NumUser(); ++uid) {
+        auto& uvec = mRatingMatrix->GetUserVector(uid);
+        for (int i = 0; i < uvec.Size(); ++i) {
+            auto& ur = uvec.Data()[i];
+            float iavg = mRatingTrait->ItemAverage(ur.ItemId());
             ur.SetRating(ur.Rating() - iavg);
         }
     }
 }
 
-void ItemBasedTrain::AdjustRatingByMinusUserAverage() {
+void UserBasedTrain::AdjustRatingByMinusUserAverage() {
     Log::I("recsys", "AdjustRatingByMinusUserAverage()");
-    for (int iid = 0; iid < mRatingMatrix->NumItem(); ++iid) {
-        auto& ivec = mRatingMatrix->GetItemVector(iid);
-        for (int i = 0; i < ivec.Size(); ++i) {
-            auto& ur = ivec.Data()[i];
-            float uavg = mRatingTrait->UserAverage(ur.UserId());
+    for (int uid = 0; uid < mRatingMatrix->NumUser(); ++uid) {
+        auto& uvec = mRatingMatrix->GetUserVector(uid);
+        float uavg = mRatingTrait->UserAverage(uid);
+        for (int i = 0; i < uvec.Size(); ++i) {
+            auto& ur = uvec.Data()[i];
             ur.SetRating(ur.Rating() - uavg);
         }
     }
 }
 
-void ItemBasedTrain::InitModel() {
+void UserBasedTrain::InitModel() {
     Log::I("recsys", "InitModel()");
     if (mConfig["modelType"].asString() == "fixedNeighborSize") {
         int neighborSize = mConfig["neighborSize"].asInt();
-        mModel = new item_based::FixedNeighborSizeModel(mRatingMatrix->NumItem(), neighborSize);
+        mModel = new user_based::FixedNeighborSizeModel(mRatingMatrix->NumUser(), neighborSize);
     } else if (mConfig["modelType"].asString() == "fixedSimilarityThreshold") {
         float threshold = (float)mConfig["similarityThreshold"].asDouble();
-        mModel = new item_based::FixedSimilarityThresholdModel(mRatingMatrix->NumItem(), threshold);
+     mModel = new user_based::FixedSimilarityThresholdModel(mRatingMatrix->NumUser(), threshold);
     } else {
         throw LonganConfigError("No Such modelType");
     }
 }
 
-void ItemBasedTrain::ComputeModel() {
+void UserBasedTrain::ComputeModel() {
     Log::I("recsys", "ComputeModel()");
-    if (mConfig["modelComputation"].asString() == "simple") {
-        mModelComputationDelegate = new item_based::SimpleModelComputation();
-    } else if (mConfig["modelComputation"].asString() == "staticScheduled") {
-        mModelComputationDelegate = new item_based::StaticScheduledModelComputation();
-    } else if (mConfig["modelComputation"].asString() == "dynamicScheduled") {
-        mModelComputationDelegate = new item_based::DynamicScheduledModelComputation();
-    } else {
-        mModelComputationDelegate = new item_based::DynamicScheduledModelComputation();
-    }
-    mModelComputationDelegate->ComputeModel(mRatingMatrix, mModel);
+      if (mConfig["modelComputation"].asString() == "simple") {
+          mModelComputationDelegate = new user_based::SimpleModelComputation();
+      } else if (mConfig["modelComputation"].asString() == "staticScheduled") {
+          mModelComputationDelegate = new user_based::StaticScheduledModelComputation();
+      } else if (mConfig["modelComputation"].asString() == "dynamicScheduled") {
+          mModelComputationDelegate = new user_based::DynamicScheduledModelComputation();
+      } else {
+          mModelComputationDelegate = new user_based::DynamicScheduledModelComputation();
+      }
+      mModelComputationDelegate->ComputeModel(mRatingMatrix, mModel);
 }
 
-void ItemBasedTrain::SaveModel() {
+void UserBasedTrain::SaveModel() {
     Log::I("recsys", "SaveModel");
     mModel->Save(mModelFilepath);
 }
 
-void ItemBasedTrain::Cleanup() {
+void UserBasedTrain::Cleanup() {
     delete mModelComputationDelegate;
     delete mModel;
     delete mRatingTrait;

@@ -34,8 +34,7 @@ void ModelTrain::Save(const std::string& filename) {
     bos << mNumItem;
     for (int itemId = 0; itemId < mNumItem; ++itemId) {
         const NeighborItem* begin = NeighborBegin(itemId);
-        const NeighborItem* end = NeighborEnd(itemId);
-        int numNeighbor = end - begin;
+        int numNeighbor = NeighborSize(itemId);
         bos << numNeighbor;
         for (int i = 0; i < numNeighbor; ++i) {
             int iid = begin[i].ItemId();
@@ -58,6 +57,7 @@ FixedNeighborSizeModel::FixedNeighborSizeModel(int numItem, int neighborSize) :
 void FixedNeighborSizeModel::AddPairSimilarity(int firstItemId, int secondItemId, float similarity) {
     assert(firstItemId >= 0 && firstItemId < mNeighborItemList.size());
     assert(secondItemId >= 0 && secondItemId < mNeighborItemList.size());
+    assert(similarity >= -1.0f && similarity <= 1.0f);
     mNeighborItemList[firstItemId].Add(NeighborItem(secondItemId, similarity));
     mNeighborItemList[secondItemId].Add(NeighborItem(firstItemId, similarity));
 }

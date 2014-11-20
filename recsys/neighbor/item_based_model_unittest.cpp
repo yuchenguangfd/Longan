@@ -13,7 +13,7 @@
 using namespace longan;
 using namespace longan::item_based;
 
-TEST (NeighborItemTest, ObjectCompareOK) {
+TEST(NeighborItemTest, ObjectCompareOK) {
     NeighborItem ni1(42, 0.42);
     NeighborItem ni2(43, 0.43);
     ASSERT_TRUE(ni1 < ni2);
