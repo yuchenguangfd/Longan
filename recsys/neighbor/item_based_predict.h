@@ -9,7 +9,6 @@
 
 #include "item_based_model.h"
 #include "recsys/base/rating_matrix_as_users.h"
-#include "recsys/base/rating_trait.h"
 #include "common/lang/defines.h"
 #include <json/json.h>
 #include <string>
@@ -23,6 +22,7 @@ public:
 	ItemBasedPredict(const std::string& trainRatingFilepath, const std::string& configFilepath, const std::string& modelFilepath);
     ~ItemBasedPredict();
 	void Init();
+	void Cleanup();
     float PredictRating(int userId, int itemId);
     RecommendedItemIdList PredictTopNItem(int userId, int listSize);
 protected:

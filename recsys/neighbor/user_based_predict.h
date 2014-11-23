@@ -22,6 +22,7 @@ public:
     UserBasedPredict(const std::string& trainRatingFilepath, const std::string& configFilepath, const std::string& modelFilepath);
     ~UserBasedPredict();
     void Init();
+    void Cleanup();
     float PredictRating(int userId, int itemId);
     RecommendedItemIdList PredictTopNItem(int userId, int listSize);
 protected:

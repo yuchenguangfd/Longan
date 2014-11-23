@@ -55,7 +55,7 @@ template <class T, class Alloc>
 void WeightedBipartite<T, Alloc>::AddWeight(int vertexLeft, int vertexRight, T weight) {
     assert(vertexLeft >= 0 && vertexLeft < mNumVertexLeft);
     assert(vertexRight >= 0 && vertexRight < mNumVertexRight);
-    mWeight[vertexLeft * mNumVertexRight + vertexRight] = weight;
+    mWeight[vertexLeft * mNumVertexRight + vertexRight] += weight;
 }
 
 template <class T, class Alloc>

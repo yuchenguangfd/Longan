@@ -17,7 +17,7 @@ namespace longan {
 struct BipartiteMatchPair {
     int vertexLeft;
     int vertexRight;
-    BipartiteMatchPair(int v1, int v2) : vertexLeft(v1), vertexRight(v2) { }
+    BipartiteMatchPair(int s, int t) : vertexLeft(s), vertexRight(t) { }
 };
 
 template <class T, class Alloc = std::allocator<T> >
@@ -31,11 +31,11 @@ private:
 private:
     const WeightedBipartite<T, Alloc> *mBipartite;
     std::vector<int> mLinkY;
-    std::vector<T> mLimitX;
-    std::vector<T> mLimitY;
+    std::vector<T> mPotentialLeft;
+    std::vector<T> mPotentialRight;
     std::vector<T> mSlack;
-    std::vector<bool> mVistX;
-    std::vector<bool> mVistY;
+    std::vector<bool> mVistedLeft;
+    std::vector<bool> mVistedRight;
 };
 
 template <class T, class Alloc>
@@ -46,76 +46,86 @@ T WeightedBipartiteMaxMatch<T, Alloc>::ComputeMaxMatch(const WeightedBipartite<T
     for(int x = 0; x < mBipartite->NumVertexLeft(); ++x) {
         std::fill(mSlack.begin(), mSlack.end(), std::numeric_limits<T>::max());
         while(true) {
-            std::fill(mVistX.begin(), mVistX.end(), false);
-            std::fill(mVistY.begin(), mVistY.end(), false);
+            std::fill(mVistedLeft.begin(), mVistedLeft.end(), false);
+            std::fill(mVistedRight.begin(), mVistedRight.end(), false);
             if(Find(x)) break;
             T d = std::numeric_limits<T>::max();
             for(int i = 0; i < mBipartite->NumVertexRight(); ++i) {
-                if (!mVistY[i] && d > mSlack[i])
+                if (!mVistedRight[i] && d > mSlack[i])
                     d = mSlack[i];
             }
             for(int i = 0; i < mBipartite->NumVertexLeft(); ++i) {
-                if (mVistX[i]) {
-                    mLimitX[i] -= d;
+                if (mVistedLeft[i]) {
+                    mPotentialLeft[i] -= d;
                 }
             }
             for(int i = 0; i < mBipartite->NumVertexRight(); ++i) {
-                if (mVistY[i]) {
-                    mLimitY[i] += d;
+                if (mVistedRight[i]) {
+                    mPotentialRight[i] += d;
                 } else {
                     mSlack[i] -= d;
                 }
             }
         }
     }
-    T result = T();
-    maxMatch->clear();
-    for(int i = 0; i < mBipartite->NumVertexRight(); ++i) {
-        if(mLinkY[i] > -1) {
-            maxMatch->push_back(BipartiteMatchPair(mLinkY[i], i));
-            result += mBipartite->GetWeight(mLinkY[i], i);
+    if (maxMatch == nullptr) {
+        T result = T();
+        for(int i = 0; i < mBipartite->NumVertexRight(); ++i) {
+            if(mLinkY[i] > -1) {
+                result += mBipartite->GetWeight(mLinkY[i], i);
+            }
         }
+        return result;
+    } else {
+        T result = T();
+        maxMatch->clear();
+        for(int i = 0; i < mBipartite->NumVertexRight(); ++i) {
+            if(mLinkY[i] > -1) {
+                maxMatch->push_back(BipartiteMatchPair(mLinkY[i], i));
+                result += mBipartite->GetWeight(mLinkY[i], i);
+            }
+        }
+        std::sort(maxMatch->begin(), maxMatch->end(),
+                [](const BipartiteMatchPair& lhs, const BipartiteMatchPair& rhs)->bool {
+            return lhs.vertexLeft < rhs.vertexLeft;
+        });
+        return result;
     }
-    std::sort(maxMatch->begin(), maxMatch->end(),
-            [](const BipartiteMatchPair& lhs, const BipartiteMatchPair& rhs)->bool {
-        return lhs.vertexLeft < rhs.vertexLeft;
-    });
-    return result;
 }
 
 template <class T, class Alloc>
 void WeightedBipartiteMaxMatch<T, Alloc>::Init() {
     mLinkY.resize(mBipartite->NumVertexRight());
     std::fill(mLinkY.begin(), mLinkY.end(), -1);
-    mLimitY.resize(mBipartite->NumVertexRight());
-    std::fill(mLimitY.begin(), mLimitY.end(), T());
-    mLimitX.resize(mBipartite->NumVertexLeft());
+    mPotentialRight.resize(mBipartite->NumVertexRight());
+    std::fill(mPotentialRight.begin(), mPotentialRight.end(), T());
+    mPotentialLeft.resize(mBipartite->NumVertexLeft());
     for(int i = 0; i < mBipartite->NumVertexLeft(); ++i) {
-        mLimitX[i] = mBipartite->GetWeight(i, 0);
+        mPotentialLeft[i] = mBipartite->GetWeight(i, 0);
         for(int j = 1; j < mBipartite->NumVertexRight(); ++j) {
-            mLimitX[i] = std::max(mLimitX[i], mBipartite->GetWeight(i, j));
+            mPotentialLeft[i] = std::max(mPotentialLeft[i], mBipartite->GetWeight(i, j));
         }
     }
     mSlack.resize(mBipartite->NumVertexRight());
-    mVistX.resize(mBipartite->NumVertexLeft());
-    mVistY.resize(mBipartite->NumVertexRight());
+    mVistedLeft.resize(mBipartite->NumVertexLeft());
+    mVistedRight.resize(mBipartite->NumVertexRight());
 }
 
 template <class T, class Alloc>
 bool WeightedBipartiteMaxMatch<T, Alloc>::Find(int x) {
-    mVistX[x] = true;
+    mVistedLeft[x] = true;
     for(int y = 0; y < mBipartite->NumVertexRight(); ++y) {
-        if(mVistY[y]) continue;
-        int t = mLimitX[x] + mLimitY[y] - mBipartite->GetWeight(x, y);
-        if(t == 0) {
-            mVistY[y] = true;
+        if(mVistedRight[y]) continue;
+        int delta = mPotentialLeft[x] + mPotentialRight[y] - mBipartite->GetWeight(x, y);
+        if(delta == 0) {
+            mVistedRight[y] = true;
             if(mLinkY[y]==-1 || Find(mLinkY[y])) {
                 mLinkY[y] = x;
                 return true;
             }
         }
-        else if(mSlack[y] > t)
-            mSlack[y] = t;
+        else if(mSlack[y] > delta)
+            mSlack[y] = delta;
     }
     return false;
 }

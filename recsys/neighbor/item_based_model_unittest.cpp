@@ -28,8 +28,8 @@ TEST(FixedNeighborSizeModelTest, UpdateOK) {
     ArrayHelper::FillRange(array, numItem);
     ArrayHelper::RandomShuffle(array, numItem);
     for (int i = 0; i < numItem; ++i) {
-        model->AddPairSimilarity(0, array[i], (float)array[i]);
-        model->AddPairSimilarity(1, array[i], (float)(-array[i]));
+        model->AddPairSimilarity(0, array[i], (float)array[i]/numItem);
+        model->AddPairSimilarity(1, array[i], (float)(-array[i])/numItem);
     }
     for (const NeighborItem *begin = model->NeighborBegin(0), *end = model->NeighborEnd(0); begin != end; ++begin) {
         ASSERT_TRUE(begin->ItemId() >= numItem - neighborSize && begin->ItemId() < numItem);

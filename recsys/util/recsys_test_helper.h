@@ -9,6 +9,7 @@
 
 #include "recsys/base/rating_list.h"
 #include "recsys/base/rating_matrix_as_items.h"
+#include "recsys/base/rating_matrix_as_users.h"
 
 namespace longan {
 
@@ -16,6 +17,7 @@ class RecsysTestHelper {
 public:
     static RatingList CreateRandomRatingList(int numUser, int numItem, int numRating);
     static RatingMatrixAsItems<> CreateRandomRatingMatrixAsItems(int numUser, int numItem, int numRating);
+    static RatingMatrixAsUsers<> CreateRandomRatingMatrixAsUsers(int numUser, int numItem, int numRating);
 };
 
 } //~ namespace longan

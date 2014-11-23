@@ -1,10 +1,10 @@
 /*
- * item_based_evaluate.cpp
+ * user_based_evaluate.cpp
  * Created on: Nov 12, 2014
  * Author: chenguangyu
  */
 
-#include "item_based_evaluate.h"
+#include "user_based_evaluate.h"
 #include "recsys/base/rating_list_loader.h"
 #include "common/logging/logging.h"
 #include "common/math/math.h"
@@ -13,7 +13,7 @@
 
 namespace longan {
 
-ItemBasedEvaluate::ItemBasedEvaluate(
+UserBasedEvaluate::UserBasedEvaluate(
     const std::string& ratingTrainFilepath,
     const std::string& configFilepath,
     const std::string& modelFilepath,
@@ -28,7 +28,7 @@ ItemBasedEvaluate::ItemBasedEvaluate(
     mMAE(0.0), mRMSE(0.0),
     mPrecision(0.0), mRecall(0.0) { }
 
-void ItemBasedEvaluate::Evaluate() {
+void UserBasedEvaluate::Evaluate() {
     LoadConfig();
     LoadTestRatings();
     CreatePredict();
@@ -42,8 +42,8 @@ void ItemBasedEvaluate::Evaluate() {
     Cleanup();
 }
 
-void ItemBasedEvaluate::LoadConfig() {
-    Log::I("recsys", "ItemBasedEvaluate::LoadConfig()");
+void UserBasedEvaluate::LoadConfig() {
+    Log::I("recsys", "UserBasedEvaluate::LoadConfig()");
     Log::I("recsys", "config file = " + mConfigFilepath);
     std::string content = FileUtil::LoadFileContent(mConfigFilepath);
     Json::Reader reader;
@@ -52,19 +52,19 @@ void ItemBasedEvaluate::LoadConfig() {
     }
 }
 
-void ItemBasedEvaluate::LoadTestRatings() {
-    Log::I("recsys", "ItemBasedEvaluate::LoadTestRatings()");
+void UserBasedEvaluate::LoadTestRatings() {
+    Log::I("recsys", "UserBasedEvaluate::LoadTestRatings()");
     mTestRatingList = std::move(RatingListLoader::Load(mRatingTestFilepath));
 }
 
-void ItemBasedEvaluate::CreatePredict() {
-    Log::I("recsys", "ItemBasedEvaluate::CreatePredict()");
-    mPredict = new ItemBasedPredict(mRatingTrainFilepath, mConfigFilepath, mModelFilepath);
+void UserBasedEvaluate::CreatePredict() {
+    Log::I("recsys", "UserBasedEvaluate::CreatePredict()");
+    mPredict = new UserBasedPredict(mRatingTrainFilepath, mConfigFilepath, mModelFilepath);
     mPredict->Init();
 }
 
-void ItemBasedEvaluate::EvaluateRating() {
-    Log::I("recsys", "ItemBasedEvaluate::EvaluateRating()");
+void UserBasedEvaluate::EvaluateRating() {
+    Log::I("recsys", "UserBasedEvaluate::EvaluateRating()");
     double sumMAE = 0.0;
     double sumRMSE = 0.0;
     for (int i = 0; i < mTestRatingList.NumRating(); ++i) {
@@ -79,12 +79,12 @@ void ItemBasedEvaluate::EvaluateRating() {
     mRMSE = Math::Sqrt(sumRMSE / mTestRatingList.NumRating());
 }
 
-void ItemBasedEvaluate::EvaluateRanking() {
+void UserBasedEvaluate::EvaluateRanking() {
     throw LonganNotSupportError();
 }
 
-void ItemBasedEvaluate::WriteResult() {
-    Log::I("recsys", "ItemBasedEvaluate::WriteResult()");
+void UserBasedEvaluate::WriteResult() {
+    Log::I("recsys", "UserBasedEvaluate::WriteResult()");
     Json::Value result;
     if (mConfig["evaluateRating"].asBool()) {
         result["MAE"] = mMAE;
@@ -100,7 +100,7 @@ void ItemBasedEvaluate::WriteResult() {
     FileUtil::SaveFileContent(mResultFilepath, output);
 }
 
-void ItemBasedEvaluate::Cleanup() {
+void UserBasedEvaluate::Cleanup() {
     mPredict->Cleanup();
     delete mPredict;
 }

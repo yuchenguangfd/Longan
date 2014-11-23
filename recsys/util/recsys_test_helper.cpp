@@ -42,4 +42,11 @@ RatingMatrixAsItems<> RecsysTestHelper::CreateRandomRatingMatrixAsItems(int numU
     return std::move(rmat);
 }
 
+RatingMatrixAsUsers<> RecsysTestHelper::CreateRandomRatingMatrixAsUsers(int numUser, int numItem, int numRating) {
+    RatingList rlist = CreateRandomRatingList(numUser, numItem, numRating);
+    RatingMatrixAsUsers<> rmat;
+    rmat.Init(rlist);
+    return std::move(rmat);
+}
+
 } //~ namespace longan

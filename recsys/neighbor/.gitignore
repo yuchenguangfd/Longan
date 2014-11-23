@@ -1,8 +1,6 @@
 /item_based_train_longan
 /item_based_train_longan.o
 /item_based_train.o
-/item_based_train_unittest
-/item_based_train_unittest.o
 /user_based_train_longan
 /user_based_train_longan.o
 /user_based_train.o
@@ -16,3 +14,13 @@
 /item_based_evaluate_longan.o
 /item_based_evaluate.o
 /item_based_predict.o
+/user_based_model_computation_unittest
+/user_based_model_computation_unittest.o
+/user_based_model_computation.o
+/user_based_model_unittest
+/user_based_model_unittest.o
+/user_based_model.o
+/user_based_evaluate_longan
+/user_based_evaluate_longan.o
+/user_based_evaluate.o
+/user_based_predict.o

@@ -16,23 +16,25 @@
 
 namespace longan {
 
-ItemBasedPredict::ItemBasedPredict(const std::string& trainRatingFilepath, const std::string& trainConfigFilepath,
+ItemBasedPredict::ItemBasedPredict(const std::string& trainRatingFilepath, const std::string& configFilepath,
         const std::string& modelFilepath) :
     mTrainRatingFilepath(trainRatingFilepath),
-    mConfigFilepath(trainConfigFilepath),
+    mConfigFilepath(configFilepath),
     mModelFilepath(modelFilepath),
     mRatingMatrix(nullptr),
     mModel(nullptr) { }
 
-ItemBasedPredict::~ItemBasedPredict() {
-    delete mModel;
-    delete mRatingMatrix;
-}
+ItemBasedPredict::~ItemBasedPredict() { }
 
 void ItemBasedPredict::Init() {
     LoadConfig();
     LoadRatings();
     LoadModel();
+}
+
+void ItemBasedPredict::Cleanup() {
+    delete mModel;
+    delete mRatingMatrix;
 }
 
 void ItemBasedPredict::LoadConfig() {
@@ -65,7 +67,7 @@ float ItemBasedPredict::PredictRating(int userId, int itemId) {
 	assert(userId >= 0 && userId < mRatingMatrix->NumUser());
 	assert(itemId >= 0 && itemId < mRatingMatrix->NumItem());
     const auto& uv = mRatingMatrix->GetUserVector(userId);
-    const ItemRating* data1 = uv.Data();
+    const ItemRating *data1 = uv.Data();
     int size1 = uv.Size();
     const item_based::NeighborItem* data2 = mModel->NeighborBegin(itemId);
     int size2 = mModel->NeighborSize(itemId);
@@ -102,4 +104,4 @@ float ItemBasedPredict::PredictRating(int userId, int itemId) {
     return (float)predictedRating;
 }
 
-} //~ namespace ycg
+} //~ namespace longan
