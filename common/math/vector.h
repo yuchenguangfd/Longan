@@ -1,8 +1,16 @@
+/*
+ * vector.h
+ * Created on: Sep 4, 2014
+ * Author: chenguangyu
+ */
+
 #ifndef COMMON_MATH_VECTOR_H
 #define COMMON_MATH_VECTOR_H
 
 #include "math.h"
 #include "common/util/random.h"
+#include <algorithm>
+#include <memory>
 #include <iostream>
 #include <cassert>
 
@@ -13,8 +21,8 @@ class Vector {
 public:
     Vector();
 	Vector(int size, bool init = false, T initValue = T());
-    template <class InputIterator>
-	Vector(InputIterator begin, InputIterator end);
+    template <class Iterator>
+	Vector(int size, Iterator begin, Iterator end);
 	Vector(const Vector<T, Alloc>& orig);
     Vector(Vector<T, Alloc>&& orig);
 	~Vector();
@@ -68,21 +76,18 @@ Vector<T, Alloc>::Vector(int size, bool init, T initValue) :
     Alloc alloc;
     mData = alloc.allocate(mSize);
     if (init) {
-        for (int i = 0; i < mSize; ++i) {
-            mData[i] = initValue;
-        }
+        std::fill(mData, mData + mSize, initValue);
     }
 }
 
 template <class T, class Alloc>
-template <class InputIterator>
-Vector<T, Alloc>::Vector(InputIterator begin, InputIterator end) {
-    mSize = end - begin;
+template <class Iterator>
+Vector<T, Alloc>::Vector(int size, Iterator begin, Iterator end) :
+    mSize(size) {
+    assert(mSize == end - begin);
     Alloc alloc;
     mData = alloc.allocate(mSize);
-    for (int i = 0; i < mSize; ++i) {
-        mData[i] = *begin++;
-    }
+    std::copy(begin, end, mData);
 }
 
 template <class T, class Alloc>
@@ -90,9 +95,7 @@ Vector<T, Alloc>::Vector(const Vector<T, Alloc>& orig) :
     mSize(orig.mSize) {
     Alloc alloc;
     mData = alloc.allocate(mSize);
-    for (int i = 0; i < mSize; ++i) {
-        mData[i] = orig.mData[i];
-    }
+    std::copy(orig.mData, orig.mData + orig.mSize, mData);
 }
 
 template <class T, class Alloc>
@@ -118,9 +121,7 @@ Vector<T, Alloc>& Vector<T, Alloc>::operator= (const Vector<T, Alloc>& rhs) {
         mSize = rhs.mSize;
         mData = alloc.allocate(mSize);
     }
-    for (int i = 0; i < mSize; ++i) {
-        mData[i] = rhs.mData[i];
-    }
+    std::copy(rhs.mData, rhs.mData + rhs.mSize, mData);
     return *this;
 }
 
@@ -224,4 +225,4 @@ typedef Vector<double> Vector64F;
 
 } //~ namespace longan
 
-#endif // COMMON_MATH_VECTOR_H
+#endif /* COMMON_MATH_VECTOR_H */

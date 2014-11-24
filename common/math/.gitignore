@@ -3,3 +3,5 @@
 /math.o
 /vector_unittest
 /vector_unittest.o
+/matrix_unittest
+/matrix_unittest.o
