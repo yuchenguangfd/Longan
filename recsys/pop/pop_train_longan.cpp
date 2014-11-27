@@ -8,14 +8,15 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
-DEFINE_string(ratingTrainFilePath, "./rating_train.txt", "input file path of rating data file for training.");
-DEFINE_string(modelFilePath, "./model.dat", "output file path of model file.");
+DEFINE_string(ratingTrainFilepath, "./rating_train.txt", "input filepath of rating data file for training.");
+DEFINE_string(configFilepath, "./pop_config.json", "input filepath of config file");
+DEFINE_string(modelFilepath, "./pop_model.dat", "output filepath of model file.");
 
 int main(int argc, char **argv) {
     ::google::InitGoogleLogging(argv[0]);
     ::gflags::ParseCommandLineFlags(&argc, &argv, true);
     FLAGS_alsologtostderr = true;
-    longan::PopTrain popTrain(FLAGS_ratingTrainFilePath, FLAGS_modelFilePath);
+    longan::PopTrain popTrain(FLAGS_ratingTrainFilepath, FLAGS_configFilepath, FLAGS_modelFilepath);
     popTrain.Train();
     return 0;
 }

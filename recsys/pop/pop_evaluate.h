@@ -7,42 +7,17 @@
 #ifndef RECSYS_POP_POP_EVALUATE_H
 #define RECSYS_POP_POP_EVALUATE_H
 
-#include "pop_predict.h"
-#include "recsys/base/rating_record.h"
-#include <json/json.h>
-#include <string>
-#include <vector>
+#include "recsys/base/basic_evaluate.h"
 
 namespace longan {
 
-class PopEvaluate {
+class PopEvaluate : public BasicEvaluate {
 public:
-    PopEvaluate(const std::string& modelFilePath, const std::string& ratingTrainFilePath,
-            const std::string& ratingTestFilePath, const std::string& resultFilePath,
-            const std::string& configFilePath);
-    void Evaluate();
-private:
-    void ReadConfig();
-    void ReadTestRatingData();
-    void EvaluateRating();
-    void EvaluateRanking();
-    void WriteResult();
-private:
-    const std::string mModelFilePath;
-    const std::string mRatingTrainFilePath;
-    const std::string mRatingTestFilePath;
-    const std::string mResultFilePath;
-    const std::string mConfigFilePath;
-    Json::Value mConfig;
-    PopPredict* mPopPredict;
-    int mNumUser;
-    int mNumItem;
-    int mNumTestRating;
-    std::vector<RatingRecord> mTestRatings;
-    double mMAE;
-    double mRMSE;
-    double mPrecision;
-    double mRecall;
+    PopEvaluate(const std::string& ratingTrainFilepath, const std::string& configFilepath,
+            const std::string& modelFilepath, const std::string& ratingTestFilepath,
+            const std::string& resultFilepath);
+protected:
+    void CreatePredict() override;
 };
 
 } //~ namespace longan

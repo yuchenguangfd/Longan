@@ -7,36 +7,29 @@
 #ifndef RECSYS_POP_POP_PREDICT_H
 #define RECSYS_POP_POP_PREDICT_H
 
-#include "recsys/base/item_rating.h"
-#include "recsys/base/user_rating.h"
+#include "recsys/base/basic_predict.h"
+#include "recsys/base/rating_matrix_as_users.h"
 #include <string>
 #include <vector>
 
 namespace longan {
 
-typedef std::vector<int> RecommendedItemIdList;
-typedef std::vector<int> RecommendedUserIdList;
-
-class PopPredict {
+class PopPredict : public BasicPredict {
 public:
-    PopPredict(const std::string& ratingTrainFilePath, const std::string& modelFilePath);
-    void Init();
-    float PredictRating(int userId, int itemId);
-    RecommendedItemIdList PredictItemTopN(int userId, int listSize);
-    RecommendedUserIdList PredictUserTopN(int itemId, int listSize);
+    PopPredict(const std::string& ratingTrainFilepath, const std::string& configFilepath,
+            const std::string& modelFilepath);
+    virtual void Init() override;
+    virtual void Cleanup() override;
+    virtual float PredictRating(int userId, int itemId) const override;
+    virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
 private:
-    void SortItemAverage();
-    void SortUserAverage();
+    void LoadRatings();
+    void LoadModel();
+    void SortItemAverages();
 private:
-    const std::string mRatingTrainFilePath;
-    const std::string mModelFilePath;
-    bool mModelLoaded;
-    int mNumItem;
-    int mNumUser;
+    RatingMatrixAsUsers<> mRatingMatrix;
     std::vector<float> mItemAverages;
-    std::vector<float> mUserAverages;
-    std::vector<ItemRating> mSortAverageItems;
-    std::vector<UserRating> mSortAverageUsers;
+    std::vector<ItemRating> mSortedItemAverages;
 };
 
 } //~ namespace longan

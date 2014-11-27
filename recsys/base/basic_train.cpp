@@ -8,8 +8,8 @@
 
 namespace longan {
 
-BasicTrain::BasicTrain(const std::string& trainRatingFilepath, const std::string& configFilepath, const std::string& modelFilepath) :
-    mTrainRatingFilepath(trainRatingFilepath),
+BasicTrain::BasicTrain(const std::string& ratingTrainFilepath, const std::string& configFilepath, const std::string& modelFilepath) :
+    mRatingTrainFilepath(ratingTrainFilepath),
     mConfigFilepath(configFilepath),
     mModelFilepath(modelFilepath) { }
 

@@ -10,6 +10,7 @@
 #include "common/util/running_statistic.h"
 #include "common/util/random.h"
 #include "common/util/array_helper.h"
+#include "common/logging/logging.h"
 
 namespace longan {
 
@@ -20,6 +21,7 @@ RandomPredict::RandomPredict(const std::string& ratingTrainFilepath,
 RandomPredict::~RandomPredict() { }
 
 void RandomPredict::Init() {
+    Log::I("recsys", "RandomPredict::Init()");
     RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
     std::vector<RunningMax<float> > runUserMaxRatings(rlist.NumUser());
     std::vector<RunningMin<float> > runUserMinRatings(rlist.NumUser());
@@ -38,9 +40,7 @@ void RandomPredict::Init() {
     mRatingMatrix.Init(rlist);
 
     mRandomItemIds.resize(rlist.NumItem());
-    for (int i = 0; i < rlist.NumItem(); ++i) {
-        mRandomItemIds[i] = i;
-    }
+    ArrayHelper::FillRange(&mRandomItemIds[0], mRandomItemIds.size());
 }
 
 void RandomPredict::Cleanup() { }
@@ -76,7 +76,7 @@ ItemIdList RandomPredict::PredictTopNItem(int userId, int listSize) const {
             topNItem.push_back(-1);
         }
     }
-    return topNItem;
+    return std::move(topNItem);
 }
 
 } //~ namespace longan

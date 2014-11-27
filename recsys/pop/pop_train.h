@@ -7,31 +7,23 @@
 #ifndef RECSYS_POP_POP_TRAIN_H
 #define RECSYS_POP_POP_TRAIN_H
 
-#include "recsys/base/rating_record.h"
+#include "recsys/base/basic_train.h"
+#include "recsys/base/rating_list.h"
 #include "common/util/running_statistic.h"
 #include <string>
 
 namespace longan {
   
-class PopTrain {
+class PopTrain : public BasicTrain {
 public:
-    PopTrain(const std::string& ratingTrainFilePath, const std::string& modelFilePath);
-    void Train();
+    PopTrain(const std::string& ratingTrainFilepath, const std::string& configFilepath,
+            const std::string& modelFilepath);
+    virtual void Train() override;
 private:
-    void ReadRatingFile();
-    void InitRunningAverage();
-    void DestroyRunningAverage();
-    void AddToRunningAverage(const RatingRecord& rating);
-    void WriteModelFile();
+    void SaveModel();
 private:
-    const std::string mRatingTrainFilePath;
-    const std::string mModelFilePath;
-    int mNumRating;
-    int mNumUser;
-    int mNumItem;
-    typedef RunningAverage<float> RunningRatingAverage;
-    std::vector<RunningRatingAverage*> mItemsAverage;
-    std::vector<RunningRatingAverage*> mUsersAverage;
+    RatingList mRatingList;
+    std::vector<RunningAverage<float> > mItemsAverage;
 };
 
 } //~ namespace longan

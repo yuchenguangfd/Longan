@@ -13,11 +13,11 @@ namespace longan {
 
 class BasicTrain {
 public:
-    BasicTrain(const std::string& trainRatingFilepath, const std::string& configFilepath, const std::string& modelFilepath);
+    BasicTrain(const std::string& ratingTrainFilepath, const std::string& configFilepath, const std::string& modelFilepath);
     virtual ~BasicTrain();
     virtual void Train() = 0;
 protected:
-    const std::string mTrainRatingFilepath;
+    const std::string mRatingTrainFilepath;
     const std::string mConfigFilepath;
     const std::string mModelFilepath;
 };
