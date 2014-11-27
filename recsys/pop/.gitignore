@@ -5,3 +5,10 @@
 /pop_train_longan
 /pop_train_longan.o
 /pop_train.o
+/random_train_longan
+/random_train_longan.o
+/random_train.o
+/random_evaluate_longan
+/random_evaluate_longan.o
+/random_evaluate.o
+/random_predict.o
