@@ -46,6 +46,7 @@ protected:
     double mRMSE;
     double mPrecision;
     double mRecall;
+    double mF1Score;
     DISALLOW_COPY_AND_ASSIGN(BasicEvaluate);
 };
 

@@ -32,7 +32,8 @@ BasicEvaluate::BasicEvaluate(
     mMAE(0.0),
     mRMSE(0.0),
     mPrecision(0.0),
-    mRecall(0.0) { }
+    mRecall(0.0),
+    mF1Score(0.0) { }
 
 BasicEvaluate::~BasicEvaluate() { }
 
@@ -98,6 +99,7 @@ void BasicEvaluate::EvaluateRanking() {
     }
     mPrecision = raPrecision.CurrentAverage();
     mRecall = raRecall.CurrentAverage();
+    mF1Score = 2.0 * (mPrecision * mRecall)/(mPrecision + mRecall);
 }
 
 void BasicEvaluate::EvaluateRankingPerUser(int userId, int listSize,
@@ -124,12 +126,13 @@ void BasicEvaluate::WriteResult() {
     Log::I("recsys", "BasicEvaluate::WriteResult()");
     Json::Value result;
     if (mConfig["evaluateRating"].asBool()) {
-        result["MAE"] = mMAE;
-        result["RMSE"] = mRMSE;
+        result["ratingResult"]["MAE"] = mMAE;
+        result["ratingResult"]["RMSE"] = mRMSE;
     }
     if (mConfig["evaluateRanking"].asBool()) {
-        result["Precision"] = mPrecision;
-        result["Recall"] = mRecall;
+        result["rankingResult"]["Precision"] = mPrecision;
+        result["rankingResult"]["Recall"] = mRecall;
+        result["rankingResult"]["F1Score"] = mF1Score;
     }
     std::string output = result.toStyledString();
     Log::I("recsys", "result = \n" + output);

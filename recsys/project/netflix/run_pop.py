@@ -13,15 +13,15 @@ def run_command(cmd):
         
 def run_pop():
     run_command("../../pop/pop_train_longan "
-              + "-ratingTrainFilepath=./MovieLens/rating_train.txt "
+              + "-ratingTrainFilepath=./Netflix/rating_train.txt "
               + "-configFilepath=./pop_config.json "
               + "-modelFilepath=./pop_model.dat") 
         
     run_command("../../pop/pop_evaluate_longan " 
-              + "-ratingTrainFilepath=./MovieLens/rating_train.txt "
+              + "-ratingTrainFilepath=./Netflix/rating_train.txt "
               + "-configFilepath=./pop_config.json "
               + "-modelFilepath=./pop_model.dat "
-              + "-ratingTestFilepath=./MovieLens/rating_test.txt " 
+              + "-ratingTestFilepath=./Netflix/rating_test.txt " 
               + "-resultFilepath=./pop_result.json")
 
 if __name__=="__main__":
