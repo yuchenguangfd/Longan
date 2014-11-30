@@ -1,4 +1,10 @@
 /MovieLens/
-/movielens_preparation_longan
-/movielens_preparation_longan.o
-/movielens_preparation.o
+/random_result.json
+/pop_model.dat
+/pop_result.txt
+/user_based_model.dat
+/user_based_result.json
+/pop_result.json
+/movielens_prepare_longan
+/movielens_prepare_longan.o
+/movielens_prepare.o

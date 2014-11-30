@@ -11,7 +11,7 @@
 using namespace longan;
 using namespace std;
 
-TEST(StringHelperTest, Split) {
+TEST(StringHelperTest, SplitOK) {
     vector<string> substrings = StringHelper::Split("a b cd efg", " ");
     EXPECT_EQ(substrings.size(), 4);
     EXPECT_EQ(substrings[0], "a");
@@ -48,6 +48,13 @@ TEST(StringHelperTest, Split) {
     EXPECT_EQ(substrings.size(), 5);
     for (int i = 0; i < substrings.size(); ++i)
         EXPECT_EQ(substrings[i], "");
+}
+
+TEST(StringHelperTest, ToStringOk) {
+    string str;
+    int i = 12345;
+    ASSERT_NO_THROW(str = StringHelper::ToString(i));
+    EXPECT_EQ("12345", str);
 }
 
 TEST(StringHelperTest, CountWhitespace) {

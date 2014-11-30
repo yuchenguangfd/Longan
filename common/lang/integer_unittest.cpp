@@ -21,9 +21,11 @@ TEST(IntegerTest, ParseIntOK) {
 }
 
 TEST(IntegerTest, ToStringOK) {
+    int i0 = 0;
     int i1 = 1234;
     int i2 = -4321;
     int i3 = +2147483647;
+    EXPECT_EQ("0", Integer::ToString(i0));
     EXPECT_EQ("1234", Integer::ToString(i1));
     EXPECT_EQ("-4321", Integer::ToString(i2));
     EXPECT_EQ("2147483647", Integer::ToString(i3));

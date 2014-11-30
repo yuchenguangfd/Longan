@@ -1,17 +1,16 @@
 /*
- * netflix_preparation.cpp
+ * netflix_prepare.cpp
  * Created on: Aug 5, 2014
  * Author: chenguangyu
  */
 
-#include "netflix_preparation.h"
+#include "netflix_prepare.h"
+#include "common/logging/logging.h"
+#include "common/system/file_lister.h"
 #include "common/util/string_helper.h"
 #include "common/lang/integer.h"
-#include "common/system/file_lister.h"
 #include "common/error.h"
-#include "common/logging/logging_helper.h"
 #include "algorithm/sort/quick_sort_mt.h"
-#include <glog/logging.h>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -20,27 +19,27 @@
 
 namespace longan {
 
-NetflixPreparation::NetflixPreparation(const std::string& inputPath, const std::string& outputPath) :
-    mInputPath(inputPath), mOutputPath(outputPath),
+NetflixPrepare::NetflixPrepare(const std::string& inputDirpath, const std::string& outputDirpath) :
+    mInputDirpath(inputDirpath), mOutputDirpath(outputDirpath),
     mNumUser(0), mNumItem(0), mNumRating(0),
     mNumTestRatings(0) { }
 
-void NetflixPreparation::PrepareDataset() {
-    LOG_FUNC;
+void NetflixPrepare::Prepare() {
+    Log::I("recsys", "NetflixPrepare::Prepare()");
     ReadItemInfo();
     ReadAllRating();
     GenerateUserIdMapping();
     GenerateItemIdMapping();
     GenerateMovieData();
     GenerateRatingData();
-    FreeRatings();
+    Cleanup();
 }
 
-void NetflixPreparation::ReadItemInfo() {
-    LOG_FUNC;
+void NetflixPrepare::ReadItemInfo() {
+    Log::I("recsys", "NetflixPrepare::ReadItemInfo()");
     using namespace std;
     ifstream fin;
-    string itemInfoFile = mInputPath + "/movie_titles.txt";
+    string itemInfoFile = mInputDirpath + "/movie_titles.txt";
     fin.open(itemInfoFile.c_str());
     assert(!fin.fail());
 
@@ -61,20 +60,21 @@ void NetflixPreparation::ReadItemInfo() {
     });
 }
 
-void NetflixPreparation::ReadAllRating() {
-    LOG_FUNC;
+void NetflixPrepare::ReadAllRating() {
+    Log::I("recsys", "NetflixPrepare::ReadAllRating()");
     using namespace std;
-    string ratingDir = mInputPath + "/training_set";
+    using namespace StringHelper;
+    string ratingDir = mInputDirpath + "/training_set";
     FileLister lister(ratingDir);
     vector<string> ratingFiles = lister.ListFilename();
     mRatings.clear();
     for (int i = 0; i < ratingFiles.size(); ++i) {
-        LOG_IF(INFO, i % 1000 == 0) << "loading rating data file " << i << "/" << ratingFiles.size();
+        if (i % 1000 == 0) Log::I("recsys", "loading rating data file " + ToString(i) + "/" + ToString(ratingFiles.size()));
         ReadRatingFile(ratingFiles[i]);
     }
     mNumRating = mRatings.size();
-    LOG(INFO) << "#rating = " << mRatings.size();
-    LOG(INFO) << "sorting all ratings by timestamp...";
+    Log::I("recsys", "num rating = " + ToString(mRatings.size()));
+    Log::I("recsys", "sorting all ratings by timestamp...");
     QuickSortMT sort;
     sort(&mRatings[0], mRatings.size(),
          [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs)->int {
@@ -82,10 +82,10 @@ void NetflixPreparation::ReadAllRating() {
     });
 }
 
-void NetflixPreparation::ReadRatingFile(const std::string& filename) {
+void NetflixPrepare::ReadRatingFile(const std::string& filename) {
     using namespace std;
     int itemId = GetItemIdFromFileName(filename);
-    string ratingFile = mInputPath + "/training_set/" + filename;
+    string ratingFile = mInputDirpath + "/training_set/" + filename;
     ifstream fin;
     fin.open(ratingFile.c_str());
     assert(!fin.fail());
@@ -103,8 +103,22 @@ void NetflixPreparation::ReadRatingFile(const std::string& filename) {
     }
 }
 
-void NetflixPreparation::GenerateUserIdMapping() {
-    LOG_FUNC;
+int NetflixPrepare::GetItemIdFromFileName(const std::string& filename) {
+    auto begPos = filename.find('_') + 1;
+    auto endPos = filename.find('.');
+    assert(begPos != std::string::npos);
+    assert(endPos != std::string::npos);
+    assert(begPos < endPos);
+    return Integer::ParseInt(filename.substr(begPos, endPos - begPos));
+}
+
+int NetflixPrepare::GetTimestampFromDate(const std::string& date) {
+    // date has the format YYYY-MM-DD.
+    return Integer::ParseInt(date.substr(0, 4) + date.substr(5, 2) + date.substr(8, 2));
+}
+
+void NetflixPrepare::GenerateUserIdMapping() {
+    Log::I("recsys", "NetflixPrepare::GenerateUserIdMapping()");
     using namespace std;
     mUserIdMap.clear();
     int userCount = 0;
@@ -116,7 +130,7 @@ void NetflixPreparation::GenerateUserIdMapping() {
     }
     mNumUser = userCount;
 
-    string filename = mOutputPath + "/user_id_mapping.txt";
+    string filename = mOutputDirpath + "/user_id_mapping.txt";
     ofstream fout;
     fout.open(filename.c_str());
     assert(!fout.fail());
@@ -126,8 +140,8 @@ void NetflixPreparation::GenerateUserIdMapping() {
     }
 }
 
-void NetflixPreparation::GenerateItemIdMapping() {
-    LOG_FUNC;
+void NetflixPrepare::GenerateItemIdMapping() {
+    Log::I("recsys", "NetflixPrepare::GenerateItemIdMapping()");
     using namespace std;
     mItemIdMap.clear();
     int itemCount = 0;
@@ -139,7 +153,7 @@ void NetflixPreparation::GenerateItemIdMapping() {
     }
     mNumItem = itemCount;
 
-    string filename = mOutputPath + "/item_id_mapping.txt";
+    string filename = mOutputDirpath + "/item_id_mapping.txt";
     ofstream fout;
     fout.open(filename.c_str());
     assert(!fout.fail());
@@ -149,10 +163,10 @@ void NetflixPreparation::GenerateItemIdMapping() {
     }
 }
 
-void NetflixPreparation::GenerateMovieData() {
-    LOG_FUNC;
+void NetflixPrepare::GenerateMovieData() {
+    Log::I("recsys", "NetflixPrepare::GenerateMovieData()");
     using namespace std;
-    string filename = mOutputPath + "/movie.txt";
+    string filename = mOutputDirpath + "/movie.txt";
     ofstream fout(filename.c_str());
     assert(!fout.fail());
     int countValidMovie = 0;
@@ -171,18 +185,18 @@ void NetflixPreparation::GenerateMovieData() {
     }
 }
 
-void NetflixPreparation::GenerateRatingData() {
-    LOG_FUNC;
+void NetflixPrepare::GenerateRatingData() {
+    Log::I("recsys", "NetflixPrepare::GenerateRatingData()");
     ReadTestRating();
     SetTrainOrTestFlag();
     GenerateTrainRatings();
     GenerateTestRatings();
 }
 
-void NetflixPreparation::ReadTestRating() {
-    LOG_FUNC;
+void NetflixPrepare::ReadTestRating() {
+    Log::I("recsys", "NetflixPrepare::ReadTestRating()");
     using namespace std;
-    string filename = mInputPath + "/probe.txt";
+    string filename = mInputDirpath + "/probe.txt";
     ifstream fin(filename.c_str());
     assert(!fin.fail());
 
@@ -205,13 +219,12 @@ void NetflixPreparation::ReadTestRating() {
     }
 }
 
-void NetflixPreparation::SetTrainOrTestFlag() {
-    LOG_FUNC;
+void NetflixPrepare::SetTrainOrTestFlag() {
+    Log::I("recsys", "NetflixPrepare::SetTrainOrTestFlag()");
     using namespace std;
     mIsTestRatingFlags.resize(mRatings.size());
     mNumTestRatings = 0;
     for (int i = 0; i < mRatings.size(); ++i) {
-        LOG_IF(INFO, i % 10000000 == 0) << "process" << i << "/" << mRatings.size();
         RatingRecordWithTime& rating = *mRatings[i];
         UserItemPair pair;
         pair.userId = rating.UserId();
@@ -221,10 +234,10 @@ void NetflixPreparation::SetTrainOrTestFlag() {
     }
 }
 
-void NetflixPreparation::GenerateTrainRatings() {
-    LOG_FUNC;
+void NetflixPrepare::GenerateTrainRatings() {
+    Log::I("recsys", "NetflixPrepare::GenerateTrainRatings()");
     using namespace std;
-    string filename = mOutputPath + "/rating_train.txt";
+    string filename = mOutputDirpath + "/rating_train.txt";
     ofstream fout(filename.c_str());
     assert(!fout.fail());
     int numTrainRatings = mNumRating - mNumTestRatings;
@@ -232,7 +245,6 @@ void NetflixPreparation::GenerateTrainRatings() {
          << mNumUser << ","
          << mNumItem << endl;
     for (int i = 0; i < mRatings.size(); ++i) {
-        LOG_IF(INFO, i % 10000000 == 0) << "process" << i << "/" << mRatings.size();
         if (mIsTestRatingFlags[i]) continue;
         RatingRecordWithTime& rating = *mRatings[i];
         fout << mUserIdMap[rating.UserId()] << ","
@@ -241,17 +253,16 @@ void NetflixPreparation::GenerateTrainRatings() {
     }
 }
 
-void NetflixPreparation::GenerateTestRatings() {
-    LOG_FUNC;
+void NetflixPrepare::GenerateTestRatings() {
+    Log::I("recsys", "NetflixPrepare::GenerateTestRatings()");
     using namespace std;
-    string filename = mOutputPath + "/rating_test.txt";
+    string filename = mOutputDirpath + "/rating_test.txt";
     ofstream fout(filename.c_str());
     assert(!fout.fail());
     fout << mNumTestRatings << ","
          << mNumUser << ","
          << mNumItem << endl;;
     for (int i = 0; i < mRatings.size(); ++i) {
-        LOG_IF(INFO, i % 10000000 == 0) << "process" << i << "/" << mRatings.size();
         if (!mIsTestRatingFlags[i]) continue;
         RatingRecordWithTime& rating = *mRatings[i];
         fout << mUserIdMap[rating.UserId()] << ","
@@ -260,25 +271,10 @@ void NetflixPreparation::GenerateTestRatings() {
     }
 }
 
-void NetflixPreparation::FreeRatings() {
-    LOG_FUNC;
+void NetflixPrepare::Cleanup() {
     for (RatingRecordWithTime* pRating : mRatings) {
         delete pRating;
     }
-}
-
-int NetflixPreparation::GetItemIdFromFileName(const std::string& filename) {
-    auto begPos = filename.find('_') + 1;
-    auto endPos = filename.find('.');
-    assert(begPos != std::string::npos);
-    assert(endPos != std::string::npos);
-    assert(begPos < endPos);
-    return Integer::ParseInt(filename.substr(begPos, endPos - begPos));
-}
-
-int NetflixPreparation::GetTimestampFromDate(const std::string& date) {
-    // date has the format YYYY-MM-DD.
-    return Integer::ParseInt(date.substr(0, 4) + date.substr(5, 2) + date.substr(8, 2));
 }
 
 } //~ namespace longan

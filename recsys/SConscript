@@ -11,6 +11,7 @@ env_recsys.Prepend(LIBS = "json")
 env_recsys.Prepend(CPPPATH = "#/external/glog/include")
 env_recsys.Prepend(LIBPATH = "#/external/glog")
 env_recsys.Prepend(LIBS = "glog")
+env_recsys.Prepend(LINKFLAGS = "-pthread")
 
 env_recsys.Prepend(LIBPATH = ["#/recsys"])
 env_recsys.Prepend(LIBS=["librecsys.a"])

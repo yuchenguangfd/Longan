@@ -5,6 +5,7 @@
 
 #include "string_helper.h"
 #include "common/lang/character.h"
+#include "common/lang/integer.h"
 
 namespace longan {
 
@@ -28,6 +29,10 @@ std::vector<std::string> StringHelper::Split(const std::string& src, const std::
         subStrings.push_back(last_one);
     }
     return subStrings;
+}
+
+std::string StringHelper::ToString(int i) {
+    return Integer::ToString(i);
 }
 
 int StringHelper::CountWhitespace(const std::string& str) {

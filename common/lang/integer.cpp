@@ -25,6 +25,7 @@ int Integer::ParseInt(const std::string &s) {
 }
 
 std::string Integer::ToString(int num) {
+    if (num == 0) return "0";
     int sign = num;
     if (sign < 0) num = -num;
     char buff[16];

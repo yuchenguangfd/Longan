@@ -18,14 +18,17 @@ public:
         LOG(INFO) << '[' << tag << ']'
                   << msg;
     }
+
     inline static void W(const std::string& tag, const std::string& msg) {
         LOG(WARNING) << '[' << tag << ']'
                      << msg;
     }
+
     inline static void E(const std::string& tag, const std::string& msg) {
         LOG(ERROR) << '[' << tag << ']'
                    << msg;
     }
+
 };
 
 } //~ namespace longan

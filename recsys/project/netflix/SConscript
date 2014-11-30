@@ -16,5 +16,5 @@ build_env.Append(CPPPATH = "#/external/boost/include")
 build_env.Append(LIBPATH = "#/external/boost/lib")
 build_env.Append(LIBS = ["boost_system", "boost_filesystem"])
 
-build_env.Program("netflix_preparation_longan", 
-                  ["netflix_preparation_longan.cpp", "netflix_preparation.cpp"]);
+build_env.Program("netflix_prepare_longan", 
+                  ["netflix_prepare_longan.cpp", "netflix_prepare.cpp"]);
