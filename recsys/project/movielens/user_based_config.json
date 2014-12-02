@@ -1,0 +1,7 @@
+{
+	"similarityType": "correlation",
+	"modelType": "fixedNeighborSize",
+	"neighborSize": 800,
+	"modelComputation": "dynamicScheduled",
+	"evaluateRating": true
+}

@@ -8,3 +8,5 @@
 /movielens_prepare_longan
 /movielens_prepare_longan.o
 /movielens_prepare.o
+/item_based_model.dat
+/item_based_result.json

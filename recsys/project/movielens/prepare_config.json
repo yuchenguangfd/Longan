@@ -1,4 +1,4 @@
 {
-	"datasetType": "10m",
+	"datasetType": "1m",
 	"trainRatio": 0.9
 }

@@ -48,6 +48,7 @@ protected:
     void DoGeneratePairWork();
     void DoComputeSimilarityWork();
     void DoUpdateModelWork();
+    void DoMonitorProgress();
 protected:
     struct Task {
         int firstItemId;
@@ -93,6 +94,7 @@ protected:
     RatingMatrixAsItems<> *mRatingMatrix;
     ModelTrain *mModel;
     Scheduler *mScheduler;
+    double mProgress;
 };
 
 } //~ namespace item_based

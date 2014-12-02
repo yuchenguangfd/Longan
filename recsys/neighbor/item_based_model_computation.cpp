@@ -5,8 +5,11 @@
  */
 
 #include "item_based_model_computation.h"
+#include "common/lang/types.h"
 #include "common/lang/double.h"
 #include "common/system/system_info.h"
+#include "common/util/string_helper.h"
+#include "common/logging/logging.h"
 #include "common/error.h"
 #include <thread>
 #include <vector>
@@ -189,6 +192,7 @@ void DynamicScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *ratin
     for (int i = 0; i < mScheduler->NumUpdateModelWorker(); ++i) {
         workers.push_back(std::thread(&DynamicScheduledModelComputation::DoUpdateModelWork, this));
     }
+    workers.push_back(std::thread(&DynamicScheduledModelComputation::DoMonitorProgress, this));
     for (std::thread& t : workers) {
         t.join();
     }
@@ -229,6 +233,8 @@ void DynamicScheduledModelComputation::DoComputeSimilarityWork() {
 }
 
 void DynamicScheduledModelComputation::DoUpdateModelWork() {
+    int64 totoalTask = static_cast<int64>(mRatingMatrix->NumItem())*mRatingMatrix->NumItem()/2;
+    int64 processedTask = 0;
     while (true) {
         TaskBundle *currentBundle = mScheduler->GetUpdateModelWork();
         if (currentBundle == nullptr) break;
@@ -236,9 +242,19 @@ void DynamicScheduledModelComputation::DoUpdateModelWork() {
             Task& task = currentBundle->at(i);
             mModel->AddPairSimilarity(task.firstItemId, task.secondItemId, task.similarity);
         }
+        processedTask += currentBundle->size();
+        mProgress = static_cast<double>(processedTask)/totoalTask;
         delete currentBundle;
     }
     mScheduler->UpdateModelDone();
+}
+
+void DynamicScheduledModelComputation::DoMonitorProgress() {
+    while (true) {
+        ConsoleLog::I("recsys", "Computing Model..." + StringHelper::ToString((int)(mProgress*100)) + "% done.");
+        if (mProgress > 0.99) break;
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+    }
 }
 
 } //~ namespace item_based

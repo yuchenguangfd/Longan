@@ -2,3 +2,6 @@
 /netflix_prepare_longan
 /netflix_prepare_longan.o
 /netflix_prepare.o
+/pop_model.dat
+/pop_result.json
+/random_result.json

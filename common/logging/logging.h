@@ -9,6 +9,7 @@
 
 #include <glog/logging.h>
 #include <string>
+#include <cstdio>
 
 namespace longan {
 
@@ -29,6 +30,13 @@ public:
                    << msg;
     }
 
+};
+
+class ConsoleLog {
+public:
+    inline static void I(const std::string& tag, const std::string& msg) {
+        fprintf(stderr, "[%s]%s\n", tag.c_str(), msg.c_str());
+    }
 };
 
 } //~ namespace longan

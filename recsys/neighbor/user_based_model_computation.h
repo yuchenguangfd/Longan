@@ -48,6 +48,7 @@ protected:
     void DoGeneratePairWork();
     void DoComputeSimilarityWork();
     void DoUpdateModelWork();
+    void DoMonitorProgress();
 protected:
     struct Task {
         int firstUserId;
@@ -93,6 +94,7 @@ protected:
     RatingMatrixAsUsers<> *mRatingMatrix;
     ModelTrain *mModel;
     Scheduler *mScheduler;
+    double mProgress;
 };
 
 } //~ namespace user_based
