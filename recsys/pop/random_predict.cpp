@@ -14,12 +14,6 @@
 
 namespace longan {
 
-RandomPredict::RandomPredict(const std::string& ratingTrainFilepath,
-        const std::string& configFilepath, const std::string& modelFilepath) :
-    BasicPredict(ratingTrainFilepath, configFilepath, modelFilepath) { }
-
-RandomPredict::~RandomPredict() { }
-
 void RandomPredict::Init() {
     Log::I("recsys", "RandomPredict::Init()");
     RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);

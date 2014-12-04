@@ -9,6 +9,7 @@
 
 #include "item_based_model.h"
 #include "item_based_model_computation.h"
+#include "recsys/base/basic_train.h"
 #include "recsys/base/rating_matrix_as_items.h"
 #include "recsys/base/rating_trait.h"
 #include "common/lang/defines.h"
@@ -17,14 +18,11 @@
 
 namespace longan {
 
-class ItemBasedTrain {
+class ItemBasedTrain : public BasicTrain {
 public:
-    ItemBasedTrain(const std::string& trainRatingFilepath, const std::string& configFilepath,
-            const std::string& modelFilepath);
-    ~ItemBasedTrain();
-    void Train();
+    using BasicTrain::BasicTrain;
+    virtual void Train() override;
 protected:
-    void LoadConfig();
     void LoadRatings();
     void AdjustRating();
     void AdjustRatingByMinusItemAverage();
@@ -34,15 +32,10 @@ protected:
     void SaveModel();
     void Cleanup();
 protected:
-    std::string mTrainRatingFilepath;
-    std::string mConfigFilepath;
-    std::string mModelFilepath;
-    Json::Value mConfig;
-    RatingMatrixAsItems<> *mRatingMatrix;
-    RatingTrait *mRatingTrait;
-    item_based::ModelTrain *mModel;
-    item_based::ModelComputation *mModelComputationDelegate;
-    DISALLOW_COPY_AND_ASSIGN(ItemBasedTrain);
+    RatingMatrixAsItems<> *mRatingMatrix = nullptr;
+    RatingTrait *mRatingTrait = nullptr;
+    item_based::ModelTrain *mModel = nullptr;
+    item_based::ModelComputation *mModelComputationDelegate = nullptr;
 };
 
 } //~ namespace longan

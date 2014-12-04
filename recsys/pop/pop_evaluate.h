@@ -13,11 +13,9 @@ namespace longan {
 
 class PopEvaluate : public BasicEvaluate {
 public:
-    PopEvaluate(const std::string& ratingTrainFilepath, const std::string& configFilepath,
-            const std::string& modelFilepath, const std::string& ratingTestFilepath,
-            const std::string& resultFilepath);
+    using BasicEvaluate::BasicEvaluate;
 protected:
-    void CreatePredict() override;
+    virtual void CreatePredict() override;
 };
 
 } //~ namespace longan

@@ -7,7 +7,6 @@
 #include "user_based_predict.h"
 #include "recsys/base/rating_list_loader.h"
 #include "common/logging/logging.h"
-#include "common/system/file_util.h"
 #include "common/base/algorithm.h"
 #include "common/math/math.h"
 #include "common/lang/double.h"
@@ -15,16 +14,6 @@
 #include <cassert>
 
 namespace longan {
-
-UserBasedPredict::UserBasedPredict(const std::string& trainRatingFilepath, const std::string& configFilepath,
-        const std::string& modelFilepath) :
-    mTrainRatingFilepath(trainRatingFilepath),
-    mConfigFilepath(configFilepath),
-    mModelFilepath(modelFilepath),
-    mRatingMatrix(nullptr),
-    mModel(nullptr) { }
-
-UserBasedPredict::~UserBasedPredict() { }
 
 void UserBasedPredict::Init() {
     LoadConfig();
@@ -37,20 +26,10 @@ void UserBasedPredict::Cleanup() {
     delete mRatingMatrix;
 }
 
-void UserBasedPredict::LoadConfig() {
-    Log::I("recsys", "UserBasedPredict::LoadConfig()");
-    Log::I("recsys", "config file = " + mConfigFilepath);
-    std::string content = FileUtil::LoadFileContent(mConfigFilepath);
-    Json::Reader reader;
-    if (!reader.parse(content, mConfig)) {
-        throw LonganFileFormatError();
-    }
-}
-
 void UserBasedPredict::LoadRatings() {
     Log::I("recsys", "UserBasedPredict::LoadRatings()");
-    Log::I("recsys", "rating file = " + mTrainRatingFilepath);
-    RatingList rlist = RatingListLoader::Load(mTrainRatingFilepath);
+    Log::I("recsys", "rating file = " + mRatingTrainFilepath);
+    RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
     Log::I("recsys", "create rating matrix");
     mRatingMatrix = new RatingMatrixAsItems<>();
     mRatingMatrix->Init(rlist);
@@ -63,7 +42,7 @@ void UserBasedPredict::LoadModel() {
     mModel->Load(mModelFilepath);
 }
 
-float UserBasedPredict::PredictRating(int userId, int itemId) {
+float UserBasedPredict::PredictRating(int userId, int itemId) const {
     assert(userId >= 0 && userId < mRatingMatrix->NumUser());
     assert(itemId >= 0 && itemId < mRatingMatrix->NumItem());
     const auto& iv = mRatingMatrix->GetItemVector(itemId);
@@ -102,6 +81,10 @@ float UserBasedPredict::PredictRating(int userId, int itemId) {
     }
     double predictedRating = numerator / (denominator + Double::EPS);
     return (float)predictedRating;
+}
+
+ItemIdList UserBasedPredict::PredictTopNItem(int userId, int listSize) const {
+    return ItemIdList(listSize);
 }
 
 } //~ namespace longan

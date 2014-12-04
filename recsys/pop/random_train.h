@@ -13,9 +13,7 @@ namespace longan {
 
 class RandomTrain : public BasicTrain {
 public:
-    RandomTrain(const std::string& trainRatingFilepath, const std::string& configFilepath,
-            const std::string& modelFilepath);
-    ~RandomTrain();
+    using BasicTrain::BasicTrain;
     virtual void Train() override;
 };
 

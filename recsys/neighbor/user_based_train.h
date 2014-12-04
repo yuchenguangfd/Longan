@@ -9,22 +9,17 @@
 
 #include "user_based_model.h"
 #include "user_based_model_computation.h"
+#include "recsys/base/basic_train.h"
 #include "recsys/base/rating_matrix_as_users.h"
 #include "recsys/base/rating_trait.h"
-#include "common/lang/defines.h"
-#include <json/json.h>
-#include <string>
 
 namespace longan {
 
-class UserBasedTrain {
+class UserBasedTrain : public BasicTrain {
 public:
-    UserBasedTrain(const std::string& trainRatingFilepath, const std::string& configFilepath,
-            const std::string& modelFilepath);
-    ~UserBasedTrain();
-    void Train();
+    using BasicTrain::BasicTrain;
+    virtual void Train() override;
 protected:
-    void LoadConfig();
     void LoadRatings();
     void AdjustRating();
     void AdjustRatingByMinusUserAverage();
@@ -34,15 +29,10 @@ protected:
     void SaveModel();
     void Cleanup();
 protected:
-    std::string mTrainRatingFilepath;
-    std::string mConfigFilepath;
-    std::string mModelFilepath;
-    Json::Value mConfig;
-    RatingMatrixAsUsers<> *mRatingMatrix;
-    RatingTrait *mRatingTrait;
-    user_based::ModelTrain *mModel;
-    user_based::ModelComputation *mModelComputationDelegate;
-    DISALLOW_COPY_AND_ASSIGN(UserBasedTrain);
+    RatingMatrixAsUsers<> *mRatingMatrix = nullptr;
+    RatingTrait *mRatingTrait = nullptr;
+    user_based::ModelTrain *mModel = nullptr;
+    user_based::ModelComputation *mModelComputationDelegate = nullptr;
 };
 
 } //~ namespace longan

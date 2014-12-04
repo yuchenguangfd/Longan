@@ -14,9 +14,7 @@ namespace longan {
 
 class RandomPredict : public BasicPredict {
 public:
-    RandomPredict(const std::string& ratingTrainFilepath, const std::string& configFilepath,
-            const std::string& modelFilepath);
-    ~RandomPredict();
+    using BasicPredict::BasicPredict;
     virtual void Init() override;
     virtual void Cleanup() override;
     virtual float PredictRating(int userId, int itemId) const override;

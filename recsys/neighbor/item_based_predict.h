@@ -8,6 +8,7 @@
 #define RECSYS_NEIGHBOR_ITEM_BASED_PREDICT_H
 
 #include "item_based_model.h"
+#include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_matrix_as_users.h"
 #include "common/lang/defines.h"
 #include <json/json.h>
@@ -15,28 +16,19 @@
 
 namespace longan {
 
-typedef std::vector<int> RecommendedItemIdList;
-
-class ItemBasedPredict {
+class ItemBasedPredict : public BasicPredict {
 public:
-	ItemBasedPredict(const std::string& trainRatingFilepath, const std::string& configFilepath, const std::string& modelFilepath);
-    ~ItemBasedPredict();
-	void Init();
-	void Cleanup();
-    float PredictRating(int userId, int itemId);
-    RecommendedItemIdList PredictTopNItem(int userId, int listSize);
+    using BasicPredict::BasicPredict;
+	virtual void Init() override;
+	virtual void Cleanup() override;
+    virtual float PredictRating(int userId, int itemId) const override;
+    virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
 protected:
-    void LoadConfig();
     void LoadRatings();
     void LoadModel();
 protected:
-    std::string mTrainRatingFilepath;
-    std::string mConfigFilepath;
-    std::string mModelFilepath;
-    Json::Value mConfig;
     RatingMatrixAsUsers<> *mRatingMatrix;
     item_based::ModelPredict *mModel;
-    DISALLOW_COPY_AND_ASSIGN(ItemBasedPredict);
 };
 
 } //~ namespace longan

@@ -7,6 +7,8 @@
 #ifndef RECSYS_BASE_BASIC_TRAIN_H
 #define RECSYS_BASE_BASIC_TRAIN_H
 
+#include "common/lang/defines.h"
+#include <json/json.h>
 #include <string>
 
 namespace longan {
@@ -17,9 +19,13 @@ public:
     virtual ~BasicTrain();
     virtual void Train() = 0;
 protected:
+    virtual void LoadConfig() final;
+protected:
     const std::string mRatingTrainFilepath;
     const std::string mConfigFilepath;
     const std::string mModelFilepath;
+    Json::Value mConfig;
+    DISALLOW_COPY_AND_ASSIGN(BasicTrain);
 };
 
 } //~ namespace longan

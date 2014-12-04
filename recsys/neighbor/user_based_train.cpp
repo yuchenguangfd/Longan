@@ -12,18 +12,6 @@
 
 namespace longan {
 
-UserBasedTrain::UserBasedTrain(const std::string& trainRatingFilepath,
-        const std::string& configFilepath, const std::string& modelFilepath) :
-    mTrainRatingFilepath(trainRatingFilepath),
-    mConfigFilepath(configFilepath),
-    mModelFilepath(modelFilepath),
-    mRatingMatrix(nullptr),
-    mRatingTrait(nullptr),
-    mModel(nullptr),
-    mModelComputationDelegate(nullptr) { }
-
-UserBasedTrain::~UserBasedTrain() { }
-
 void UserBasedTrain::Train() {
     LoadConfig();
     LoadRatings();
@@ -34,20 +22,10 @@ void UserBasedTrain::Train() {
     Cleanup();
 }
 
-void UserBasedTrain::LoadConfig() {
-    Log::I("recsys", "UserBasedTrain::LoadConfig()");
-    Log::I("recsys", "config file = " + mConfigFilepath);
-    std::string content = FileUtil::LoadFileContent(mConfigFilepath);
-    Json::Reader reader;
-    if (!reader.parse(content, mConfig)) {
-        throw LonganFileFormatError();
-    }
-}
-
 void UserBasedTrain::LoadRatings() {
-    Log::I("recsys", "LoadRatings()");
-    Log::I("recsys", "rating file = " + mTrainRatingFilepath);
-    RatingList rlist = RatingListLoader::Load(mTrainRatingFilepath);
+    Log::I("recsys", "UserBasedTrain::LoadRatings()");
+    Log::I("recsys", "rating file = " + mRatingTrainFilepath);
+    RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
     Log::I("recsys", "create rating matrix");
     mRatingMatrix = new RatingMatrixAsUsers<>();
     mRatingMatrix->Init(rlist);
@@ -65,7 +43,7 @@ void UserBasedTrain::AdjustRating() {
 }
 
 void UserBasedTrain::AdjustRatingByMinusItemAverage() {
-    Log::I("recsys", "AdjustRatingByMinusItemAverage()");
+    Log::I("recsys", "UserBasedTrain::AdjustRatingByMinusItemAverage()");
     for (int uid = 0; uid < mRatingMatrix->NumUser(); ++uid) {
         auto& uvec = mRatingMatrix->GetUserVector(uid);
         for (int i = 0; i < uvec.Size(); ++i) {
@@ -77,7 +55,7 @@ void UserBasedTrain::AdjustRatingByMinusItemAverage() {
 }
 
 void UserBasedTrain::AdjustRatingByMinusUserAverage() {
-    Log::I("recsys", "AdjustRatingByMinusUserAverage()");
+    Log::I("recsys", "UserBasedTrain::AdjustRatingByMinusUserAverage()");
     for (int uid = 0; uid < mRatingMatrix->NumUser(); ++uid) {
         auto& uvec = mRatingMatrix->GetUserVector(uid);
         float uavg = mRatingTrait->UserAverage(uid);
@@ -89,20 +67,20 @@ void UserBasedTrain::AdjustRatingByMinusUserAverage() {
 }
 
 void UserBasedTrain::InitModel() {
-    Log::I("recsys", "InitModel()");
+    Log::I("recsys", "UserBasedTrain::InitModel()");
     if (mConfig["modelType"].asString() == "fixedNeighborSize") {
         int neighborSize = mConfig["neighborSize"].asInt();
         mModel = new user_based::FixedNeighborSizeModel(mRatingMatrix->NumUser(), neighborSize);
     } else if (mConfig["modelType"].asString() == "fixedSimilarityThreshold") {
         float threshold = (float)mConfig["similarityThreshold"].asDouble();
-     mModel = new user_based::FixedSimilarityThresholdModel(mRatingMatrix->NumUser(), threshold);
+        mModel = new user_based::FixedSimilarityThresholdModel(mRatingMatrix->NumUser(), threshold);
     } else {
         throw LonganConfigError("No Such modelType");
     }
 }
 
 void UserBasedTrain::ComputeModel() {
-    Log::I("recsys", "ComputeModel()");
+    Log::I("recsys", "UserBasedTrain::ComputeModel()");
       if (mConfig["modelComputation"].asString() == "simple") {
           mModelComputationDelegate = new user_based::SimpleModelComputation();
       } else if (mConfig["modelComputation"].asString() == "staticScheduled") {
@@ -116,11 +94,12 @@ void UserBasedTrain::ComputeModel() {
 }
 
 void UserBasedTrain::SaveModel() {
-    Log::I("recsys", "SaveModel");
+    Log::I("recsys", "UserBasedTrain::SaveModel()");
     mModel->Save(mModelFilepath);
 }
 
 void UserBasedTrain::Cleanup() {
+    Log::I("recsys", "UserBasedTrain::Cleanup()");
     delete mModelComputationDelegate;
     delete mModel;
     delete mRatingTrait;

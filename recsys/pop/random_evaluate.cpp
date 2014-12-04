@@ -10,15 +10,6 @@
 
 namespace longan {
 
-RandomEvaluate::RandomEvaluate(const std::string& ratingTrainFilepath,
-    const std::string& configFilepath, const std::string& modelFilepath,
-    const std::string& ratingTestFilepath, const std::string& resultFilepath) :
-    BasicEvaluate(ratingTrainFilepath, configFilepath, modelFilepath,
-            ratingTestFilepath, resultFilepath) {
-}
-
-RandomEvaluate::~RandomEvaluate() { }
-
 void RandomEvaluate::CreatePredict() {
     Log::I("recsys", "RandomEvaluate::CreatePredict()");
     mPredict = new RandomPredict(mRatingTrainFilepath, mConfigFilepath, mModelFilepath);

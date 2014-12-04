@@ -16,8 +16,7 @@ namespace longan {
 
 class PopPredict : public BasicPredict {
 public:
-    PopPredict(const std::string& ratingTrainFilepath, const std::string& configFilepath,
-            const std::string& modelFilepath);
+    using BasicPredict::BasicPredict;
     virtual void Init() override;
     virtual void Cleanup() override;
     virtual float PredictRating(int userId, int itemId) const override;

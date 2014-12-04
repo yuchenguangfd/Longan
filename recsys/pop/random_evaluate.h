@@ -13,10 +13,7 @@ namespace longan {
 
 class RandomEvaluate : public BasicEvaluate {
 public:
-    RandomEvaluate(const std::string& ratingTrainFilepath, const std::string& configFilepath,
-            const std::string& modelFilepath, const std::string& ratingTestFilepath,
-            const std::string& resultFilepath);
-    ~RandomEvaluate();
+    using BasicEvaluate::BasicEvaluate;
 protected:
     virtual void CreatePredict() override;
 };

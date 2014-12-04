@@ -6,23 +6,10 @@
 
 #include "item_based_train.h"
 #include "recsys/base/rating_list_loader.h"
-#include "common/system/file_util.h"
 #include "common/logging/logging.h"
 #include "common/error.h"
 
 namespace longan {
-
-ItemBasedTrain::ItemBasedTrain(const std::string& trainRatingFilepath,
-        const std::string& configFilepath, const std::string& modelFilepath) :
-    mTrainRatingFilepath(trainRatingFilepath),
-    mConfigFilepath(configFilepath),
-    mModelFilepath(modelFilepath),
-    mRatingMatrix(nullptr),
-    mRatingTrait(nullptr),
-    mModel(nullptr),
-    mModelComputationDelegate(nullptr) { }
-
-ItemBasedTrain::~ItemBasedTrain() { }
 
 void ItemBasedTrain::Train() {
     LoadConfig();
@@ -34,20 +21,10 @@ void ItemBasedTrain::Train() {
     Cleanup();
 }
 
-void ItemBasedTrain::LoadConfig() {
-    Log::I("recsys", "ItemBasedTrain::LoadConfig()");
-    Log::I("recsys", "config file = " + mConfigFilepath);
-    std::string content = FileUtil::LoadFileContent(mConfigFilepath);
-    Json::Reader reader;
-    if (!reader.parse(content, mConfig)) {
-        throw LonganFileFormatError();
-    }
-}
-
 void ItemBasedTrain::LoadRatings() {
-    Log::I("recsys", "LoadRatings()");
-    Log::I("recsys", "rating file = " + mTrainRatingFilepath);
-    RatingList rlist = RatingListLoader::Load(mTrainRatingFilepath);
+    Log::I("recsys", "ItemBasedTrain::LoadRatings()");
+    Log::I("recsys", "rating file = " + mRatingTrainFilepath);
+    RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
     Log::I("recsys", "create rating matrix");
     mRatingMatrix = new RatingMatrixAsItems<>();
     mRatingMatrix->Init(rlist);
@@ -89,7 +66,7 @@ void ItemBasedTrain::AdjustRatingByMinusUserAverage() {
 }
 
 void ItemBasedTrain::InitModel() {
-    Log::I("recsys", "InitModel()");
+    Log::I("recsys", "ItemBasedTrain::InitModel()");
     if (mConfig["modelType"].asString() == "fixedNeighborSize") {
         int neighborSize = mConfig["neighborSize"].asInt();
         mModel = new item_based::FixedNeighborSizeModel(mRatingMatrix->NumItem(), neighborSize);
@@ -102,7 +79,7 @@ void ItemBasedTrain::InitModel() {
 }
 
 void ItemBasedTrain::ComputeModel() {
-    Log::I("recsys", "ComputeModel()");
+    Log::I("recsys", "ItemBasedTrain::ComputeModel()");
     if (mConfig["modelComputation"].asString() == "simple") {
         mModelComputationDelegate = new item_based::SimpleModelComputation();
     } else if (mConfig["modelComputation"].asString() == "staticScheduled") {
@@ -116,11 +93,12 @@ void ItemBasedTrain::ComputeModel() {
 }
 
 void ItemBasedTrain::SaveModel() {
-    Log::I("recsys", "SaveModel");
+    Log::I("recsys", "ItemBasedTrain::SaveModel()");
     mModel->Save(mModelFilepath);
 }
 
 void ItemBasedTrain::Cleanup() {
+    Log::I("recsys", "ItemBasedTrain::Clueanup()");
     delete mModelComputationDelegate;
     delete mModel;
     delete mRatingTrait;

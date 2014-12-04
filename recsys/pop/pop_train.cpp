@@ -14,10 +14,6 @@
 
 namespace longan {
 
-PopTrain::PopTrain(const std::string& trainRatingFilepath, const std::string& configFilepath,
-        const std::string& modelFilepath) :
-    BasicTrain(trainRatingFilepath, configFilepath, modelFilepath) { }
-
 void PopTrain::Train() {
     Log::I("recsys", "PopTrain::Train()");
     Log::I("recsys", "loading train rating, file = " + mRatingTrainFilepath);

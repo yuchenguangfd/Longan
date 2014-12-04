@@ -14,10 +14,6 @@
 
 namespace longan {
 
-PopPredict::PopPredict(const std::string& ratingTrainFilepath, const std::string& configFilepath,
-    const std::string& modelFilepath) :
-    BasicPredict(ratingTrainFilepath, configFilepath, modelFilepath) { }
-
 void PopPredict::Init() {
     Log::I("recsys", "PopPredict::Init()");
     LoadRatings();

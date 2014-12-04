@@ -16,8 +16,7 @@ namespace longan {
   
 class PopTrain : public BasicTrain {
 public:
-    PopTrain(const std::string& ratingTrainFilepath, const std::string& configFilepath,
-            const std::string& modelFilepath);
+    using BasicTrain::BasicTrain;
     virtual void Train() override;
 private:
     void SaveModel();
