@@ -76,10 +76,14 @@ public:
     const NeighborItem* NeighborBegin(int itemId) const;
     const NeighborItem* NeighborEnd(int itemId) const;
     int NeighborSize(int itemId) const;
+    const NeighborItem* ReverseNeighborBegin(int itemId) const;
+    const NeighborItem* ReverseNeighborEnd(int itemId) const;
+    int ReverseNeighborSize(int itemId) const;
     void Load(const std::string& filename);
 private:
     int mNumItem;
-    std::vector<std::vector<NeighborItem> > mNeighborItemList;
+    std::vector<std::vector<NeighborItem>> mNeighborItemList;
+    std::vector<std::vector<NeighborItem>> mReverseNeighborItemList;
 };
 
 } //~ namespace item_based

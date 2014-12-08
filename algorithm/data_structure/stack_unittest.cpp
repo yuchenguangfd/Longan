@@ -46,6 +46,7 @@ class Obj {
 public:
     Obj(int ii) { ++sCount; i = ii;}
     Obj(const Obj& o) { ++sCount; i = o.i; }
+    Obj(Obj&& o) { ++sCount; i = o.i; o,i = 0; }
     ~Obj() { --sCount; }
 public:
     static int sCount;

@@ -86,29 +86,59 @@ float ItemBasedPredict::PredictRating(int userId, int itemId) const {
 
 ItemIdList ItemBasedPredict::PredictTopNItem(int userId, int listSize) const {
     assert(userId >= 0 && userId < mRatingMatrix->NumUser());
+    assert(listSize > 0);
     int numItem = mRatingMatrix->NumItem();
-    std::vector<ItemRating> scoreList;
-    scoreList.reserve(numItem);
+    std::vector<double> numerators(numItem);
+    std::vector<double> denominator(numItem);
     const auto& uv = mRatingMatrix->GetUserVector(userId);
-    const ItemRating *data = uv.Data();
-    int begin = -1, end = -1;
-    for (int i = 0; i < uv.Size(); ++i) {
-        begin = end + 1;
-        end = data[i].ItemId();
-        for (int iid = begin; iid < end; ++iid) {
-            float rating = PredictRating(userId, iid);
-            scoreList.push_back(ItemRating(iid, rating));
+    const ItemRating *data1 = uv.Data();
+    int size1 = uv.Size();
+    for (int i = 0; i < size1; ++i) {
+        int iid = data1[i].ItemId();
+        float sim = data1[i].Rating();
+        const item_based::NeighborItem* data2 = mModel->ReverseNeighborBegin(iid);
+        int size2 = mModel->ReverseNeighborSize(iid);
+        for (int j = 0; j < size2; ++j) {
+            int idx = data2[j].ItemId();
+            numerators[idx] += data2[j].Similarity() * sim;
+            denominator[idx] += Math::Abs(data2[j].Similarity());
         }
     }
-    std::sort(scoreList.begin(), scoreList.end(),
+    std::vector<ItemRating> ratings;
+    ratings.reserve(numItem);
+    int begin = -1, end = -1;
+    for (int i = 0; i < size1; ++i) {
+        begin = end + 1;
+        end = data1[i].ItemId();
+        for (int iid = begin; iid < end; ++iid) {
+            float predRating = numerators[iid] / (denominator[iid] + Double::EPS);
+            ratings.push_back(ItemRating(iid, predRating));
+        }
+    }
+    begin = end + 1;
+    end = numItem;
+    for (int iid = begin; iid < end; ++iid) {
+        float predRating = numerators[iid] / (denominator[iid] + Double::EPS);
+        ratings.push_back(ItemRating(iid, predRating));
+    }
+    std::sort(ratings.begin(), ratings.end(),
         [](const ItemRating& lhs, const ItemRating& rhs)->bool {
             return lhs.Rating() > rhs.Rating();
     });
-    ItemIdList idList(listSize);
-    for (int i = 0; i < listSize; ++i) {
-        idList[i] = scoreList[i].ItemId();
+    ItemIdList resultList(listSize);
+    if (listSize <= ratings.size()) {
+        for (int i = 0; i < listSize; ++i) {
+            resultList[i] = ratings[i].ItemId();
+        }
+    } else {
+        for (int i = 0; i < ratings.size(); ++i) {
+           resultList[i] = ratings[i].ItemId();
+        }
+        for (int i = ratings.size(); i < listSize; ++i) {
+           resultList[i] = -1;
+        }
     }
-    return idList;
+    return std::move(resultList);
 }
 
 } //~ namespace longan

@@ -130,26 +130,44 @@ int ModelPredict::NeighborSize(int itemId) const {
     return mNeighborItemList[itemId].size();
 }
 
+const NeighborItem* ModelPredict::ReverseNeighborBegin(int itemId) const {
+    assert(itemId >= 0 && itemId < mReverseNeighborItemList.size());
+    return mReverseNeighborItemList[itemId].data();
+}
+
+const NeighborItem* ModelPredict::ReverseNeighborEnd(int itemId) const {
+    assert(itemId >= 0 && itemId < mReverseNeighborItemList.size());
+    return mReverseNeighborItemList[itemId].data()
+            + mReverseNeighborItemList[itemId].size();
+}
+
+int ModelPredict::ReverseNeighborSize(int itemId) const {
+    assert(itemId >= 0 && itemId < mReverseNeighborItemList.size());
+    return mReverseNeighborItemList[itemId].size();
+}
+
 void ModelPredict::Load(const std::string& filename) {
     BinaryInputStream bis(filename);
     bis >> mNumItem;
-    mNeighborItemList.reserve(mNumItem);
+    mNeighborItemList.resize(mNumItem);
+    mReverseNeighborItemList.resize(mNumItem);
     for (int itemId = 0; itemId < mNumItem; ++itemId) {
         int numNeighbor;
         bis >> numNeighbor;
         std::vector<NeighborItem> neighbors;
         neighbors.reserve(numNeighbor);
         for (int i = 0; i < numNeighbor; ++i) {
-            int iid;
+            int neighborId;
             float sim;
-            bis >> iid >> sim;
-            neighbors.push_back(NeighborItem(iid, sim));
+            bis >> neighborId >> sim;
+            neighbors.push_back(NeighborItem(neighborId, sim));
+            mReverseNeighborItemList[neighborId].push_back(NeighborItem(itemId, sim));
         }
         std::sort(neighbors.begin(), neighbors.end(),
                 [](const NeighborItem& lhs, const NeighborItem& rhs)->bool {
                     return lhs.ItemId() < rhs.ItemId();
         });
-        mNeighborItemList.push_back(std::move(neighbors));
+        mNeighborItemList[itemId] = std::move(neighbors);
     }
 }
 

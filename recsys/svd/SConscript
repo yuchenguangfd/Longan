@@ -1,4 +1,14 @@
 Import("env_recsys")
-Export("env_recsys")
 
-SConscript("fpsgd/SConscript")
+build_env = env_recsys.Clone()
+build_env.Append(CCFLAGS = [
+    "-O3", "-march=native", "-funroll-loops", "-Wall"])
+# build_env.Append(CPPDEFINES = ["NOSSE", "USEAVX"])
+
+build_env.Program("libmf", 
+                  ["main.cpp",
+                   "convert.cpp",
+                   "mf.cpp",
+                   "predict.cpp",
+                   "train.cpp",
+                   "view.cpp"])

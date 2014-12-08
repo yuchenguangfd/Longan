@@ -61,13 +61,13 @@ TEST(FixedSimilarityThresholdModelTest, UpdateOK) {
 
 TEST(ModelPredictTest, NeighborShouldSortedByItemId) {
     BinaryOutputStream bos("model.tmp");
-    int numItem = 10;
+    int numItem = 200;
     bos << numItem;
     for (int i = 0; i < numItem; ++i) {
         int numNeighbor = Random::Instance().Uniform(100, 200);
         bos << numNeighbor;
         for (int j = 0; j < numNeighbor; ++j) {
-            int iid = Random::Instance().Uniform(0, 1000);
+            int iid = Random::Instance().Uniform(0, numItem);
             float sim = (float)Random::Instance().NextDouble();
             bos << iid << sim;
         }
@@ -83,6 +83,31 @@ TEST(ModelPredictTest, NeighborShouldSortedByItemId) {
         for (int j = 1; j < size; ++j) {
             ASSERT_LE(begin[j-1].ItemId(), begin[j].ItemId());
         }
+    }
+
+    int rtn = remove("model.tmp");
+    ASSERT_TRUE(rtn == 0);
+}
+
+TEST(ModelPredictTest, NeighborAndReverseNeighborShouldMatch) {
+    BinaryOutputStream bos("model.tmp");
+    int numItem = 10;
+    bos << numItem;
+    for (int i = 0; i < numItem; ++i) {
+        int numNeighbor = i;
+        bos << numNeighbor;
+        for (int j = 0; j < numNeighbor; ++j) {
+            int iid = j;
+            float sim = (float)Random::Instance().NextDouble();
+            bos << iid << sim;
+        }
+    }
+    bos.Close();
+
+    ModelPredict model;
+    model.Load("model.tmp");
+    for (int i = 0; i < numItem; ++i) {
+        ASSERT_EQ(numItem-i-1, model.ReverseNeighborSize(i));
     }
 
     int rtn = remove("model.tmp");

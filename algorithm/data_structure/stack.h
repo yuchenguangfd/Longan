@@ -72,7 +72,7 @@ private:
         Alloc alloc;
         T* newData = alloc.allocate(newCapacity);
         for(int i = 0; i < mCapacity; ++i) {
-            alloc.construct(&newData[i], mData[i]);
+            alloc.construct(&newData[i], std::move(mData[i]));
             alloc.destroy(&mData[i]);
         }
         alloc.deallocate(mData, mCapacity);

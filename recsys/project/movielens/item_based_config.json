@@ -4,5 +4,6 @@
 	"neighborSize": 0.7,
 	"modelComputation": "dynamicScheduled",
 	"evaluateRating": true,
-	"evaluateRanking": false
+	"evaluateRanking": true,
+	"rankingListSize": 50
 }
