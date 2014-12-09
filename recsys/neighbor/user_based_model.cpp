@@ -132,26 +132,26 @@ int ModelPredict::NeighborSize(int userId) const {
 void ModelPredict::Load(const std::string& filename) {
     BinaryInputStream bis(filename);
     bis >> mNumUser;
-    mNeighborUserList.reserve(mNumUser);
-    for (int itemId = 0; itemId < mNumUser; ++itemId) {
+    mNeighborUserList.resize(mNumUser);
+    for (int userId = 0; userId < mNumUser; ++userId) {
         int numNeighbor;
         bis >> numNeighbor;
         std::vector<NeighborUser> neighbors;
         neighbors.reserve(numNeighbor);
         for (int i = 0; i < numNeighbor; ++i) {
-            int uid;
+            int neighborId;
             float sim;
-            bis >> uid >> sim;
-            neighbors.push_back(NeighborUser(uid, sim));
+            bis >> neighborId >> sim;
+            neighbors.push_back(NeighborUser(neighborId, sim));
         }
         std::sort(neighbors.begin(), neighbors.end(),
                 [](const NeighborUser& lhs, const NeighborUser& rhs)->bool {
                     return lhs.UserId() < rhs.UserId();
         });
-        mNeighborUserList.push_back(std::move(neighbors));
+        mNeighborUserList[userId] = std::move(neighbors);
     }
 }
 
 } //~ namespace user_based
 
-} /* namespace longan */
+} //~ namespace longan

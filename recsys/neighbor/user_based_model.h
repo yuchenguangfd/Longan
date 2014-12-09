@@ -49,24 +49,24 @@ protected:
 class FixedNeighborSizeModel : public ModelTrain {
 public:
     FixedNeighborSizeModel(int numUser, int neighborSize);
-    virtual void AddPairSimilarity(int firstUserId, int secondUserId, float similarity);
-    virtual const NeighborUser* NeighborBegin(int userId) const;
-    virtual const NeighborUser* NeighborEnd(int userId) const;
-    virtual int NeighborSize(int userId) const;
+    virtual void AddPairSimilarity(int firstUserId, int secondUserId, float similarity) override;
+    virtual const NeighborUser* NeighborBegin(int userId) const override;
+    virtual const NeighborUser* NeighborEnd(int userId) const override;
+    virtual int NeighborSize(int userId) const override;
 private:
-    std::vector<RunningMaxK<NeighborUser> > mNeighborUserList;
+    std::vector<RunningMaxK<NeighborUser>> mNeighborUserList;
 };
 
 class FixedSimilarityThresholdModel : public ModelTrain {
 public:
     FixedSimilarityThresholdModel(int numUser, float threshold);
-    virtual void AddPairSimilarity(int firstUserId, int secondUserId, float similarity);
-    virtual const NeighborUser* NeighborBegin(int userId) const;
-    virtual const NeighborUser* NeighborEnd(int userId) const;
-    virtual int NeighborSize(int userId) const;
+    virtual void AddPairSimilarity(int firstUserId, int secondUserId, float similarity) override;
+    virtual const NeighborUser* NeighborBegin(int userId) const override;
+    virtual const NeighborUser* NeighborEnd(int userId) const override;
+    virtual int NeighborSize(int userId) const override;
 private:
     float mThreshold;
-    std::vector<std::vector<NeighborUser> > mNeighborUserList;
+    std::vector<std::vector<NeighborUser>> mNeighborUserList;
 };
 
 class ModelPredict {
@@ -79,7 +79,7 @@ public:
     void Load(const std::string& filename);
 private:
     int mNumUser;
-    std::vector<std::vector<NeighborUser> > mNeighborUserList;
+    std::vector<std::vector<NeighborUser>> mNeighborUserList;
 };
 
 } //~ namespace user_based

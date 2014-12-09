@@ -59,17 +59,17 @@ TEST(FixedSimilarityThresholdModelTest, UpdateOK) {
     ArrayHelper::ReleaseArray1D(&array, numUser);
 }
 
-TEST(ModelPredictTest, NeighborShouldSortedByItemId) {
+TEST(ModelPredictTest, NeighborShouldSortedByUserId) {
     BinaryOutputStream bos("model.tmp");
-    int numUser = 10;
+    int numUser = 200;
     bos << numUser;
     for (int i = 0; i < numUser; ++i) {
-        int numNeighbor = Random::Instance().Uniform(100, 200);
+        int numNeighbor = Random::Instance().Uniform(100, numUser);
         bos << numNeighbor;
         for (int j = 0; j < numNeighbor; ++j) {
-            int iid = Random::Instance().Uniform(0, 1000);
+            int uid = Random::Instance().Uniform(0, numUser);
             float sim = (float)Random::Instance().NextDouble();
-            bos << iid << sim;
+            bos << uid << sim;
         }
     }
     bos.Close();

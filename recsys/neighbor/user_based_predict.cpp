@@ -23,16 +23,20 @@ void UserBasedPredict::Init() {
 
 void UserBasedPredict::Cleanup() {
     delete mModel;
-    delete mRatingMatrix;
+    delete mRatingMatrixAsItems;
+    delete mRatingMatrixAsUsers;
 }
 
 void UserBasedPredict::LoadRatings() {
     Log::I("recsys", "UserBasedPredict::LoadRatings()");
     Log::I("recsys", "rating file = " + mRatingTrainFilepath);
     RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
-    Log::I("recsys", "create rating matrix");
-    mRatingMatrix = new RatingMatrixAsItems<>();
-    mRatingMatrix->Init(rlist);
+    Log::I("recsys", "create rating matrix(as items)");
+    mRatingMatrixAsItems = new RatingMatrixAsItems<>();
+    mRatingMatrixAsItems->Init(rlist);
+    Log::I("recsys", "create rating matrix(as users)");
+    mRatingMatrixAsUsers = new RatingMatrixAsUsers<>();
+    mRatingMatrixAsUsers->Init(rlist);
 }
 
 void UserBasedPredict::LoadModel() {
@@ -43,9 +47,9 @@ void UserBasedPredict::LoadModel() {
 }
 
 float UserBasedPredict::PredictRating(int userId, int itemId) const {
-    assert(userId >= 0 && userId < mRatingMatrix->NumUser());
-    assert(itemId >= 0 && itemId < mRatingMatrix->NumItem());
-    const auto& iv = mRatingMatrix->GetItemVector(itemId);
+    assert(userId >= 0 && userId < mRatingMatrixAsItems->NumUser());
+    assert(itemId >= 0 && itemId < mRatingMatrixAsItems->NumItem());
+    const auto& iv = mRatingMatrixAsItems->GetItemVector(itemId);
     const UserRating *data1 = iv.Data();
     int size1 = iv.Size();
     const user_based::NeighborUser* data2 = mModel->NeighborBegin(userId);
@@ -84,7 +88,57 @@ float UserBasedPredict::PredictRating(int userId, int itemId) const {
 }
 
 ItemIdList UserBasedPredict::PredictTopNItem(int userId, int listSize) const {
-    return ItemIdList(listSize);
+    assert(userId >= 0 && userId < mRatingMatrixAsItems->NumUser());
+    assert(listSize >= 0);
+    int numItem = mRatingMatrixAsItems->NumItem();
+    std::vector<double> numerators(numItem);
+    std::vector<double> denominator(numItem);
+    const user_based::NeighborUser *data1 = mModel->NeighborBegin(userId);
+    int size1 = mModel->NeighborSize(userId);
+    for (int i = 0; i < size1; ++i) {
+        int uid = data1[i].UserId();
+        float sim = data1[i].Similarity();
+        const auto& uv = mRatingMatrixAsUsers->GetUserVector(uid);
+        const ItemRating *data2 = uv.Data();
+        int size2 = uv.Size();
+        for (int j = 0; j < size2; ++j) {
+            int idx = data2[j].ItemId();
+            numerators[idx] += data2[j].Rating()*sim;
+            denominator[idx] += Math::Abs(sim);
+        }
+    }
+    std::vector<ItemRating> ratings;
+    ratings.reserve(numItem);
+    const auto& uv = mRatingMatrixAsUsers->GetUserVector(userId);
+    const ItemRating *data3 = uv.Data();
+    int size3 = uv.Size();
+    int begin = -1, end = -1;
+    for (int i = 0; i < size3; ++i) {
+        begin = end + 1;
+        end = data3[i].ItemId();
+        for (int iid = begin; iid < end; ++iid) {
+            float predRating = numerators[iid] / (denominator[iid] + Double::EPS);
+            ratings.push_back(ItemRating(iid, predRating));
+        }
+    }
+    std::sort(ratings.begin(), ratings.end(),
+            [](const ItemRating& lhs, const ItemRating& rhs)->bool {
+                return lhs.Rating() > rhs.Rating();
+    });
+    ItemIdList resultList(listSize);
+    if (listSize <= ratings.size()) {
+        for (int i = 0; i < listSize; ++i) {
+            resultList[i] = ratings[i].ItemId();
+        }
+    } else {
+        for (int i = 0; i < ratings.size(); ++i) {
+            resultList[i] = ratings[i].ItemId();
+        }
+        for (int i = ratings.size(); i < listSize; ++i) {
+            resultList[i] = -1;
+        }
+    }
+    return std::move(resultList);
 }
 
 } //~ namespace longan

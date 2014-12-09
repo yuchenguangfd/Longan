@@ -4,3 +4,5 @@
 /binary_heap_unittest.o
 /stack_unittest
 /stack_unittest.o
+/hash_set_unittest
+/hash_set_unittest.o

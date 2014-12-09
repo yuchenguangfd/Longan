@@ -1,9 +1,9 @@
 {
-	"similarityType": "correlation",
+	"similarityType": "adjustedCosine",
 	"modelType": "fixedSimilarityThreshold",
 	"neighborSize": 0.7,
 	"modelComputation": "dynamicScheduled",
 	"evaluateRating": true,
 	"evaluateRanking": true,
-	"rankingListSize": 50
+	"rankingListSize": 100
 }

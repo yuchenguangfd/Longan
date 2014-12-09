@@ -5,5 +5,5 @@
 	"modelComputation": "dynamicScheduled",
 	"evaluateRating": true,
 	"evaluateRanking": true,
-	"rankingListSize": 50
+	"rankingListSize": 100
 }

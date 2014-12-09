@@ -49,12 +49,12 @@ protected:
 class FixedNeighborSizeModel : public ModelTrain {
 public:
     FixedNeighborSizeModel(int numItem, int neighborSize);
-    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity);
-    virtual const NeighborItem* NeighborBegin(int itemId) const;
-    virtual const NeighborItem* NeighborEnd(int itemId) const;
-    virtual int NeighborSize(int itemId) const;
+    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity) override;
+    virtual const NeighborItem* NeighborBegin(int itemId) const override;
+    virtual const NeighborItem* NeighborEnd(int itemId) const override;
+    virtual int NeighborSize(int itemId) const override;
 private:
-    std::vector<RunningMaxK<NeighborItem> > mNeighborItemList;
+    std::vector<RunningMaxK<NeighborItem>> mNeighborItemList;
 };
 
 class FixedSimilarityThresholdModel : public ModelTrain {

@@ -95,12 +95,12 @@ ItemIdList ItemBasedPredict::PredictTopNItem(int userId, int listSize) const {
     int size1 = uv.Size();
     for (int i = 0; i < size1; ++i) {
         int iid = data1[i].ItemId();
-        float sim = data1[i].Rating();
-        const item_based::NeighborItem* data2 = mModel->ReverseNeighborBegin(iid);
+        float rating = data1[i].Rating();
+        const item_based::NeighborItem *data2 = mModel->ReverseNeighborBegin(iid);
         int size2 = mModel->ReverseNeighborSize(iid);
         for (int j = 0; j < size2; ++j) {
             int idx = data2[j].ItemId();
-            numerators[idx] += data2[j].Similarity() * sim;
+            numerators[idx] += data2[j].Similarity() * rating;
             denominator[idx] += Math::Abs(data2[j].Similarity());
         }
     }

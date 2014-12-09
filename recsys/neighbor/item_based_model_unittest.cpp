@@ -64,7 +64,7 @@ TEST(ModelPredictTest, NeighborShouldSortedByItemId) {
     int numItem = 200;
     bos << numItem;
     for (int i = 0; i < numItem; ++i) {
-        int numNeighbor = Random::Instance().Uniform(100, 200);
+        int numNeighbor = Random::Instance().Uniform(100, numItem);
         bos << numNeighbor;
         for (int j = 0; j < numNeighbor; ++j) {
             int iid = Random::Instance().Uniform(0, numItem);

@@ -10,6 +10,7 @@
 #include "user_based_model.h"
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_matrix_as_items.h"
+#include "recsys/base/rating_matrix_as_users.h"
 
 namespace longan {
 
@@ -24,7 +25,8 @@ protected:
     void LoadRatings();
     void LoadModel();
 protected:
-    RatingMatrixAsItems<> *mRatingMatrix = nullptr;
+    RatingMatrixAsItems<> *mRatingMatrixAsItems = nullptr;
+    RatingMatrixAsUsers<> *mRatingMatrixAsUsers = nullptr;
     user_based::ModelPredict *mModel = nullptr;
 };
 
