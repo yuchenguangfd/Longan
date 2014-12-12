@@ -1,6 +1,6 @@
 Import("env_common")
 env_common.lib_objects.append(env_common.Object("math.cpp"))
-
+env_common.lib_objects.append(env_common.Object("big_decimal.cpp"))
 build_env = env_common.Clone()
 # add gtest support
 build_env.Prepend(CPPPATH = "#/external/gtest/include")
@@ -8,6 +8,7 @@ build_env.Prepend(LIBPATH = "#/external/gtest")
 build_env.Prepend(LIBS = "gtest")
 build_env.Prepend(LINKFLAGS = "-pthread")
 
+build_env.Program("big_decimal_unittest", ["big_decimal_unittest.cpp"])
 build_env.Program("math_unittest", ["math_unittest.cpp"])
 build_env.Program("vector_unittest", ["vector_unittest.cpp"])
 build_env.Program("matrix_unittest", ["matrix_unittest.cpp"])

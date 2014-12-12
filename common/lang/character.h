@@ -31,6 +31,10 @@ public:
         return (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r');
     }
 
+    static int ToDigit(char ch) {
+        return (ch - '0');
+    }
+
     static char ToLower(char ch) {
         if (IsUpperCase(ch)) {
             char lower = ch - 'A' + 'a';

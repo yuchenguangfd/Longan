@@ -21,16 +21,24 @@ public:
 	BinaryOutputStream(const std::string& filename);
 	virtual ~BinaryOutputStream();
 	void Close();
-	friend BinaryOutputStream& operator << (BinaryOutputStream& bos, int32 i);
-	friend BinaryOutputStream& operator << (BinaryOutputStream& bos, float32 f);
-	friend BinaryOutputStream& operator << (BinaryOutputStream& bos, float64 f);
+	friend BinaryOutputStream& operator<< (BinaryOutputStream& bos, int32 i);
+	friend BinaryOutputStream& operator<< (BinaryOutputStream& bos, int64 i);
+	friend BinaryOutputStream& operator<< (BinaryOutputStream& bos, float32 f);
+	friend BinaryOutputStream& operator<< (BinaryOutputStream& bos, float64 f);
 protected:
 	FILE* mStream;
 	DISALLOW_COPY_AND_ASSIGN(BinaryOutputStream);
 };
 
-inline BinaryOutputStream& operator << (BinaryOutputStream& bos, int32 i) {
+inline BinaryOutputStream& operator<< (BinaryOutputStream& bos, int32 i) {
     if (fwrite((void*)&i, sizeof(int32), 1, bos.mStream) != 1) {
+        throw LonganFileWriteError();
+    }
+    return bos;
+}
+
+inline BinaryOutputStream& operator<< (BinaryOutputStream& bos, int64 i) {
+    if (fwrite((void*)&i, sizeof(int64), 1, bos.mStream) != 1) {
         throw LonganFileWriteError();
     }
     return bos;
