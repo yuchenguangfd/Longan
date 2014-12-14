@@ -2,7 +2,7 @@ Import("env_recsys")
 
 build_env = env_recsys.Clone()
 build_env.Append(CCFLAGS = [
-    "-O3", "-march=native", "-funroll-loops", "-Wall"])
+    "-O3", "-march=native", "-funroll-loops"])
 build_env.Append(CPPDEFINES = ["NOSSE"])
 # build_env.Append(CPPDEFINES = ["USEAVX"])
 
@@ -15,17 +15,15 @@ build_env.Prepend(CPPPATH = "#/external/gflags/include")
 build_env.Prepend(LIBPATH = "#/external/gflags")
 build_env.Prepend(LIBS = "gflags")
 
-build_env.Program("libmf", 
-                  ["main.cpp",
-                   "mf.cpp",
-                   "predict.cpp",
-                   "train.cpp",
-                   "view.cpp"])
-
 build_env.Program("svd_convert_longan", 
                  ["svd_convert_longan.cpp",
                   "svd_convert.cpp"])
+build_env.Program("svd_train_longan",
+                 ["svd_train_longan.cpp",
+                  "svd_train.cpp"])
 build_env.Program("svd_evaluate_longan",
                  ["svd_evaluate_longan.cpp",
                   "svd_evaluate.cpp",
-                  "svd_predict.cpp"])
+                  "svd_predict.cpp",
+                  "svd_model.cpp"])
+

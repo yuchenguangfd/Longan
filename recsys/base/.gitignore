@@ -16,3 +16,4 @@
 /basic_evaluate.o
 /basic_predict.o
 /basic_train.o
+/basic_convert.o

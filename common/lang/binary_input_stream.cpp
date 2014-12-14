@@ -32,4 +32,10 @@ void BinaryInputStream::Close() {
     mStream = nullptr;
 }
 
+void BinaryInputStream::Read(float32 *data, int size) {
+    if (fread((void*)data, sizeof(float32), size, mStream) != size) {
+        throw LonganFileReadError();
+    }
+}
+
 } //~ namespace longan

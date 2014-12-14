@@ -24,6 +24,7 @@ public:
 	friend BinaryInputStream& operator >> (BinaryInputStream& bis, int32& i);
 	friend BinaryInputStream& operator >> (BinaryInputStream& bis, float32& f);
 	friend BinaryInputStream& operator >> (BinaryInputStream& bis, float64& f);
+	void Read(float32 *data, int size);
 protected:
 	FILE* mStream;
 	DISALLOW_COPY_AND_ASSIGN(BinaryInputStream);

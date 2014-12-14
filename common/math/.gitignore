@@ -5,3 +5,6 @@
 /vector_unittest.o
 /matrix_unittest
 /matrix_unittest.o
+/big_decimal_unittest
+/big_decimal_unittest.o
+/big_decimal.o

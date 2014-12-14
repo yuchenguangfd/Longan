@@ -1,0 +1,19 @@
+{
+    "dimensions": 200,
+    "iterations": 40,
+    "threads": 4,
+    "lambdaP": 0.05,
+    "lambdaQ": 0.05,
+    "gamma": 0.003,
+    "blocks": "8x8",
+    "randShuffle": true,
+    "trainRMSE": true,
+    "objValue": true,
+    "useAvg": false,
+    "lambdaUb": -1.0,
+    "lambdaIb": -1.0,
+
+	"evaluateRating": true,
+	"evaluateRanking": false,
+	"rankingListSize": 50
+}
