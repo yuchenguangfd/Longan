@@ -13,7 +13,7 @@
 
 namespace longan {
 
-namespace user_based {
+namespace UserBased {
 
 ModelTrain::ModelTrain(int numUser) :
     mNumUser(numUser) { }
@@ -152,6 +152,6 @@ void ModelPredict::Load(const std::string& filename) {
     }
 }
 
-} //~ namespace user_based
+} //~ namespace UserBased
 
 } //~ namespace longan

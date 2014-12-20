@@ -13,7 +13,7 @@
 
 namespace longan {
 
-namespace user_based {
+namespace UserBased {
 
 class NeighborUser {
 public:
@@ -82,7 +82,7 @@ private:
     std::vector<std::vector<NeighborUser>> mNeighborUserList;
 };
 
-} //~ namespace user_based
+} //~ namespace UserBased
 
 } //~ namespace longan
 

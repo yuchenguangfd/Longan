@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 
 using namespace longan;
-using namespace longan::user_based;
+using namespace longan::UserBased;
 
 class ModelComputationTest : public ::testing::Test, public ModelComputation {
 public:

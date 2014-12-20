@@ -11,6 +11,7 @@
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_matrix_as_items.h"
 #include "recsys/base/rating_matrix_as_users.h"
+#include "recsys/base/rating_trait.h"
 
 namespace longan {
 
@@ -24,10 +25,17 @@ public:
 protected:
     void LoadRatings();
     void LoadModel();
+    void AdjustRating();
 protected:
     RatingMatrixAsItems<> *mRatingMatrixAsItems = nullptr;
     RatingMatrixAsUsers<> *mRatingMatrixAsUsers = nullptr;
-    user_based::ModelPredict *mModel = nullptr;
+    RatingTrait *mRatingTrait = nullptr;
+    UserBased::ModelPredict *mModel = nullptr;
+    enum SIM_TYPE {
+        SIM_TYPE_ADJUSTED_COSINE,
+        SIM_TYPE_CORRELATION,
+        SIM_TYPE_COSINE
+    } mSimType;
 };
 
 } //~ namespace longan

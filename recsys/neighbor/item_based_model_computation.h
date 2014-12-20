@@ -14,7 +14,7 @@
 
 namespace longan {
 
-namespace item_based {
+namespace ItemBased {
 
 class ModelComputation {
 public:
@@ -27,12 +27,12 @@ protected:
 
 class SimpleModelComputation : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
+    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) override;
 };
 
 class StaticScheduledModelComputation : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
+    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) override;
 protected:
     void DoWork(int64 taskIdBegin, int64 taskIdEnd);
 protected:
@@ -61,7 +61,6 @@ protected:
     };
     static const int TASK_BUNDLE_SIZE = 16384;
     typedef std::vector<Task> TaskBundle;
-
     class Scheduler {
     public:
         Scheduler();
@@ -94,10 +93,10 @@ protected:
     RatingMatrixAsItems<> *mRatingMatrix;
     ModelTrain *mModel;
     Scheduler *mScheduler;
-    double mProgress;
+    double mCurrentProgress;
 };
 
-} //~ namespace item_based
+} //~ namespace ItemBased
 
 } //~ namespace longan
 

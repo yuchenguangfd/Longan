@@ -22,8 +22,6 @@ public:
 protected:
     void LoadRatings();
     void AdjustRating();
-    void AdjustRatingByMinusUserAverage();
-    void AdjustRatingByMinusItemAverage();
     void InitModel();
     void ComputeModel();
     void SaveModel();
@@ -31,8 +29,8 @@ protected:
 protected:
     RatingMatrixAsUsers<> *mRatingMatrix = nullptr;
     RatingTrait *mRatingTrait = nullptr;
-    user_based::ModelTrain *mModel = nullptr;
-    user_based::ModelComputation *mModelComputationDelegate = nullptr;
+    UserBased::ModelTrain *mModel = nullptr;
+    UserBased::ModelComputation *mModelComputationDelegate = nullptr;
 };
 
 } //~ namespace longan

@@ -11,7 +11,7 @@
 #include <cstdio>
 
 using namespace longan;
-using namespace longan::user_based;
+using namespace longan::UserBased;
 
 TEST(NeighborUserTest, ObjectCompareOk) {
     NeighborUser nu1(42, 0.42);

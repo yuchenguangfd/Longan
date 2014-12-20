@@ -11,7 +11,7 @@
 #include <cstdio>
 
 using namespace longan;
-using namespace longan::item_based;
+using namespace longan::ItemBased;
 
 TEST(NeighborItemTest, ObjectCompareOK) {
     NeighborItem ni1(42, 0.42);

@@ -13,7 +13,7 @@
 
 namespace longan {
 
-namespace item_based {
+namespace ItemBased {
 
 class NeighborItem {
 public:
@@ -54,19 +54,19 @@ public:
     virtual const NeighborItem* NeighborEnd(int itemId) const override;
     virtual int NeighborSize(int itemId) const override;
 private:
-    std::vector<RunningMaxK<NeighborItem>> mNeighborItemList;
+    std::vector<RunningMaxK<NeighborItem>> mNeighborItemTable;
 };
 
 class FixedSimilarityThresholdModel : public ModelTrain {
 public:
     FixedSimilarityThresholdModel(int numItem, float threshold);
-    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity);
-    virtual const NeighborItem* NeighborBegin(int itemId) const;
-    virtual const NeighborItem* NeighborEnd(int itemId) const;
-    virtual int NeighborSize(int itemId) const;
+    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity) override;
+    virtual const NeighborItem* NeighborBegin(int itemId) const override;
+    virtual const NeighborItem* NeighborEnd(int itemId) const override;
+    virtual int NeighborSize(int itemId) const override;
 private:
     float mThreshold;
-    std::vector<std::vector<NeighborItem> > mNeighborItemList;
+    std::vector<std::vector<NeighborItem>> mNeighborItemTable;
 };
 
 class ModelPredict {
@@ -82,11 +82,11 @@ public:
     void Load(const std::string& filename);
 private:
     int mNumItem;
-    std::vector<std::vector<NeighborItem>> mNeighborItemList;
-    std::vector<std::vector<NeighborItem>> mReverseNeighborItemList;
+    std::vector<std::vector<NeighborItem>> mNeighborItemTable;
+    std::vector<std::vector<NeighborItem>> mReverseNeighborItemTable;
 };
 
-} //~ namespace item_based
+} //~ namespace ItemBased
 
 } //~ namespace longan
 

@@ -18,7 +18,7 @@
 
 namespace longan {
 
-namespace item_based {
+namespace ItemBased {
 
 ModelComputation::ModelComputation() { }
 
@@ -63,10 +63,7 @@ float ModelComputation::ComputeSimilarity(const ItemVector<>& firstItemVector, c
         }
     }
     double denominator = sqrt(norm1 * norm2);
-    if (Double::DblZero(denominator)) {
-        return 0.0f;
-    }
-    return (float)(sum / denominator);
+    return (float)(sum / (denominator + Double::EPS));
 }
 
 void SimpleModelComputation::ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) {
@@ -86,7 +83,7 @@ void StaticScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *rating
     int numItem = mRatingMatrix->NumItem();
     mUpdateModelMutexs.clear();
     for (int i = 0; i < numItem; ++i) {
-        mUpdateModelMutexs.push_back(new std::mutex);
+        mUpdateModelMutexs.push_back(new std::mutex());
     }
     int64 numTaskTotal = (int64)numItem * (numItem - 1) / 2;
     int numThread = SystemInfo::GetNumCPUCore();
@@ -106,7 +103,7 @@ void StaticScheduledModelComputation::ComputeModel(RatingMatrixAsItems<> *rating
 }
 
 void StaticScheduledModelComputation::DoWork(int64 taskIdBegin, int64 taskIdEnd) {
-    for (int taskId = taskIdBegin; taskId < taskIdEnd; ++taskId) {
+    for (int64 taskId = taskIdBegin; taskId < taskIdEnd; ++taskId) {
         int iid1 = static_cast<int>((sqrt(8.0*taskId+1)+1)/2);
         int iid2 = taskId - iid1*(iid1-1)/2;
         const auto& iv1 = mRatingMatrix->GetItemVector(iid1);
@@ -223,8 +220,8 @@ void DynamicScheduledModelComputation::DoComputeSimilarityWork() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            auto& iv1 = mRatingMatrix->GetItemVector(task.firstItemId);
-            auto& iv2 = mRatingMatrix->GetItemVector(task.secondItemId);
+            const auto& iv1 = mRatingMatrix->GetItemVector(task.firstItemId);
+            const auto& iv2 = mRatingMatrix->GetItemVector(task.secondItemId);
             task.similarity = ComputeSimilarity(iv1, iv2);
         }
         mScheduler->PutUpdateModelWork(currentBundle);
@@ -243,7 +240,7 @@ void DynamicScheduledModelComputation::DoUpdateModelWork() {
             mModel->AddPairSimilarity(task.firstItemId, task.secondItemId, task.similarity);
         }
         processedTask += currentBundle->size();
-        mProgress = static_cast<double>(processedTask)/totoalTask;
+        mCurrentProgress = static_cast<double>(processedTask)/totoalTask;
         delete currentBundle;
     }
     mScheduler->UpdateModelDone();
@@ -251,12 +248,12 @@ void DynamicScheduledModelComputation::DoUpdateModelWork() {
 
 void DynamicScheduledModelComputation::DoMonitorProgress() {
     while (true) {
-        ConsoleLog::I("recsys", "Computing Model..." + StringHelper::ToString((int)(mProgress*100)) + "% done.");
-        if (mProgress > 0.99) break;
+        ConsoleLog::I("recsys", "Computing Model..." + StringHelper::ToString((int)(mCurrentProgress*100)) + "% done.");
+        if (mCurrentProgress > 0.99) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 }
 
-} //~ namespace item_based
+} //~ namespace ItemBased
 
 } //~ namespace longan

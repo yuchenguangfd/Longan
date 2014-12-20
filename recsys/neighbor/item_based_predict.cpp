@@ -6,6 +6,7 @@
 
 #include "item_based_predict.h"
 #include "recsys/base/rating_list_loader.h"
+#include "recsys/base/rating_adjust.h"
 #include "common/logging/logging.h"
 #include "common/base/algorithm.h"
 #include "common/math/math.h"
@@ -19,12 +20,14 @@ namespace longan {
 void ItemBasedPredict::Init() {
     LoadConfig();
     LoadRatings();
+    AdjustRating();
     LoadModel();
 }
 
 void ItemBasedPredict::Cleanup() {
     delete mModel;
     delete mRatingMatrix;
+    delete mRatingTrait;
 }
 
 void ItemBasedPredict::LoadRatings() {
@@ -34,12 +37,27 @@ void ItemBasedPredict::LoadRatings() {
     Log::I("recsys", "create rating matrix");
     mRatingMatrix = new RatingMatrixAsUsers<>();
     mRatingMatrix->Init(rlist);
+    Log::I("recsys", "create rating trait");
+    mRatingTrait = new RatingTrait();
+    mRatingTrait->Init(rlist);
+}
+
+void ItemBasedPredict::AdjustRating() {
+    if (mConfig["similarityType"].asString() == "adjustedCosine") {
+        mSimTpye = SIM_TYPE_ADJUSTED_COSINE;
+        AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrix);
+    } else if (mConfig["similarityType"].asString() == "correlation") {
+        mSimTpye = SIM_TYPE_CORRELATION;
+        AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrix);
+    } else { // (mConfig["similarityType"].asString() == "cosine")
+        mSimTpye = SIM_TYPE_COSINE;
+    }
 }
 
 void ItemBasedPredict::LoadModel() {
     Log::I("recsys", "ItemBasedPredict::LoadModel()");
     Log::I("recsys", "mdoel file = " + mModelFilepath);
-    mModel = new item_based::ModelPredict();
+    mModel = new ItemBased::ModelPredict();
     mModel->Load(mModelFilepath);
 }
 
@@ -49,7 +67,7 @@ float ItemBasedPredict::PredictRating(int userId, int itemId) const {
     const auto& uv = mRatingMatrix->GetUserVector(userId);
     const ItemRating *data1 = uv.Data();
     int size1 = uv.Size();
-    const item_based::NeighborItem* data2 = mModel->NeighborBegin(itemId);
+    const ItemBased::NeighborItem* data2 = mModel->NeighborBegin(itemId);
     int size2 = mModel->NeighborSize(itemId);
     double numerator = 0.0;
     double denominator = 0.0;
@@ -57,18 +75,18 @@ float ItemBasedPredict::PredictRating(int userId, int itemId) const {
         for (int i = 0; i < size1; ++i) {
             const ItemRating& ir = data1[i];
             int pos = BSearch(ir.ItemId(), data2, size2,
-                    [](int lhs, const item_based::NeighborItem& rhs)->int {
+                    [](int lhs, const ItemBased::NeighborItem& rhs)->int {
                 return lhs - rhs.ItemId();
             });
             if (pos >= 0) {
-                const item_based::NeighborItem& ni = data2[pos];
+                const ItemBased::NeighborItem& ni = data2[pos];
                 numerator += ni.Similarity() * ir.Rating();
                 denominator += Math::Abs(ni.Similarity());
             }
         }
     } else {
         for (int i = 0; i < size2; ++i) {
-            const item_based::NeighborItem& ni = data2[i];
+            const ItemBased::NeighborItem& ni = data2[i];
             int pos = BSearch(ni.ItemId(), data1, size1,
                     [](int lhs, const ItemRating& rhs)->int {
                 return lhs - rhs.ItemId();
@@ -81,6 +99,11 @@ float ItemBasedPredict::PredictRating(int userId, int itemId) const {
         }
     }
     double predictedRating = numerator / (denominator + Double::EPS);
+    if (mSimTpye == SIM_TYPE_ADJUSTED_COSINE) {
+        predictedRating += mRatingTrait->UserAverage(userId);
+    } else if (mSimTpye == SIM_TYPE_CORRELATION) {
+        predictedRating += mRatingTrait->ItemAverage(itemId);
+    }
     return (float)predictedRating;
 }
 
@@ -96,7 +119,7 @@ ItemIdList ItemBasedPredict::PredictTopNItem(int userId, int listSize) const {
     for (int i = 0; i < size1; ++i) {
         int iid = data1[i].ItemId();
         float rating = data1[i].Rating();
-        const item_based::NeighborItem *data2 = mModel->ReverseNeighborBegin(iid);
+        const ItemBased::NeighborItem *data2 = mModel->ReverseNeighborBegin(iid);
         int size2 = mModel->ReverseNeighborSize(iid);
         for (int j = 0; j < size2; ++j) {
             int idx = data2[j].ItemId();

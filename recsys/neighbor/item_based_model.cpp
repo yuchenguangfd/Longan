@@ -13,7 +13,7 @@
 
 namespace longan {
 
-namespace item_based {
+namespace ItemBased {
 
 ModelTrain::ModelTrain(int numItem) :
     mNumItem(numItem) { }
@@ -48,33 +48,33 @@ FixedNeighborSizeModel::FixedNeighborSizeModel(int numItem, int neighborSize) :
     ModelTrain(numItem) {
     assert(numItem > 0);
     assert(neighborSize > 0 && neighborSize < numItem);
-    mNeighborItemList.reserve(numItem);
+    mNeighborItemTable.reserve(numItem);
     for (int i = 0; i < numItem; ++i) {
-        mNeighborItemList.push_back(RunningMaxK<NeighborItem>(neighborSize));
+        mNeighborItemTable.push_back(RunningMaxK<NeighborItem>(neighborSize));
     }
 }
 
 void FixedNeighborSizeModel::AddPairSimilarity(int firstItemId, int secondItemId, float similarity) {
-    assert(firstItemId >= 0 && firstItemId < mNeighborItemList.size());
-    assert(secondItemId >= 0 && secondItemId < mNeighborItemList.size());
+    assert(firstItemId >= 0 && firstItemId < mNeighborItemTable.size());
+    assert(secondItemId >= 0 && secondItemId < mNeighborItemTable.size());
     assert(similarity >= -1.0f && similarity <= 1.0f);
-    mNeighborItemList[firstItemId].Add(NeighborItem(secondItemId, similarity));
-    mNeighborItemList[secondItemId].Add(NeighborItem(firstItemId, similarity));
+    mNeighborItemTable[firstItemId].Add(NeighborItem(secondItemId, similarity));
+    mNeighborItemTable[secondItemId].Add(NeighborItem(firstItemId, similarity));
 }
 
 const NeighborItem* FixedNeighborSizeModel::NeighborBegin(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].CurrentMaxKBegin();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].CurrentMaxKBegin();
 }
 
 const NeighborItem* FixedNeighborSizeModel::NeighborEnd(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].CurrentMaxKEnd();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].CurrentMaxKEnd();
 }
 
 int FixedNeighborSizeModel::NeighborSize(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].CurrentMaxKSize();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].CurrentMaxKSize();
 }
 
 FixedSimilarityThresholdModel::FixedSimilarityThresholdModel(int numItem, float threshold) :
@@ -82,32 +82,32 @@ FixedSimilarityThresholdModel::FixedSimilarityThresholdModel(int numItem, float 
     mThreshold(threshold) {
     assert(numItem > 0);
     assert(threshold >= -1.0f && threshold <= 1.0f);
-    mNeighborItemList.resize(numItem);
+    mNeighborItemTable.resize(numItem);
 }
 
 void FixedSimilarityThresholdModel::AddPairSimilarity(int firstItemId, int secondItemId, float similarity) {
-    assert(firstItemId >= 0 && firstItemId < mNeighborItemList.size());
-    assert(secondItemId >= 0 && secondItemId < mNeighborItemList.size());
+    assert(firstItemId >= 0 && firstItemId < mNeighborItemTable.size());
+    assert(secondItemId >= 0 && secondItemId < mNeighborItemTable.size());
     assert(similarity >= -1.0f && similarity <= 1.0f);
     if (similarity >= mThreshold) {
-        mNeighborItemList[firstItemId].push_back(NeighborItem(secondItemId, similarity));
-        mNeighborItemList[secondItemId].push_back(NeighborItem(firstItemId, similarity));
+        mNeighborItemTable[firstItemId].push_back(NeighborItem(secondItemId, similarity));
+        mNeighborItemTable[secondItemId].push_back(NeighborItem(firstItemId, similarity));
     }
 }
 
 const NeighborItem* FixedSimilarityThresholdModel::NeighborBegin(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].data();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].data();
 }
 
 const NeighborItem* FixedSimilarityThresholdModel::NeighborEnd(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].data() + mNeighborItemList[itemId].size();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].data() + mNeighborItemTable[itemId].size();
 }
 
 int FixedSimilarityThresholdModel::NeighborSize(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].size();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].size();
 }
 
 ModelPredict::ModelPredict() :
@@ -116,41 +116,41 @@ ModelPredict::ModelPredict() :
 ModelPredict::~ModelPredict() { }
 
 const NeighborItem* ModelPredict::NeighborBegin(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].data();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].data();
 }
 
 const NeighborItem* ModelPredict::NeighborEnd(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].data() + mNeighborItemList[itemId].size();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].data() + mNeighborItemTable[itemId].size();
 }
 
 int ModelPredict::NeighborSize(int itemId) const {
-    assert(itemId >= 0 && itemId < mNeighborItemList.size());
-    return mNeighborItemList[itemId].size();
+    assert(itemId >= 0 && itemId < mNeighborItemTable.size());
+    return mNeighborItemTable[itemId].size();
 }
 
 const NeighborItem* ModelPredict::ReverseNeighborBegin(int itemId) const {
-    assert(itemId >= 0 && itemId < mReverseNeighborItemList.size());
-    return mReverseNeighborItemList[itemId].data();
+    assert(itemId >= 0 && itemId < mReverseNeighborItemTable.size());
+    return mReverseNeighborItemTable[itemId].data();
 }
 
 const NeighborItem* ModelPredict::ReverseNeighborEnd(int itemId) const {
-    assert(itemId >= 0 && itemId < mReverseNeighborItemList.size());
-    return mReverseNeighborItemList[itemId].data()
-            + mReverseNeighborItemList[itemId].size();
+    assert(itemId >= 0 && itemId < mReverseNeighborItemTable.size());
+    return mReverseNeighborItemTable[itemId].data()
+            + mReverseNeighborItemTable[itemId].size();
 }
 
 int ModelPredict::ReverseNeighborSize(int itemId) const {
-    assert(itemId >= 0 && itemId < mReverseNeighborItemList.size());
-    return mReverseNeighborItemList[itemId].size();
+    assert(itemId >= 0 && itemId < mReverseNeighborItemTable.size());
+    return mReverseNeighborItemTable[itemId].size();
 }
 
 void ModelPredict::Load(const std::string& filename) {
     BinaryInputStream bis(filename);
     bis >> mNumItem;
-    mNeighborItemList.resize(mNumItem);
-    mReverseNeighborItemList.resize(mNumItem);
+    mNeighborItemTable.resize(mNumItem);
+    mReverseNeighborItemTable.resize(mNumItem);
     for (int itemId = 0; itemId < mNumItem; ++itemId) {
         int numNeighbor;
         bis >> numNeighbor;
@@ -161,13 +161,13 @@ void ModelPredict::Load(const std::string& filename) {
             float sim;
             bis >> neighborId >> sim;
             neighbors.push_back(NeighborItem(neighborId, sim));
-            mReverseNeighborItemList[neighborId].push_back(NeighborItem(itemId, sim));
+            mReverseNeighborItemTable[neighborId].push_back(NeighborItem(itemId, sim));
         }
         std::sort(neighbors.begin(), neighbors.end(),
                 [](const NeighborItem& lhs, const NeighborItem& rhs)->bool {
                     return lhs.ItemId() < rhs.ItemId();
         });
-        mNeighborItemList[itemId] = std::move(neighbors);
+        mNeighborItemTable[itemId] = std::move(neighbors);
     }
 }
 

@@ -17,7 +17,7 @@
 
 namespace longan {
 
-namespace user_based {
+namespace UserBased {
 
 ModelComputation::ModelComputation() { }
 
@@ -62,10 +62,7 @@ float ModelComputation::ComputeSimilarity(const UserVector<>& firstUserVector, c
         }
     }
     double denominator = sqrt(norm1 * norm2);
-    if (Double::DblZero(denominator)) {
-        return 0.0f;
-    }
-    return (float)(sum / denominator);
+    return (float)(sum / (denominator + Double::EPS));
 }
 
 void SimpleModelComputation::ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) {
@@ -256,6 +253,6 @@ void DynamicScheduledModelComputation::DoMonitorProgress() {
     }
 }
 
-} //~ namespace user_based
+} //~ namespace UserBased
 
 } //~ namespace longan

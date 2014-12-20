@@ -14,7 +14,7 @@
 
 namespace longan {
 
-namespace user_based {
+namespace UserBased {
 
 class ModelComputation {
 public:
@@ -97,7 +97,7 @@ protected:
     double mProgress;
 };
 
-} //~ namespace user_based
+} //~ namespace UserBased
 
 } //~ namespace longan
 

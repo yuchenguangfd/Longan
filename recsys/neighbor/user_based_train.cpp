@@ -6,6 +6,7 @@
 
 #include "user_based_train.h"
 #include "recsys/base/rating_list_loader.h"
+#include "recsys/base/rating_adjust.h"
 #include "common/system/file_util.h"
 #include "common/logging/logging.h"
 #include "common/error.h"
@@ -36,33 +37,9 @@ void UserBasedTrain::LoadRatings() {
 
 void UserBasedTrain::AdjustRating() {
     if (mConfig["similarityType"].asString() == "adjustedCosine") {
-        AdjustRatingByMinusItemAverage();
+        AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrix);
     } else if (mConfig["similarityType"].asString() == "correlation") {
-        AdjustRatingByMinusUserAverage();
-    }
-}
-
-void UserBasedTrain::AdjustRatingByMinusItemAverage() {
-    Log::I("recsys", "UserBasedTrain::AdjustRatingByMinusItemAverage()");
-    for (int uid = 0; uid < mRatingMatrix->NumUser(); ++uid) {
-        auto& uvec = mRatingMatrix->GetUserVector(uid);
-        for (int i = 0; i < uvec.Size(); ++i) {
-            auto& ur = uvec.Data()[i];
-            float iavg = mRatingTrait->ItemAverage(ur.ItemId());
-            ur.SetRating(ur.Rating() - iavg);
-        }
-    }
-}
-
-void UserBasedTrain::AdjustRatingByMinusUserAverage() {
-    Log::I("recsys", "UserBasedTrain::AdjustRatingByMinusUserAverage()");
-    for (int uid = 0; uid < mRatingMatrix->NumUser(); ++uid) {
-        auto& uvec = mRatingMatrix->GetUserVector(uid);
-        float uavg = mRatingTrait->UserAverage(uid);
-        for (int i = 0; i < uvec.Size(); ++i) {
-            auto& ur = uvec.Data()[i];
-            ur.SetRating(ur.Rating() - uavg);
-        }
+        AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrix);
     }
 }
 
@@ -70,10 +47,10 @@ void UserBasedTrain::InitModel() {
     Log::I("recsys", "UserBasedTrain::InitModel()");
     if (mConfig["modelType"].asString() == "fixedNeighborSize") {
         int neighborSize = mConfig["neighborSize"].asInt();
-        mModel = new user_based::FixedNeighborSizeModel(mRatingMatrix->NumUser(), neighborSize);
+        mModel = new UserBased::FixedNeighborSizeModel(mRatingMatrix->NumUser(), neighborSize);
     } else if (mConfig["modelType"].asString() == "fixedSimilarityThreshold") {
         float threshold = (float)mConfig["similarityThreshold"].asDouble();
-        mModel = new user_based::FixedSimilarityThresholdModel(mRatingMatrix->NumUser(), threshold);
+        mModel = new UserBased::FixedSimilarityThresholdModel(mRatingMatrix->NumUser(), threshold);
     } else {
         throw LonganConfigError("No Such modelType");
     }
@@ -82,13 +59,13 @@ void UserBasedTrain::InitModel() {
 void UserBasedTrain::ComputeModel() {
     Log::I("recsys", "UserBasedTrain::ComputeModel()");
       if (mConfig["modelComputation"].asString() == "simple") {
-          mModelComputationDelegate = new user_based::SimpleModelComputation();
+          mModelComputationDelegate = new UserBased::SimpleModelComputation();
       } else if (mConfig["modelComputation"].asString() == "staticScheduled") {
-          mModelComputationDelegate = new user_based::StaticScheduledModelComputation();
+          mModelComputationDelegate = new UserBased::StaticScheduledModelComputation();
       } else if (mConfig["modelComputation"].asString() == "dynamicScheduled") {
-          mModelComputationDelegate = new user_based::DynamicScheduledModelComputation();
+          mModelComputationDelegate = new UserBased::DynamicScheduledModelComputation();
       } else {
-          mModelComputationDelegate = new user_based::DynamicScheduledModelComputation();
+          mModelComputationDelegate = new UserBased::DynamicScheduledModelComputation();
       }
       mModelComputationDelegate->ComputeModel(mRatingMatrix, mModel);
 }

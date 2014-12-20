@@ -10,6 +10,7 @@
 #include "item_based_model.h"
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_matrix_as_users.h"
+#include "recsys/base/rating_trait.h"
 #include "common/lang/defines.h"
 #include <json/json.h>
 #include <string>
@@ -23,12 +24,19 @@ public:
 	virtual void Cleanup() override;
     virtual float PredictRating(int userId, int itemId) const override;
     virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
-protected:
+private:
     void LoadRatings();
     void LoadModel();
-protected:
-    RatingMatrixAsUsers<> *mRatingMatrix;
-    item_based::ModelPredict *mModel;
+    void AdjustRating();
+private:
+    RatingMatrixAsUsers<> *mRatingMatrix = nullptr;
+    RatingTrait *mRatingTrait = nullptr;
+    ItemBased::ModelPredict *mModel = nullptr;
+    enum SIM_TYPE {
+        SIM_TYPE_ADJUSTED_COSINE,
+        SIM_TYPE_CORRELATION,
+        SIM_TYPE_COSINE
+    } mSimTpye;
 };
 
 } //~ namespace longan

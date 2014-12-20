@@ -6,6 +6,7 @@
 
 #include "user_based_predict.h"
 #include "recsys/base/rating_list_loader.h"
+#include "recsys/base/rating_adjust.h"
 #include "common/logging/logging.h"
 #include "common/base/algorithm.h"
 #include "common/math/math.h"
@@ -18,6 +19,7 @@ namespace longan {
 void UserBasedPredict::Init() {
     LoadConfig();
     LoadRatings();
+    AdjustRating();
     LoadModel();
 }
 
@@ -25,6 +27,7 @@ void UserBasedPredict::Cleanup() {
     delete mModel;
     delete mRatingMatrixAsItems;
     delete mRatingMatrixAsUsers;
+    delete mRatingTrait;
 }
 
 void UserBasedPredict::LoadRatings() {
@@ -37,12 +40,29 @@ void UserBasedPredict::LoadRatings() {
     Log::I("recsys", "create rating matrix(as users)");
     mRatingMatrixAsUsers = new RatingMatrixAsUsers<>();
     mRatingMatrixAsUsers->Init(rlist);
+    Log::I("recsys", "create rating trait");
+    mRatingTrait = new RatingTrait();
+    mRatingTrait->Init(rlist);
+}
+
+void UserBasedPredict::AdjustRating() {
+    if (mConfig["similarityType"].asString() == "adjustedCosine") {
+        mSimType = SIM_TYPE_ADJUSTED_COSINE;
+        AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrixAsUsers);
+        AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrixAsItems);
+    } else if (mConfig["similarityType"].asString() == "correlation") {
+        mSimType = SIM_TYPE_CORRELATION;
+        AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrixAsUsers);
+        AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrixAsItems);
+    } else { // (mConfig["similarityType"].asString == "cosine")
+        mSimType = SIM_TYPE_COSINE;
+    }
 }
 
 void UserBasedPredict::LoadModel() {
     Log::I("recsys", "UserBasedPredict::LoadModel()");
     Log::I("recsys", "model file = " + mModelFilepath);
-    mModel = new user_based::ModelPredict();
+    mModel = new UserBased::ModelPredict();
     mModel->Load(mModelFilepath);
 }
 
@@ -52,7 +72,7 @@ float UserBasedPredict::PredictRating(int userId, int itemId) const {
     const auto& iv = mRatingMatrixAsItems->GetItemVector(itemId);
     const UserRating *data1 = iv.Data();
     int size1 = iv.Size();
-    const user_based::NeighborUser* data2 = mModel->NeighborBegin(userId);
+    const UserBased::NeighborUser* data2 = mModel->NeighborBegin(userId);
     int size2 = mModel->NeighborSize(userId);
     double numerator = 0.0;
     double denominator = 0.0;
@@ -60,18 +80,18 @@ float UserBasedPredict::PredictRating(int userId, int itemId) const {
         for (int i = 0; i < size1; ++i) {
             const UserRating& ur = data1[i];
             int pos = BSearch(ur.UserId(), data2, size2,
-                    [](int lhs, const user_based::NeighborUser& rhs)->int {
+                    [](int lhs, const UserBased::NeighborUser& rhs)->int {
                 return lhs - rhs.UserId();
             });
             if (pos >= 0) {
-                const user_based::NeighborUser& nu = data2[pos];
+                const UserBased::NeighborUser& nu = data2[pos];
                 numerator += nu.Similarity() * ur.Rating();
                 denominator += Math::Abs(nu.Similarity());
             }
         }
     } else {
         for (int i = 0; i < size2; ++i) {
-            const user_based::NeighborUser& nu = data2[i];
+            const UserBased::NeighborUser& nu = data2[i];
             int pos = BSearch(nu.UserId(), data1, size1,
                     [](int lhs, const UserRating& rhs)->int {
                 return lhs - rhs.UserId();
@@ -84,6 +104,11 @@ float UserBasedPredict::PredictRating(int userId, int itemId) const {
         }
     }
     double predictedRating = numerator / (denominator + Double::EPS);
+    if (mSimType == SIM_TYPE_ADJUSTED_COSINE) {
+        predictedRating += mRatingTrait->ItemAverage(itemId);
+    } else if (mSimType == SIM_TYPE_CORRELATION) {
+        predictedRating += mRatingTrait->UserAverage(userId);
+    }
     return (float)predictedRating;
 }
 
@@ -93,7 +118,7 @@ ItemIdList UserBasedPredict::PredictTopNItem(int userId, int listSize) const {
     int numItem = mRatingMatrixAsItems->NumItem();
     std::vector<double> numerators(numItem);
     std::vector<double> denominator(numItem);
-    const user_based::NeighborUser *data1 = mModel->NeighborBegin(userId);
+    const UserBased::NeighborUser *data1 = mModel->NeighborBegin(userId);
     int size1 = mModel->NeighborSize(userId);
     for (int i = 0; i < size1; ++i) {
         int uid = data1[i].UserId();
@@ -118,6 +143,9 @@ ItemIdList UserBasedPredict::PredictTopNItem(int userId, int listSize) const {
         end = data3[i].ItemId();
         for (int iid = begin; iid < end; ++iid) {
             float predRating = numerators[iid] / (denominator[iid] + Double::EPS);
+            if (mSimType == SIM_TYPE_ADJUSTED_COSINE) {
+                predRating += mRatingTrait->ItemAverage(iid);
+            }
             ratings.push_back(ItemRating(iid, predRating));
         }
     }
