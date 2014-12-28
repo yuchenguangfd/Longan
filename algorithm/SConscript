@@ -8,6 +8,7 @@ env_algorithm.Prepend(LIBS = ["algorithm"])
 env_algorithm.lib_objects = []
 
 SConscript("data_structure/SConscript")
+SConscript("geometry/SConscript")
 SConscript("graph/SConscript")
 SConscript("number_theory/SConscript")
 SConscript("sort/SConscript")

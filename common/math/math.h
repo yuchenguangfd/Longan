@@ -98,6 +98,10 @@ inline double Sqrt(float x) {
     return ::sqrtf(x);
 }
 
+inline double Round(double x) {
+    return ::round(x);
+}
+
 int Factorial(int n);
 
 } //~ namespace Math
