@@ -8,10 +8,10 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
-DEFINE_string(ratingTrainFilepath, "./rating_train.txt", "input file path of train rating data.");
+DEFINE_string(ratingTrainFilepath, "./rating_train.bin", "input file path of train rating data.");
 DEFINE_string(configFilepath, "./pop_config.json", "input file path of config file.");
 DEFINE_string(modelFilepath, "./pop_model.dat", "input file path of trained model.");
-DEFINE_string(ratingTestFilepath, "./rating_test.txt", "input file path of test rating data.");
+DEFINE_string(ratingTestFilepath, "./rating_test.bin", "input file path of test rating data.");
 DEFINE_string(resultFilepath, "./pop_result.json", "output file path of result report.");
 
 int main(int argc, char **argv) {

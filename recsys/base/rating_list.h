@@ -8,11 +8,10 @@
 #define RECSYS_BASE_RATING_LIST_H
 
 #include "rating_record.h"
-#include <memory>
+#include "common/lang/defines.h"
 #include <string>
 #include <vector>
 
-#include "common/lang/defines.h"
 
 namespace longan {
 
@@ -45,6 +44,11 @@ public:
     RatingRecord& operator[] (int i) {
         return mRatingRecords[i];
     }
+public:
+    static RatingList LoadFromTextFile(const std::string& ratingTextFilepath);
+    static RatingList LoadFromBinaryFile(const std::string& ratingBinaryFilepath);
+    static void WriteToTextFile(const RatingList& rlist, const std::string& ratingTextFilepath);
+    static void WriteToBinaryFile(const RatingList& rlist, const std::string& ratingBinaryFilepath);
 private:
     int mNumUser;
     int mNumItem;

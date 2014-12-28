@@ -21,30 +21,38 @@ public:
 	BinaryInputStream(const std::string& filename);
 	virtual ~BinaryInputStream();
 	void Close();
-	friend BinaryInputStream& operator >> (BinaryInputStream& bis, int32& i);
-	friend BinaryInputStream& operator >> (BinaryInputStream& bis, float32& f);
-	friend BinaryInputStream& operator >> (BinaryInputStream& bis, float64& f);
+	friend BinaryInputStream& operator>> (BinaryInputStream& bis, int32& i);
+	friend BinaryInputStream& operator>> (BinaryInputStream& bis, int64& i);
+	friend BinaryInputStream& operator>> (BinaryInputStream& bis, float32& f);
+	friend BinaryInputStream& operator>> (BinaryInputStream& bis, float64& f);
 	void Read(float32 *data, int size);
 protected:
 	FILE* mStream;
 	DISALLOW_COPY_AND_ASSIGN(BinaryInputStream);
 };
 
-inline BinaryInputStream& operator >> (BinaryInputStream& bis, int32& i) {
+inline BinaryInputStream& operator>> (BinaryInputStream& bis, int32& i) {
     if (fread((void*)&i, sizeof(int32), 1, bis.mStream) != 1) {
         throw LonganFileReadError();
     }
     return bis;
 }
 
-inline BinaryInputStream& operator >> (BinaryInputStream& bis, float32& f) {
+inline BinaryInputStream& operator>> (BinaryInputStream& bis, int64& i) {
+    if (fread((void*)&i, sizeof(int64), 1, bis.mStream) != 1) {
+        throw LonganFileReadError();
+    }
+    return bis;
+}
+
+inline BinaryInputStream& operator>> (BinaryInputStream& bis, float32& f) {
     if (fread((void*)&f, sizeof(float32), 1, bis.mStream) != 1) {
         throw LonganFileReadError();
     }
     return bis;
 }
 
-inline BinaryInputStream& operator >> (BinaryInputStream& bis, float64& f) {
+inline BinaryInputStream& operator>> (BinaryInputStream& bis, float64& f) {
     if (fread((void*)&f, sizeof(float64), 1, bis.mStream) != 1) {
         throw LonganFileReadError();
     }

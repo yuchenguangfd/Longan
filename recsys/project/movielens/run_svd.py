@@ -24,10 +24,10 @@ def run_svd():
               + "-configFilepath=./svd_config.json "
               + "-modelFilepath=./svd_model.dat")
     run_command("../../svd/svd_evaluate_longan " 
-              + "-ratingTrainFilepath=./MovieLens/rating_train.txt "
+              + "-ratingTrainFilepath=./MovieLens/rating_train.bin "
               + "-configFilepath=./svd_config.json "
               + "-modelFilepath=./svd_model.dat "
-              + "-ratingTestFilepath=./MovieLens/rating_test.txt " 
+              + "-ratingTestFilepath=./MovieLens/rating_test.bin " 
               + "-resultFilepath=./svd_result.json")
 
 if __name__=="__main__":

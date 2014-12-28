@@ -1,9 +1,6 @@
 /rating_list_unittest
 /rating_list_unittest.o
 /rating_list.o
-/rating_list_loader_unittest
-/rating_list_loader_unittest.o
-/rating_list_loader.o
 /rating_matrix_as_items_unittest
 /rating_matrix_as_items_unittest.o
 /rating_matrix_as_users_unittest
@@ -17,3 +14,4 @@
 /basic_predict.o
 /basic_train.o
 /basic_convert.o
+/rating_adjust.o

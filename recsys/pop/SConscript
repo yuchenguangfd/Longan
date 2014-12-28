@@ -15,6 +15,8 @@ build_env.Prepend(CPPPATH = "#/external/jsoncpp/include")
 build_env.Prepend(LIBPATH = "#/external/jsoncpp")
 build_env.Prepend(LIBS = "json")
 
+build_env.Program("pop_convert_longan",
+                  ["pop_convert_longan.cpp"])
 build_env.Program("pop_train_longan", 
                   ["pop_train_longan.cpp", 
                    "pop_train.cpp"])
@@ -23,6 +25,8 @@ build_env.Program("pop_evaluate_longan",
                    "pop_evaluate.cpp", 
                    "pop_predict.cpp"])
 
+build_env.Program("random_convert_longan",
+                  ["random_convert_longan.cpp"])
 build_env.Program("random_train_longan",
                   ["random_train_longan.cpp",
                    "random_train.cpp"])

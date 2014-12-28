@@ -5,7 +5,6 @@
  */
 
 #include "random_predict.h"
-#include "recsys/base/rating_list_loader.h"
 #include "common/base/algorithm.h"
 #include "common/util/running_statistic.h"
 #include "common/util/random.h"
@@ -16,9 +15,9 @@ namespace longan {
 
 void RandomPredict::Init() {
     Log::I("recsys", "RandomPredict::Init()");
-    RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
-    std::vector<RunningMax<float> > runUserMaxRatings(rlist.NumUser());
-    std::vector<RunningMin<float> > runUserMinRatings(rlist.NumUser());
+    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
+    std::vector<RunningMax<float>> runUserMaxRatings(rlist.NumUser());
+    std::vector<RunningMin<float>> runUserMinRatings(rlist.NumUser());
     for (int i = 0; i < rlist.NumRating(); ++i) {
         const RatingRecord& rr = rlist[i];
         runUserMaxRatings[rr.UserId()].Add(rr.Rating());

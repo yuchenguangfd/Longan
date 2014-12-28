@@ -5,7 +5,6 @@
  */
 
 #include "item_based_model_computation.h"
-#include "recsys/base/rating_list_loader.h"
 #include "recsys/util/recsys_test_helper.h"
 #include "common/time/stopwatch.h"
 #include <gtest/gtest.h>

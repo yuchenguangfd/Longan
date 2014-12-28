@@ -5,6 +5,7 @@
  */
 
 #include "basic_convert.h"
+#include "rating_list.h"
 
 namespace longan {
 
@@ -12,7 +13,12 @@ BasicConvert::BasicConvert(const std::string& ratingTextFilepath, const std::str
     mRatingTextFilepath(ratingTextFilepath),
     mRatingBinaryFilepath(ratingBinaryFilepath) { }
 
-longan::BasicConvert::~BasicConvert() { }
+BasicConvert::~BasicConvert() { }
+
+void BasicConvert::Convert() {
+    RatingList rlist = RatingList::LoadFromTextFile(mRatingTextFilepath);
+    RatingList::WriteToBinaryFile(rlist, mRatingBinaryFilepath);
+}
 
 } //~ namespace longan
 

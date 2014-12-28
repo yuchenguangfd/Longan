@@ -20,52 +20,6 @@
 
 namespace longan {
 
-Timer::Timer()
-{
-    reset();
-}
-
-void Timer::reset()
-{
-    begin = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::milliseconds>
-                   (begin-begin);
-}
-
-void Timer::reset(std::string const &msg)
-{
-    printf("%s", msg.c_str());
-    fflush(stdout);
-    reset();
-}
-
-void Timer::tic()
-{
-    begin = std::chrono::high_resolution_clock::now();
-}
-
-void Timer::tic(std::string const &msg)
-{
-    printf("%s", msg.c_str());
-    fflush(stdout);
-    tic();
-}
-
-float Timer::toc()
-{
-    duration += std::chrono::duration_cast<std::chrono::milliseconds>
-                    (std::chrono::high_resolution_clock::now()-begin);
-    return (double)duration.count()/1000;
-}
-
-float Timer::toc(std::string const &msg)
-{
-    float duration_one = toc();
-    printf("%s  %.2f\n", msg.c_str(), duration_one);
-    fflush(stdout);
-    return duration_one;
-}
-
 std::shared_ptr<Matrix> read_matrix_meta(FILE *f)
 {
     std::shared_ptr<Matrix> M(new Matrix);
@@ -92,8 +46,7 @@ std::shared_ptr<Matrix> read_matrix_meta(std::string const &path)
 std::shared_ptr<Matrix> read_matrix(std::string const &path)
 {
     FILE *f = fopen(path.c_str(), "rb");
-    if(!f)
-    {
+    if(!f) {
         fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
         return std::shared_ptr<Matrix>(nullptr);
     }
@@ -129,8 +82,7 @@ Model::~Model()
         free(Q);
 }
 
-std::shared_ptr<Model> read_model_meta(FILE *f)
-{
+std::shared_ptr<Model> read_model_meta(FILE *f){
     std::shared_ptr<Model> model(new Model);
     fread(&model->param, sizeof(Parameter), 1, f);
     fread(&model->nr_users, sizeof(int), 1, f);
@@ -187,8 +139,7 @@ std::shared_ptr<Model> read_model(std::string const &path)
     return model;
 }
 
-bool write_model(Model const &model, std::string const &path)
-{
+bool write_model(Model const &model, std::string const &path) {
     FILE *f = fopen(path.c_str(), "wb");
     if(!f)
     {
@@ -237,8 +188,7 @@ float calc_rmse(const Model& model, Matrix const &M)
     return sqrt(loss/M.nr_ratings);
 }
 
-int get_aligned_dim(int const dim)
-{
+int get_aligned_dim(int const dim) {
   return dim;
 }
 
@@ -250,8 +200,7 @@ struct GriddedMatrix
     std::vector<Matrix> GM;
 };
 
-std::vector<int> gen_map(int const size, bool const shuffle)
-{
+std::vector<int> gen_map(int size, bool shuffle) {
     std::vector<int> map(size, 0);
     for(int i = 0; i < size; i++)
         map[i] = i;
@@ -451,44 +400,6 @@ std::shared_ptr<GriddedMatrix> read_gridded_matrix(
         buffers[node_in.uid].push_back(node_in);
     }
 
-    // It seems that sorting makes no significant difference in performance.
-    /*
-    std::mutex mtx;
-    std::queue<int> tasks;
-    for(int u = 0; u < Tr->nr_users; u++)
-        tasks.push(u);
-
-    auto sort_node = [] (Node lhs, Node rhs)
-    {
-        if(lhs.uid!=rhs.uid)
-            return lhs.uid < rhs.uid;
-        else
-            return lhs.iid < rhs.iid;
-    };
-
-    auto sort_worker = [&] ()
-    {
-        while(true)
-        {
-            int u = 0;
-            {
-                std::lock_guard<std::mutex> lock(mtx);
-                if(tasks.empty())
-                    break;
-                u = tasks.front();
-                tasks.pop();
-            }
-            std::sort(buffers[u].begin(), buffers[u].end(), sort_node);
-        }
-    };
-
-    std::vector<std::thread> threads;
-    for(int tx = 0; tx < option.nr_threads; tx++)
-        threads.push_back(std::thread(sort_worker));
-    for(auto &thread : threads)
-        thread.join();
-    */
-
     int const seg_u = (int)ceil((double)Tr_meta->nr_users /
                                 option.nr_user_blocks);
     int const seg_i = (int)ceil((double)Tr_meta->nr_items /
@@ -528,7 +439,6 @@ public:
     bool is_terminated();
 private:
     void pause_if_needed();
-
     int const nr_user_blocks, nr_item_blocks, nr_blocks, nr_threads;
     int total_jobs, nr_paused_thrs;
     bool paused, terminated;
@@ -587,8 +497,7 @@ int Scheduler::get_job()
     return best_jid;
 }
 
-void Scheduler::put_job(int const jid, double const loss)
-{
+void Scheduler::put_job(int const jid, double const loss) {
     {
         std::lock_guard<std::mutex> lock(mtx);
         blocked_u[jid/nr_item_blocks] = 0;
@@ -727,12 +636,8 @@ void sgd(GriddedMatrix const * const Tr, Model * const model,
 Model fpsgd(GriddedMatrix const &Tr, Matrix const &Va,
             TrainOption const &option)
 {
-    Timer timer;
-    timer.reset("Initializing model...");
     Model model = generate_initial_model(option.param, Tr.nr_users, Tr.nr_items,
                                          option.use_avg? Tr.avg : 0);
-    timer.toc("done.");
-
     Monitor monitor(Tr, &Va, &model, option.show_tr_rmse,
                     option.show_obj);
 
@@ -743,16 +648,13 @@ Model fpsgd(GriddedMatrix const &Tr, Matrix const &Va,
         threads.push_back(std::thread(sgd, &Tr, &model, &scheduler));
     monitor.print_header();
 
-    timer.reset();
     for(int iter = 1; iter <= option.nr_iters; iter++)
     {
         scheduler.wait_for_jobs_done(iter * option.nr_user_blocks *
                                      option.nr_item_blocks);
         scheduler.pause();
-        float const iter_time = timer.toc();
         double const loss = scheduler.get_loss();
-        monitor.print(iter, iter_time, loss, sqrt(loss/Tr.nr_ratings));
-        timer.tic();
+        monitor.print(iter, 0.0, loss, sqrt(loss/Tr.nr_ratings));
         scheduler.resume();
     }
 
@@ -801,9 +703,7 @@ void inversely_shuffle_model(Model &model, std::vector<int> const &user_map,
 void SVDTrain::Train() {
     LoadConfig();
     std::shared_ptr<const TrainOption> const option = ParseTrainOption();
-     Timer timer;
-
-     std::shared_ptr<const Matrix> const
+    std::shared_ptr<const Matrix> const
          Tr_meta = read_matrix_meta(option->tr_path);
      if(!Tr_meta)
          return ;
@@ -813,21 +713,17 @@ void SVDTrain::Train() {
      std::vector<int> const item_map = gen_map(Tr_meta->nr_items,
                                                option->rand_shuffle);
 
-     timer.reset("Reading training data...");
      std::shared_ptr<const GriddedMatrix> const
          Tr = read_gridded_matrix(*option, user_map, item_map);
      if(!Tr)
          return ;
-     timer.toc("done.");
 
      std::shared_ptr<Matrix> Va;
      if(!option->va_path.empty())
      {
-         timer.reset("Reading validation data...");
          Va = read_matrix(option->va_path);
          if(!Va)
              return ;
-         timer.toc("done.");
          if(Va->nr_users > Tr_meta->nr_users || Va->nr_items > Tr_meta->nr_items)
          {
              fprintf(stderr, "Error: Validation set out of range.\n");
@@ -845,10 +741,8 @@ void SVDTrain::Train() {
      if(option->rand_shuffle)
          inversely_shuffle_model(model, user_map, item_map);
 
-     timer.reset("Writing model...");
      if(!write_model(model, option->model_path))
          return ;
-     timer.toc("done.");
 }
 
 std::shared_ptr<TrainOption> SVDTrain::ParseTrainOption() {

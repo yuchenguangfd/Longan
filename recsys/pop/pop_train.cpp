@@ -5,7 +5,6 @@
  */
 
 #include "pop_train.h"
-#include "recsys/base/rating_list_loader.h"
 #include "common/logging/logging.h"
 #include "common/lang/binary_output_stream.h"
 #include "common/error.h"
@@ -17,7 +16,7 @@ namespace longan {
 void PopTrain::Train() {
     Log::I("recsys", "PopTrain::Train()");
     Log::I("recsys", "loading train rating, file = " + mRatingTrainFilepath);
-    mRatingList = RatingListLoader::Load(mRatingTrainFilepath);
+    mRatingList = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
     Log::I("recsys", "compute average rating of items");
     mItemsAverage.resize(mRatingList.NumItem());
     for (int i = 0; i < mRatingList.NumRating(); ++i) {

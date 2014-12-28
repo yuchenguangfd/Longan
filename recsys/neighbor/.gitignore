@@ -24,3 +24,7 @@
 /user_based_evaluate_longan.o
 /user_based_evaluate.o
 /user_based_predict.o
+/item_based_convert_longan.o
+/item_based_convert_longan
+/user_based_convert_longan
+/user_based_convert_longan.o

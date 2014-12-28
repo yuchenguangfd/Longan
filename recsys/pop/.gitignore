@@ -12,3 +12,7 @@
 /random_evaluate_longan.o
 /random_evaluate.o
 /random_predict.o
+/pop_convert_longan
+/pop_convert_longan.o
+/random_convert_longan
+/random_convert_longan.o

@@ -14,35 +14,29 @@
 
 namespace longan {
 
-class Timer {
-public:
-    Timer();
-    void reset();
-    void reset(std::string const &msg);
-    void tic();
-    void tic(std::string const &msg);
-    float toc();
-    float toc(std::string const &msg);
-private:
-    std::chrono::high_resolution_clock::time_point begin;
-    std::chrono::milliseconds duration;
-};
+//namespace SVD {
 
-struct Node
-{
+//} //~ namespace SVD
+class Node {
+public:
     Node() : uid(0), iid(0), rate(0) {}
     int uid, iid;
     float rate;
 };
 
-struct Matrix
-{
+class Matrix {
+public:
     Matrix() : nr_users(0), nr_items(0), nr_ratings(0), avg(0), R(0) {}
+    static std::shared_ptr<Matrix> ReadMeta(const std::string& filename);
+    static std::shared_ptr<Matrix> Read(const std::string& filename);
+public:
     int nr_users, nr_items;
     long nr_ratings;
     float avg;
     std::vector<Node> R;
 };
+
+
 
 std::shared_ptr<Matrix> read_matrix_meta(FILE *f);
 

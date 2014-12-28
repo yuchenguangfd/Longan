@@ -5,7 +5,6 @@
  */
 
 #include "basic_evaluate.h"
-#include "rating_list_loader.h"
 #include "rating_matrix_as_users.h"
 #include "common/math/math.h"
 #include "common/logging/logging.h"
@@ -63,7 +62,7 @@ void BasicEvaluate::LoadConfig() {
 
 void BasicEvaluate::LoadTestRatings() {
     Log::I("recsys", "BasicEvaluate::LoadTestRatings()");
-    mTestRatingList = RatingListLoader::Load(mRatingTestFilepath);
+    mTestRatingList = RatingList::LoadFromBinaryFile(mRatingTestFilepath);
 }
 
 void BasicEvaluate::EvaluateRating() {

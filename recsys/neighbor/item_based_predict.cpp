@@ -5,7 +5,6 @@
  */
 
 #include "item_based_predict.h"
-#include "recsys/base/rating_list_loader.h"
 #include "recsys/base/rating_adjust.h"
 #include "common/logging/logging.h"
 #include "common/base/algorithm.h"
@@ -33,7 +32,7 @@ void ItemBasedPredict::Cleanup() {
 void ItemBasedPredict::LoadRatings() {
     Log::I("recsys", "ItemBasedPredict::LoadRatings()");
     Log::I("recsys", "rating file = " + mRatingTrainFilepath);
-    RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
+    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
     Log::I("recsys", "create rating matrix");
     mRatingMatrix = new RatingMatrixAsUsers<>();
     mRatingMatrix->Init(rlist);

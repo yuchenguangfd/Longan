@@ -12,16 +12,23 @@ def run_command(cmd):
         sys.exit(-1)
         
 def run_pop():
+    run_command("../../pop/random_convert_longan "
+              + "-ratingTextFilepath=./MovieLens/rating_train.txt "
+              + "-ratingBinaryFilepath=./MovieLens/rating_train.bin")
+    run_command("../../pop/random_convert_longan "
+              + "-ratingTextFilepath=./MovieLens/rating_test.txt "
+              + "-ratingBinaryFilepath=./MovieLens/rating_test.bin")
+  
     run_command("../../pop/random_train_longan "
-              + "-ratingTrainFilepath=./MovieLens/rating_train.txt "
+              + "-ratingTrainFilepath=./MovieLens/rating_train.bin "
               + "-configFilepath=./random_config.json "
               + "-modelFilepath=./random_model.dat") 
         
     run_command("../../pop/random_evaluate_longan " 
-               + "-ratingTrainFilepath=./MovieLens/rating_train.txt "
+               + "-ratingTrainFilepath=./MovieLens/rating_train.bin "
                + "-configFilepath=./random_config.json "
                + "-modelFilepath=./random_model.dat "
-               + "-ratingTestFilepath=./MovieLens/rating_test.txt " 
+               + "-ratingTestFilepath=./MovieLens/rating_test.bin " 
                + "-resultFilepath=./random_result.json")
 
 if __name__=="__main__":

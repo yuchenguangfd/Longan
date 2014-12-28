@@ -5,7 +5,6 @@
  */
 
 #include "pop_predict.h"
-#include "recsys/base/rating_list_loader.h"
 #include "common/logging/logging.h"
 #include "common/lang/binary_input_stream.h"
 #include "common/base/algorithm.h"
@@ -18,14 +17,13 @@ void PopPredict::Init() {
     Log::I("recsys", "PopPredict::Init()");
     LoadRatings();
     LoadModel();
-    assert(mItemAverages.size() == mRatingMatrix.NumItem());
     SortItemAverages();
 }
 
 void PopPredict::Cleanup() { }
 
 void PopPredict::LoadRatings() {
-    RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
+    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
     mRatingMatrix.Init(rlist);
 }
 
@@ -37,6 +35,7 @@ void PopPredict::LoadModel() {
     for (int i = 0; i < numItem; ++i) {
         bis >> mItemAverages[i];
     }
+    assert(mItemAverages.size() == mRatingMatrix.NumItem());
 }
 
 void PopPredict::SortItemAverages() {

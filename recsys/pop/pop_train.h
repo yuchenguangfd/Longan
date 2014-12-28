@@ -22,7 +22,7 @@ private:
     void SaveModel();
 private:
     RatingList mRatingList;
-    std::vector<RunningAverage<float> > mItemsAverage;
+    std::vector<RunningAverage<float>> mItemsAverage;
 };
 
 } //~ namespace longan

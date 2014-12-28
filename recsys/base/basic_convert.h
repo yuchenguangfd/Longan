@@ -15,7 +15,7 @@ class BasicConvert {
 public:
     BasicConvert(const std::string& ratingTextFilepath, const std::string& ratingBinaryFilepath);
     virtual ~BasicConvert();
-    virtual void Convert() = 0;
+    virtual void Convert();
 protected:
     const std::string& mRatingTextFilepath;
     const std::string& mRatingBinaryFilepath;

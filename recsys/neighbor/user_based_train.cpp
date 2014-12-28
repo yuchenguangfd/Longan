@@ -5,7 +5,6 @@
  */
 
 #include "user_based_train.h"
-#include "recsys/base/rating_list_loader.h"
 #include "recsys/base/rating_adjust.h"
 #include "common/system/file_util.h"
 #include "common/logging/logging.h"
@@ -26,7 +25,7 @@ void UserBasedTrain::Train() {
 void UserBasedTrain::LoadRatings() {
     Log::I("recsys", "UserBasedTrain::LoadRatings()");
     Log::I("recsys", "rating file = " + mRatingTrainFilepath);
-    RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
+    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
     Log::I("recsys", "create rating matrix");
     mRatingMatrix = new RatingMatrixAsUsers<>();
     mRatingMatrix->Init(rlist);

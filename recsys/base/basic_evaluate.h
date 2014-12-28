@@ -26,7 +26,7 @@ public:
 protected:
     virtual void CreatePredict() = 0;
     virtual void LoadConfig() final;
-    virtual void LoadTestRatings() final;
+    virtual void LoadTestRatings();
     virtual void EvaluateRating();
     virtual void EvaluateRanking();
     virtual void EvaluateRankingPerUser(int userId, int listSize, const ItemRating *truthDataBegin,

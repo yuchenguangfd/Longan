@@ -5,8 +5,9 @@
  */
 
 #include "svd_predict.h"
-#include "recsys/base/rating_list_loader.h"
+#include "recsys/base/rating_list.h"
 #include "common/logging/logging.h"
+#include "common/lang/binary_input_stream.h"
 #include <algorithm>
 #include <cassert>
 
@@ -20,7 +21,19 @@ void SVDPredict::Init() {
 void SVDPredict::LoadRatings() {
     Log::I("recsys", "SVDPredict::LoadRatings()");
     Log::I("recsys", "rating file = " + mRatingTrainFilepath);
-    RatingList rlist = RatingListLoader::Load(mRatingTrainFilepath);
+    BinaryInputStream bis(mRatingTrainFilepath);
+    int numUser, numItem;
+    int64 numRating;
+    float avgRating;
+    bis >> numUser >> numItem >> numRating
+        >> avgRating;
+    RatingList rlist(numUser, numItem, numRating);
+    for (int i = 0; i < numRating; ++i) {
+        int uid, iid;
+        float rating;
+        bis >> uid >> iid >> rating;
+        rlist.Add(RatingRecord(uid, iid, rating));
+    }
     Log::I("recsys", "create rating matrix");
     mRatingMatrix = new RatingMatrixAsUsers<>();
     mRatingMatrix->Init(rlist);
