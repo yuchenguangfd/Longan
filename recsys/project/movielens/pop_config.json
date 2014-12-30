@@ -1,5 +1,5 @@
 {
 	"evaluateRating": true,
 	"evaluateRanking": true,
-	"rankingListSize": 20
+	"rankingListSize": 100
 }

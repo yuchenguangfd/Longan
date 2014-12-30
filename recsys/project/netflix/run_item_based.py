@@ -12,16 +12,23 @@ def run_command(cmd):
         sys.exit(-1)
         
 def run_item_based():
+    run_command("../../neighbor/item_based_convert_longan "
+              + "-ratingTextFilepath=./Netflix/rating_train.txt "
+              + "-ratingBinaryFilepath=./Netflix/rating_train.bin")
+    run_command("../../neighbor/item_based_convert_longan "
+              + "-ratingTextFilepath=./Netflix/rating_test.txt "
+              + "-ratingBinaryFilepath=./Netflix/rating_test.bin")
+    
     run_command("../../neighbor/item_based_train_longan "
-            + "-ratingTrainFilepath=./Netflix/rating_train.txt "
+            + "-ratingTrainFilepath=./Netflix/rating_train.bin "
             + "-configFilepath=./item_based_config.json "
             + "-modelFilepath=./item_based_model.dat") 
         
     run_command("../../neighbor/item_based_evaluate_longan " 
-              + "-ratingTrainFilepath=./Netflix/rating_train.txt "
+              + "-ratingTrainFilepath=./Netflix/rating_train.bin "
               + "-configFilepath=./item_based_config.json "
               + "-modelFilepath=./item_based_model.dat "
-              + "-ratingTestFilepath=./Netflix/rating_test.txt " 
+              + "-ratingTestFilepath=./Netflix/rating_test.bin " 
               + "-resultFilepath=./item_based_result.json")
 
 if __name__=="__main__":

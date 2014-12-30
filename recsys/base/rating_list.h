@@ -38,6 +38,12 @@ public:
     int Size() const {
         return mRatingRecords.size();
     }
+    const RatingRecord& At(int i) const {
+        return mRatingRecords[i];
+    }
+    RatingRecord& At(int i) {
+        return mRatingRecords[i];
+    }
     const RatingRecord& operator[] (int i) const {
         return mRatingRecords[i];
     }

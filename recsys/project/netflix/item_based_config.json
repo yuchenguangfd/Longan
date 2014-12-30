@@ -1,7 +1,7 @@
 {
 	"similarityType": "adjustedCosine",
-	"modelType": "fixedSimilarityThreshold",
-	"neighborSize": 0.7,
+	"modelType": "fixedNeighborSize",
+	"neighborSize": 2000,
 	"modelComputation": "dynamicScheduled",
 	"evaluateRating": true,
 	"evaluateRanking": true,

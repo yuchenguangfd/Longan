@@ -1,7 +1,7 @@
 {
 	"similarityType": "correlation",
 	"modelType": "fixedSimilarityThreshold",
-	"neighborSize": 0.7,
+	"similarityThreshold": 0.2,
 	"modelComputation": "dynamicScheduled",
 	"evaluateRating": true,
 	"evaluateRanking": true,
