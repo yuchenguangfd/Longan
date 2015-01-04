@@ -64,7 +64,7 @@ public:
         return mNumProducer;
     }
     int NumConsumer() const {
-        return mNumConsumer;;
+        return mNumConsumer;
     }
     int NumAliveProducer() const {
         return mNumAliveProducer;

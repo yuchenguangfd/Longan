@@ -8,3 +8,4 @@ build_env.Append(LIBS = "gtest")
 build_env.Append(LINKFLAGS = "-pthread")
 
 build_env.Program("object_buffer_unittest", ["object_buffer_unittest.cpp"])
+build_env.Program("pipelined_scheduler_unittest", ["pipelined_scheduler_unittest.cpp"])
