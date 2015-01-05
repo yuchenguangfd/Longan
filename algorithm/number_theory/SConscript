@@ -1,5 +1,7 @@
 Import("env_algorithm")
+
 env_algorithm.lib_objects.append(env_algorithm.Object("number_theory.cpp"))
+env_algorithm.lib_objects.append(env_algorithm.Object("prime.cpp"))
 
 build_env = env_algorithm.Clone()
 # add gtest support
@@ -9,3 +11,4 @@ build_env.Prepend(LIBS = "gtest")
 build_env.Prepend(LINKFLAGS = "-pthread")
 	
 build_env.Program("number_theory_unittest",["number_theory_unittest.cpp"])
+build_env.Program("prime_unittest", ["prime_unittest.cpp"])

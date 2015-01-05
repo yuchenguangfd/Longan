@@ -1,2 +1,4 @@
 /object_buffer_unittest
 /object_buffer_unittest.o
+/pipelined_scheduler_unittest
+/pipelined_scheduler_unittest.o
