@@ -7,4 +7,5 @@ build_env.Prepend(LIBPATH = "#/external/gtest")
 build_env.Prepend(LIBS = "gtest")
 build_env.Prepend(LINKFLAGS = "-pthread")
 
+build_env.Program("bipartite_max_match_unittest", ["bipartite_max_match_unittest.cpp"])
 build_env.Program("weighted_bipartite_max_match_unittest", ["weighted_bipartite_max_match_unittest.cpp"])

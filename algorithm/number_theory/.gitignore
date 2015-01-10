@@ -1,3 +1,6 @@
 /number_theory_unittest
 /number_theory_unittest.o
 /number_theory.o
+/prime_unittest
+/prime_unittest.o
+/prime.o

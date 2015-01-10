@@ -98,8 +98,16 @@ inline double Sqrt(float x) {
     return ::sqrtf(x);
 }
 
-inline double Round(double x) {
-    return ::round(x);
+inline int Round(double x) {
+    return static_cast<int>(::round(x));
+}
+
+inline int Ceil(double x) {
+    return static_cast<int>(::ceil(x));
+}
+
+inline int Floor(double x) {
+    return static_cast<int>(::floor(x));
 }
 
 int Factorial(int n);
