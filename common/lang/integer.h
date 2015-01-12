@@ -13,6 +13,7 @@ namespace longan {
 
 class Integer {
 public:
+    static const int MAX = 0x7FFFFFFF;
     static int ParseInt(const std::string& s);
     static std::string ToString(int num);
     static int ReverseByteOrder(int x);

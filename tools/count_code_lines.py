@@ -4,7 +4,7 @@
 import os
 import sys
 
-CODE_FILE_EXTS = [".h", ".cpp", ".java", ".py"]
+CODE_FILE_EXTS = [".h", ".cpp", ".java", ".py", ".js", ".css", ".html"]
 
 def count_line(file):
     fp = open(file)

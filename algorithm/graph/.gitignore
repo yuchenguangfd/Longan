@@ -2,3 +2,5 @@
 /weighted_bipartite_max_match_unittest.o
 /bipartite_max_match_unittest
 /bipartite_max_match_unittest.o
+/graph_unittest
+/graph_unittest.o

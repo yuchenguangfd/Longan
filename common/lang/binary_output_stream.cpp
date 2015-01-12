@@ -31,4 +31,22 @@ void BinaryOutputStream::Close() {
     mStream = nullptr;
 }
 
+void BinaryOutputStream::Write(const int32 *data, int size) {
+    if (fwrite((void*)data, (uint64)sizeof(int32), size, mStream) != size) {
+        throw LonganFileWriteError();
+    }
+}
+
+void BinaryOutputStream::Write(const float32 *data, int size) {
+    if (fwrite((void*)data, (uint64)sizeof(float32), size, mStream) != size) {
+        throw LonganFileWriteError();
+    }
+}
+
+void BinaryOutputStream::Write(const float64 *data, int size) {
+    if (fwrite((void*)data, (uint64)sizeof(float64), size, mStream) != size) {
+        throw LonganFileWriteError();
+    }
+}
+
 } //~ namespace longan

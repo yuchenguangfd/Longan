@@ -10,7 +10,7 @@
 
 using namespace longan;
 
-TEST(AlgorithmTest, BinarySearchOK) {
+TEST(AlgorithmTest, BSearchOK) {
     const int size = 1000;
     int array[size] = {};
     for (int i = 0; i < size; ++i) {
@@ -34,6 +34,17 @@ TEST(AlgorithmTest, BinarySearchOK) {
         });
         ASSERT_EQ(i, pos);
     }
+}
+
+TEST(AlgorithmTest, NextPermutationOK) {
+    char str[6] = "12345";
+    for (int i = 1; i < 120; ++i) {
+        std::string s1(str);
+        NextPermutation(str, 5);
+        std::string s2(str);
+        EXPECT_TRUE(s1 < s2);
+    }
+    EXPECT_FALSE(NextPermutation(str, 5));
 }
 
 int main(int argc, char **argv) {

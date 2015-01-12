@@ -9,6 +9,7 @@
 
 #include <iterator>
 #include <cmath>
+#include <cassert>
 
 namespace longan {
 
@@ -57,6 +58,7 @@ inline const T& Min(const T& a, const T& b, const T& c) {
 template <class Iterator>
 const typename std::iterator_traits<Iterator>::value_type&
     MaxInRange(Iterator begin, Iterator end, Iterator& maxPos) {
+    assert(begin != end);
     maxPos = begin;
     for (++begin; begin != end; ++begin) {
         if (*maxPos < *begin) {
@@ -71,6 +73,26 @@ const typename std::iterator_traits<Iterator>::value_type&
     MaxInRange(Iterator begin, Iterator end) {
     Iterator maxPos;
     return MaxInRange(begin, end, maxPos);
+}
+
+template <class Iterator>
+const typename std::iterator_traits<Iterator>::value_type&
+    MinInRange(Iterator begin, Iterator end, Iterator& minPos) {
+    assert(begin != end);
+    minPos = begin;
+    for (++begin; begin != end; ++begin) {
+        if (*begin < *minPos) {
+            minPos = begin;
+        }
+    }
+    return *minPos;
+}
+
+template <class Iterator>
+const typename std::iterator_traits<Iterator>::value_type&
+    MinInRange(Iterator begin, Iterator end) {
+    Iterator minPos;
+    return MinInRange(begin, end, minPos);
 }
 
 inline double RelativeError(double expect, double actual) {
@@ -108,6 +130,10 @@ inline int Ceil(double x) {
 
 inline int Floor(double x) {
     return static_cast<int>(::floor(x));
+}
+
+inline double Sigmoid(double x) {
+    return 1.0 / (1.0 + exp(-x));
 }
 
 int Factorial(int n);
