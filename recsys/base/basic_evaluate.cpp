@@ -6,6 +6,7 @@
 
 #include "basic_evaluate.h"
 #include "common/math/math.h"
+#include "common/lang/integer.h"
 #include "common/logging/logging.h"
 #include "common/system/file_util.h"
 #include "common/system/system_info.h"
@@ -211,7 +212,7 @@ void DynamicScheduledEvaluateRatingDelegate::DoCalcuateErrorWork() {
 
 void DynamicScheduledEvaluateRatingDelegate::DoMonitorProgress() {
     while (true) {
-        ConsoleLog::I("recsys", "Evaluate Rating..." + StringHelper::ToString((int)(mProgress*100)) + "% done.");
+        ConsoleLog::I("recsys", "Evaluate Rating..." + Integer::ToString((int)(mProgress*100)) + "% done.");
         if (mProgress > 0.99) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
@@ -393,7 +394,7 @@ void DynamicScheduledEvaluateRankingDelegate::DoAverageResultWork() {
 
 void DynamicScheduledEvaluateRankingDelegate::DoMonitorProgress() {
     while (true) {
-        ConsoleLog::I("recsys", "Evaluate Ranking..." + StringHelper::ToString((int)(mProgress*100)) + "% done.");
+        ConsoleLog::I("recsys", "Evaluate Ranking..." + Integer::ToString((int)(mProgress*100)) + "% done.");
         if (mProgress > 0.99) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }

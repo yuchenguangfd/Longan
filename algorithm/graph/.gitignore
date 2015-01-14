@@ -4,3 +4,5 @@
 /bipartite_max_match_unittest.o
 /graph_unittest
 /graph_unittest.o
+/euler_path_unittest
+/euler_path_unittest.o

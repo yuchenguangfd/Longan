@@ -50,13 +50,6 @@ TEST(StringHelperTest, SplitOK) {
         EXPECT_EQ(substrings[i], "");
 }
 
-TEST(StringHelperTest, ToStringOk) {
-    string str;
-    int i = 12345;
-    ASSERT_NO_THROW(str = StringHelper::ToString(i));
-    EXPECT_EQ("12345", str);
-}
-
 TEST(StringHelperTest, CountWhitespace) {
     string text = "hello, \rstring.\tohh!\n";
     EXPECT_EQ(4, StringHelper::CountWhitespace(text));

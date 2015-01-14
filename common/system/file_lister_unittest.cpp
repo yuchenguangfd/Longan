@@ -14,7 +14,7 @@
 using namespace longan;
 using namespace std;
 
-TEST(FileListerTest, ListFilename) {
+TEST(FileListerTest, ListFilenameOK) {
     FileLister fileLister(".");
     vector<std::string> filenames = fileLister.ListFilename();
     auto pos = find(filenames.begin(), filenames.end(), "file_lister_unittest.cpp");

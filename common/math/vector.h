@@ -16,7 +16,7 @@
 
 namespace longan {
 
-template <class T, class Alloc = std::allocator<T> >
+template <class T, class Alloc = std::allocator<T>>
 class Vector {
 public:
     Vector();
@@ -59,6 +59,7 @@ public:
 public:
     static Vector<T, Alloc> Zeros(int size);
     static Vector<T, Alloc> Rand(int size);
+    static Vector<T, Alloc> Rand(int size, T low, T high);
     static Vector<T, Alloc> Randn(int size);
 protected:
     T *mData;
@@ -195,7 +196,17 @@ Vector<T, Alloc> Vector<T, Alloc>::Rand(int size) {
     for (int i = 0; i < size; ++i) {
         vec.mData[i] = rnd.NextDouble();
     }
-    return vec;
+    return std::move(vec);
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc> Vector<T, Alloc>::Rand(int size, T low, T high) {
+    Vector<T, Alloc> vec(size, false);
+    Random& rnd = Random::Instance();
+    for (int i = 0; i < size; ++i) {
+        vec.mData[i] = rnd.Uniform(low, high);
+    }
+    return std::move(vec);
 }
 
 template <class T, class Alloc>

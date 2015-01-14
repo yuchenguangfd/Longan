@@ -7,24 +7,25 @@
 #ifndef COMMON_LOGGING_LOGGING_HELPER_H
 #define COMMON_LOGGING_LOGGING_HELPER_H
 
-#include <glog/logging.h>
+#include "logging.h"
 
 namespace longan {
 
-#define LOG_ENTER_FUNC  LOG(INFO) << "enter func " << __func__
-#define LOG_LEAVE_FUNC  LOG(INFO) << "leave func " << __func__
-#define LOG_FUNC  FuncCallTracer trcer(__func__)
+#define LOG_ENTER_FUNC(tag) LOG(INFO) << '[' << tag << ']' << "enter func " << __func__
+#define LOG_LEAVE_FUNC(tag) LOG(INFO) << '[' << tag << ']' << "leave func " << __func__
+#define LOG_FUNC(tag) FuncCallTracer trcer(tag, __func__)
 
 class FuncCallTracer {
 public:
-    FuncCallTracer(const char* str) {
-        mFuncName = str;
-        LOG(INFO) << "entering func " << mFuncName;
+    FuncCallTracer(const std::string& tag, const char* funcname) :
+        mTag(tag), mFuncName(funcname) {
+        LOG(INFO) << '[' << mTag << ']' << "entering func " << mFuncName;
     }
     ~FuncCallTracer() {
-        LOG(INFO) << "leaving func " << mFuncName;
+        LOG(INFO) << '[' << mTag << ']' << "leaving func " << mFuncName;
     }
 private:
+    const std::string mTag;
     const char* mFuncName;
 };
 

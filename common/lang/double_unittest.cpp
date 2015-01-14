@@ -5,9 +5,19 @@
  */
 
 #include "double.h"
+#include "common/util/random.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
+
+TEST(DoubleTest, ToStringAndParseDoubleOK) {
+    for (int i = 0; i < 100; ++i) {
+        double x = Random::Instance().NextDouble();
+        std::string strx = Double::ToString(x);
+        double prsx = Double::ParseDouble(strx);
+        ASSERT_NEAR(x, prsx, 1e-5);
+    }
+}
 
 TEST(DoubleTest, DblBlablaOK) {
     ASSERT_EQ(0, Double::DblCmp(0.0, 0.01));

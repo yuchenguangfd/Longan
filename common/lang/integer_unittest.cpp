@@ -31,6 +31,10 @@ TEST(IntegerTest, ToStringOK) {
     EXPECT_EQ("2147483647", Integer::ToString(i3));
 }
 
+TEST(IntegerTest, ReverseByteOrderOK) {
+    EXPECT_EQ(0xaa22cc44, Integer::ReverseByteOrder(0x44cc22aa));
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

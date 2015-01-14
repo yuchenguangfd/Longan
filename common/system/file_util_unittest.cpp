@@ -11,17 +11,15 @@
 
 using namespace longan;
 
-TEST(FileUtilTest, Copy) {
+TEST(FileUtilTest, CopyOK) {
 	std::string src = "file_util.h";
 	std::string dst = "file_util.h.copy";
 	FileUtil::Copy(src, dst);
-	std::string content1 = FileUtil::LoadFileContent(src);
-	std::string content2 = FileUtil::LoadFileContent(dst);
-	EXPECT_EQ(content1, content2);
+	ASSERT_TRUE(FileUtil::IsContentSame(src, dst));
 	ASSERT_NO_THROW(FileUtil::Delete(dst));
 }
 
-TEST(FileUtilTest, LoadSaveFileContent) {
+TEST(FileUtilTest, LoadSaveFileContentOK) {
     std::string content;
     ASSERT_NO_THROW(content = FileUtil::LoadFileContent("file_util_unittest.cpp"));
     ASSERT_NO_THROW(FileUtil::SaveFileContent("temp.txt", content));
@@ -31,7 +29,7 @@ TEST(FileUtilTest, LoadSaveFileContent) {
     ASSERT_NO_THROW(FileUtil::Delete("temp.txt"));
 }
 
-TEST(FileUtil, LineWordCount) {
+TEST(FileUtil, LineWordCountOK) {
 	std::string tmpFile = "tmp.txt";
 
 	std::string content1 = "This string is used to test worldcount function.";

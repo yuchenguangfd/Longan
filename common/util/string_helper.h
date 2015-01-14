@@ -15,7 +15,6 @@ namespace longan {
 namespace StringHelper {
 
 std::vector<std::string> Split(const std::string& src, const std::string& delimit, bool ignoreEmptyString = true);
-std::string ToString(int i);
 int CountWhitespace(const std::string& str);
 
 }

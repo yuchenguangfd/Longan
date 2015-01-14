@@ -5,6 +5,7 @@
  */
 
 #include "math.h"
+#include "common/lang/defines.h"
 #include <gtest/gtest.h>
 #include <vector>
 #include <string>
@@ -12,12 +13,12 @@
 using namespace longan;
 using namespace Math;
 
-TEST(MathTest, Abs) {
+TEST(MathTest, AbsOK) {
     EXPECT_EQ(Abs(32), Abs(-32));
     EXPECT_EQ(Abs(3.2), Abs(-3.2));
 }
 
-TEST(MathTest, MaxMin) {
+TEST(MathTest, MaxMinOK) {
 	int a = -1, b = 2, c = 3;
 	EXPECT_EQ(b, Max(a, b));
 	EXPECT_EQ(a, Min(a, b));
@@ -35,28 +36,29 @@ TEST(MathTest, MaxMin) {
 	EXPECT_EQ(w, Min(p, q, w));
 }
 
-TEST(MathTest, MaxMinInRange) {
+TEST(MathTest, MaxMinInRangeOK) {
     int array[] = {123, 456, 789, -321, -67, 0};
     int *p1;
-    ASSERT_EQ(789, MaxInRange(array, array + 6));
-    ASSERT_EQ(789, MaxInRange(array, array + 6, p1));
+    ASSERT_EQ(789, MaxInRange(array, array + arraysize(array)));
+    ASSERT_EQ(789, MaxInRange(array, array + arraysize(array), p1));
     ASSERT_EQ(&array[2], p1);
+    ASSERT_EQ(-321, MinInRange(array, array + arraysize(array)));
+    ASSERT_EQ(-321, MinInRange(array, array + arraysize(array), p1));
+    ASSERT_EQ(&array[3], p1);
     std::vector<double> vec = {1.23, 4.56, 7.89, -3.21, -0.67, 0};
     std::vector<double>::iterator p2;
     ASSERT_EQ(7.89, MaxInRange(vec.begin(), vec.end()));
     ASSERT_EQ(7.89, MaxInRange(vec.begin(), vec.end(), p2));
     ASSERT_EQ(vec.begin() + 2, p2);
+    ASSERT_EQ(-3.21, MinInRange(vec.begin(), vec.end()));
+    ASSERT_EQ(-3.21, MinInRange(vec.begin(), vec.end(), p2));
+    ASSERT_EQ(vec.begin() + 3, p2);
 }
 
-TEST(MathTest, RelativeError) {
+TEST(MathTest, RelativeErrorOK) {
     EXPECT_DOUBLE_EQ(0.0, RelativeError(100.2, 100.2));
     EXPECT_DOUBLE_EQ((101.2 - 99.0) / 99.0, RelativeError(99.0, 101.2));
     EXPECT_DOUBLE_EQ((101.2 - 99.0) / 101.2, RelativeError(101.2, 99.0));
-}
-
-TEST(MathTest, Sqr) {
-	EXPECT_EQ(16, Sqr(-4));
-	EXPECT_EQ(0.25, Sqr(0.5));
 }
 
 TEST(MathTest, Factorial) {

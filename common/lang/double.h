@@ -16,6 +16,7 @@ public:
     static const double EPS;
     static const double INF;
 public:
+    static std::string ToString(double x);
 	static double ParseDouble(const std::string& s);
 
     inline static int DblCmp(double x, double eps = 1e-10) {

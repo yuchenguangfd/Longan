@@ -8,14 +8,15 @@
 #define COMMON_LANG_INTEGER_H
 
 #include <string>
+#include <limits>
 
 namespace longan {
 
 class Integer {
 public:
-    static const int MAX = 0x7FFFFFFF;
-    static int ParseInt(const std::string& s);
+    static const int MAX = std::numeric_limits<int>::max();
     static std::string ToString(int num);
+    static int ParseInt(const std::string& s);
     static int ReverseByteOrder(int x);
 public:
     Integer() : mValue(0) { }

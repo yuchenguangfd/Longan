@@ -63,17 +63,16 @@ void NetflixPrepare::ReadItemInfo() {
 void NetflixPrepare::ReadAllRating() {
     Log::I("recsys", "NetflixPrepare::ReadAllRating()");
     using namespace std;
-    using namespace StringHelper;
     string ratingDir = mInputDirpath + "/training_set";
     FileLister lister(ratingDir);
     vector<string> ratingFiles = lister.ListFilename();
     mRatings.clear();
     for (int i = 0; i < ratingFiles.size(); ++i) {
-        if (i % 1000 == 0) Log::I("recsys", "loading rating data file " + ToString(i) + "/" + ToString(ratingFiles.size()));
+        if (i % 1000 == 0) Log::I("recsys", "loading rating data file " + Integer::ToString(i) + "/" + Integer::ToString(ratingFiles.size()));
         ReadRatingFile(ratingFiles[i]);
     }
     mNumRating = mRatings.size();
-    Log::I("recsys", "num rating = " + ToString(mRatings.size()));
+    Log::I("recsys", "num rating = " + Integer::ToString(mRatings.size()));
     Log::I("recsys", "sorting all ratings by timestamp...");
     QuickSortMT sort;
     sort(&mRatings[0], mRatings.size(),

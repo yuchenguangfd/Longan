@@ -13,7 +13,7 @@
 
 namespace longan {
 
-template <class T, class Alloc = std::allocator<T> >
+template <class T, class Alloc = std::allocator<T>>
 class Matrix {
 public:
     Matrix();

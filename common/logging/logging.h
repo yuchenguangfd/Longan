@@ -7,6 +7,7 @@
 #ifndef COMMON_LOGGING_LOGGING_H
 #define COMMON_LOGGING_LOGGING_H
 
+#include "common/lang/defines.h"
 #include <glog/logging.h>
 #include <string>
 #include <cstdio>
@@ -29,7 +30,8 @@ public:
         LOG(ERROR) << '[' << tag << ']'
                    << msg;
     }
-
+private:
+    DISALLOW_IMPLICIT_CONSTRUCTORS(Log);
 };
 
 class ConsoleLog {
@@ -37,6 +39,8 @@ public:
     inline static void I(const std::string& tag, const std::string& msg) {
         fprintf(stderr, "[%s]%s\n", tag.c_str(), msg.c_str());
     }
+private:
+    DISALLOW_IMPLICIT_CONSTRUCTORS(ConsoleLog);
 };
 
 } //~ namespace longan

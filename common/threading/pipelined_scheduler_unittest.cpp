@@ -18,7 +18,7 @@ public:
         mData = data;
         mSize = size;
         int numWorkers = SystemInfo::GetNumCPUCore();
-        mScheduler = new PipelinedScheduler<Task>(this, 1, numWorkers, 1, 10, 5, 5);
+        mScheduler = new PipelinedScheduler<SumTask>(this, 1, numWorkers, 1);
         mScheduler->Start();
         mScheduler->WaitFinish();
         delete mScheduler;
@@ -37,60 +37,45 @@ public:
         return nullptr;
     }
 private:
-    struct Task {
+    struct SumTask {
         int begin;
         int end;
         int sum;
     };
     void ProducerRun() {
-        const int SEG_SIZE = 10;
-        PipelinedScheduler<Task>::TaskBundle *currentBundle
-            = new PipelinedScheduler<Task>::TaskBundle();
-        currentBundle->reserve(mScheduler->TaskBundleSize());
+        const int SEG_SIZE = 128;
         for (int i = 0; i < mSize; i += SEG_SIZE) {
-           Task task;
-           task.begin = i;
-           task.end = (i + SEG_SIZE <= mSize)? i + SEG_SIZE : mSize;
-           task.sum = 0;
-           if (currentBundle->size() == mScheduler->TaskBundleSize()) {
-               mScheduler->ProducerPutTaskBundle(currentBundle);
-               currentBundle = new PipelinedScheduler<Task>::TaskBundle();
-               currentBundle->reserve(mScheduler->TaskBundleSize());
-           }
-           currentBundle->push_back(task);
+           SumTask *task = new SumTask();
+           task->begin = i;
+           task->end = (i + SEG_SIZE <= mSize)? i + SEG_SIZE : mSize;
+           task->sum = 0;
+           mScheduler->ProducerPutTask(task);
         }
-        mScheduler->ProducerPutTaskBundle(currentBundle);
         mScheduler->ProducerDone();
     }
     void WorkerRun() {
         while (true) {
-            PipelinedScheduler<Task>::TaskBundle *currentBundle = mScheduler->WorkerGetTaskBundle();
-            if (currentBundle == nullptr) break;
-            for (int i = 0; i < currentBundle->size(); ++i) {
-                Task& task = currentBundle->at(i);
-                for (int j = task.begin; j < task.end; ++j) {
-                    task.sum += mData[j];
-                }
+            SumTask *task = mScheduler->WorkerGetTask();
+            if (task == nullptr) break;
+            for (int i = task->begin; i < task->end; ++i) {
+                task->sum += mData[i];
             }
-            mScheduler->WorkerPutTaskBundle(currentBundle);
+            mScheduler->WorkerPutTask(task);
         }
         mScheduler->WorkerDone();
     }
     void ConsumerRun() {
         mSum = 0;
         while (true) {
-            PipelinedScheduler<Task>::TaskBundle *currentBundle = mScheduler->ConsumerGetTaskBundle();
-            if (currentBundle == nullptr) break;
-            for (int i = 0; i < currentBundle->size(); ++i) {
-                Task& task = currentBundle->at(i);
-                mSum += task.sum;
-            }
-            delete currentBundle;
+            SumTask *task = mScheduler->ConsumerGetTask();
+            if (task == nullptr) break;
+            mSum += task->sum;
+            delete task;
         }
         mScheduler->ConsumerDone();
     }
 private:
-    PipelinedScheduler<Task> *mScheduler;
+    PipelinedScheduler<SumTask> *mScheduler;
     int *mData;
     int mSize;
     int mSum;
@@ -98,7 +83,7 @@ private:
 
 TEST(PipelinedSchedulerTest, ParallelComputeSumOK) {
     int *array = nullptr;
-    int size = 100000;
+    int size = 10000000;
     ArrayHelper::CreateArray1D(&array, size);
     ArrayHelper::InitArray1D(array, size, 1);
     ParallelComputeSum pcs;

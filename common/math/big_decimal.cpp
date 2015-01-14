@@ -6,7 +6,7 @@
 
 #include "big_decimal.h"
 #include "common/lang/character.h"
-#include "common/util/string_helper.h"
+#include "common/lang/integer.h"
 
 namespace longan {
 
@@ -65,7 +65,7 @@ std::string BigDecimal::ToString() const {
         for(int i = up; i >= low; --i) {
             if(i == mPointPosition)
                 result += ".";
-            result += StringHelper::ToString(mDigits[i-1]);
+            result += Integer::ToString(mDigits[i-1]);
         }
     return std::move(result);
 }

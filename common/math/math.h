@@ -104,14 +104,6 @@ inline T Sqr(const T& x) {
     return x * x;
 }
 
-inline double Sqr(double x) {
-    return x * x;
-}
-
-inline int Sqr(int x) {
-    return x * x;
-}
-
 inline double Sqrt(double x) {
     return ::sqrt(x);
 }
@@ -124,12 +116,24 @@ inline int Round(double x) {
     return static_cast<int>(::round(x));
 }
 
+inline int Round(float x) {
+    return static_cast<int>(::roundf(x));
+}
+
 inline int Ceil(double x) {
     return static_cast<int>(::ceil(x));
 }
 
+inline int Ceil(float x) {
+    return static_cast<int>(::ceilf(x));
+}
+
 inline int Floor(double x) {
     return static_cast<int>(::floor(x));
+}
+
+inline int Floor(float x) {
+    return static_cast<int>(::floorf(x));
 }
 
 inline double Sigmoid(double x) {

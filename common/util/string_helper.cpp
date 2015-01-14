@@ -31,10 +31,6 @@ std::vector<std::string> StringHelper::Split(const std::string& src, const std::
     return subStrings;
 }
 
-std::string StringHelper::ToString(int i) {
-    return Integer::ToString(i);
-}
-
 int StringHelper::CountWhitespace(const std::string& str) {
 	int cnt = 0;
 	for (char ch : str) {

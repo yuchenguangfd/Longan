@@ -6,6 +6,7 @@
 
 #include "user_based_model_computation.h"
 #include "common/lang/double.h"
+#include "common/lang/integer.h"
 #include "common/system/system_info.h"
 #include "common/util/string_helper.h"
 #include "common/logging/logging.h"
@@ -247,7 +248,7 @@ void DynamicScheduledModelComputation::DoUpdateModelWork() {
 
 void DynamicScheduledModelComputation::DoMonitorProgress() {
     while (true) {
-        ConsoleLog::I("recsys", "Computing Model..." + StringHelper::ToString((int)(mProgress*100)) + "% done.");
+        ConsoleLog::I("recsys", "Computing Model..." + Integer::ToString((int)(mProgress*100)) + "% done.");
         if (mProgress > 0.99) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
