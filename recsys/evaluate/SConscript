@@ -1,0 +1,11 @@
+Import("env_recsys")
+
+env_recsys.lib_objects.append(env_recsys.Object("evaluate_rating_delegate.cpp"))
+env_recsys.lib_objects.append(env_recsys.Object("evaluate_ranking_delegate.cpp"))
+
+build_env = env_recsys.Clone()
+# add gtest support
+build_env.Prepend(CPPPATH = "#/external/gtest/include")
+build_env.Prepend(LIBPATH = "#/external/gtest")
+build_env.Prepend(LIBS = "gtest")
+build_env.Prepend(LINKFLAGS = "-pthread")

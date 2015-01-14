@@ -117,123 +117,53 @@ void StaticScheduledModelComputation::DoWork(int64 taskIdBegin, int64 taskIdEnd)
     }
 }
 
-DynamicScheduledModelComputation::Scheduler::Scheduler() {
-    mNumGeneratePairWorker = 1;
-    mNumComputeSimilarityWorker = SystemInfo::GetNumCPUCore();
-    mNumUpdateModelWorker = 1;
-    mObjectBuffer1 = new ObjectBuffer<TaskBundle*>("GeneratePair-ComputeSimilarity", BUFFER_SIZE,
-            mNumGeneratePairWorker, mNumComputeSimilarityWorker);
-    mObjectBuffer2 = new ObjectBuffer<TaskBundle*>("ComputeSimilarity-UpdateModel", BUFFER_SIZE,
-            mNumComputeSimilarityWorker, mNumUpdateModelWorker);
-}
-
-DynamicScheduledModelComputation::Scheduler::~Scheduler() {
-    delete mObjectBuffer2;
-    delete mObjectBuffer1;
-}
-
-void DynamicScheduledModelComputation::Scheduler::PutComputeSimilarityWork(
-    DynamicScheduledModelComputation::TaskBundle* bundle) {
-    int rtn = mObjectBuffer1->Push(bundle);
-    assert(rtn == LONGAN_SUCC);
-}
-
-DynamicScheduledModelComputation::TaskBundle* DynamicScheduledModelComputation::
-    Scheduler::GetComputeSimilarityWork() {
-    TaskBundle* bundle;
-    int rtn = mObjectBuffer1->Pop(bundle);
-    return (rtn == LONGAN_SUCC) ? bundle : nullptr;
-}
-
-void DynamicScheduledModelComputation::Scheduler::PutUpdateModelWork(
-    DynamicScheduledModelComputation::TaskBundle* bundle) {
-    int rtn = mObjectBuffer2->Push(bundle);
-    assert(rtn == LONGAN_SUCC);
-}
-
-DynamicScheduledModelComputation::TaskBundle* DynamicScheduledModelComputation::
-    Scheduler::GetUpdateModelWork() {
-    TaskBundle* bundle;
-    int rtn = mObjectBuffer2->Pop(bundle);
-    return (rtn == LONGAN_SUCC) ? bundle : nullptr;
-}
-
-void DynamicScheduledModelComputation::Scheduler::GeneratePairDone() {
-    int rtn = mObjectBuffer1->ProducerQuit();
-    assert(rtn == LONGAN_SUCC);
-}
-
-void DynamicScheduledModelComputation::Scheduler::ComputeSimilarityDone() {
-    int rtn1 = mObjectBuffer1->ConsumerQuit();
-    assert(rtn1 == LONGAN_SUCC);
-    int rtn2 = mObjectBuffer2->ProducerQuit();
-    assert(rtn2 == LONGAN_SUCC);
-}
-
-void DynamicScheduledModelComputation::Scheduler::UpdateModelDone() {
-    int rtn = mObjectBuffer2->ConsumerQuit();
-    assert(rtn == LONGAN_SUCC);
-}
-
 void DynamicScheduledModelComputation::ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) {
     mRatingMatrix = ratingMatrix;
     mModel = model;
-    mScheduler = new Scheduler();
-    std::vector<std::thread> workers;
-    for (int i = 0; i < mScheduler->NumGeneratePairWorker(); ++i) {
-        workers.push_back(std::thread(&DynamicScheduledModelComputation::DoGeneratePairWork, this));
-    }
-    for (int i = 0; i < mScheduler->NumComputeSimilarityWorker(); ++i) {
-        workers.push_back(std::thread(&DynamicScheduledModelComputation::DoComputeSimilarityWork,this));
-    }
-    for (int i = 0; i < mScheduler->NumUpdateModelWorker(); ++i) {
-        workers.push_back(std::thread(&DynamicScheduledModelComputation::DoUpdateModelWork, this));
-    }
-    workers.push_back(std::thread(&DynamicScheduledModelComputation::DoMonitorProgress, this));
-    for (std::thread& t : workers) {
-        t.join();
-    }
+    mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, mNumThread, 1);
+    mScheduler->Start();
+    mScheduler->WaitFinish();
     delete mScheduler;
 }
 
-void DynamicScheduledModelComputation::DoGeneratePairWork() {
+void DynamicScheduledModelComputation::ProducerRun() {
     int numUser = mRatingMatrix->NumUser();
     TaskBundle *currentBundle = new TaskBundle();
     currentBundle->reserve(TASK_BUNDLE_SIZE);
     for (int firstUserId = 0; firstUserId < numUser; ++firstUserId)  {
         for (int secondUserId = firstUserId + 1; secondUserId < numUser; ++secondUserId) {
             if (currentBundle->size() == TASK_BUNDLE_SIZE) {
-                mScheduler->PutComputeSimilarityWork(currentBundle);
+                mScheduler->ProducerPutTask(currentBundle);
                 currentBundle = new TaskBundle();
                 currentBundle->reserve(TASK_BUNDLE_SIZE);
             }
             currentBundle->push_back(Task(firstUserId, secondUserId));
         }
     }
-    mScheduler->PutComputeSimilarityWork(currentBundle);
-    mScheduler->GeneratePairDone();
+    mScheduler->ProducerPutTask(currentBundle);
+    mScheduler->ProducerDone();
 }
 
-void DynamicScheduledModelComputation::DoComputeSimilarityWork() {
+void DynamicScheduledModelComputation::WorkerRun() {
     while (true) {
-        TaskBundle *currentBundle = mScheduler->GetComputeSimilarityWork();
+        TaskBundle *currentBundle = mScheduler->WorkerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            auto& iv1 = mRatingMatrix->GetUserVector(task.firstUserId);
-            auto& iv2 = mRatingMatrix->GetUserVector(task.secondUserId);
-            task.similarity = ComputeSimilarity(iv1, iv2);
+            auto& uv1 = mRatingMatrix->GetUserVector(task.firstUserId);
+            auto& uv2 = mRatingMatrix->GetUserVector(task.secondUserId);
+            task.similarity = ComputeSimilarity(uv1, uv2);
         }
-        mScheduler->PutUpdateModelWork(currentBundle);
+        mScheduler->WorkerPutTask(currentBundle);
     }
-    mScheduler->ComputeSimilarityDone();
+    mScheduler->WorkerDone();
 }
 
-void DynamicScheduledModelComputation::DoUpdateModelWork() {
+void DynamicScheduledModelComputation::ConsumerRun() {
     int64 totoalTask = static_cast<int64>(mRatingMatrix->NumUser())*mRatingMatrix->NumUser()/2;
     int64 processedTask = 0;
     while (true) {
-        TaskBundle *currentBundle = mScheduler->GetUpdateModelWork();
+        TaskBundle *currentBundle = mScheduler->ConsumerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
@@ -243,10 +173,10 @@ void DynamicScheduledModelComputation::DoUpdateModelWork() {
         mProgress = static_cast<double>(processedTask)/totoalTask;
         delete currentBundle;
     }
-    mScheduler->UpdateModelDone();
+    mScheduler->ConsumerDone();
 }
 
-void DynamicScheduledModelComputation::DoMonitorProgress() {
+void DynamicScheduledModelComputation::MonitorRun() {
     while (true) {
         ConsoleLog::I("recsys", "Computing Model..." + Integer::ToString((int)(mProgress*100)) + "% done.");
         if (mProgress > 0.99) break;

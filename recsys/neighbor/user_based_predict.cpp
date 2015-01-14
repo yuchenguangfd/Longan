@@ -45,15 +45,15 @@ void UserBasedPredict::LoadRatings() {
 }
 
 void UserBasedPredict::AdjustRating() {
-    if (mConfig["similarityType"].asString() == "adjustedCosine") {
+    if (mConfig["parameter"]["similarityType"].asString() == "adjustedCosine") {
         mSimType = SIM_TYPE_ADJUSTED_COSINE;
         AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrixAsUsers);
         AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrixAsItems);
-    } else if (mConfig["similarityType"].asString() == "correlation") {
+    } else if (mConfig["parameter"]["similarityType"].asString() == "correlation") {
         mSimType = SIM_TYPE_CORRELATION;
         AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrixAsUsers);
         AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrixAsItems);
-    } else { // (mConfig["similarityType"].asString == "cosine")
+    } else { // (mConfig["parameter"]["similarityType"].asString == "cosine")
         mSimType = SIM_TYPE_COSINE;
     }
 }

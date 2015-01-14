@@ -14,7 +14,7 @@
 namespace longan {
 
 // all users' ratings for one item
-template <class Alloc = std::allocator<UserRating> >
+template <class Alloc = std::allocator<UserRating>>
 class ItemVector {
 public:
     ItemVector();
@@ -73,7 +73,7 @@ ItemVector<Alloc>::~ItemVector() {
 }
 
 template <class Alloc>
-ItemVector<Alloc>& ItemVector<Alloc>::operator =(ItemVector<Alloc>&& rhs) noexcept {
+ItemVector<Alloc>& ItemVector<Alloc>::operator= (ItemVector<Alloc>&& rhs) noexcept {
     if (this == &rhs) return *this;
     if (mData != nullptr) {
         Alloc alloc;

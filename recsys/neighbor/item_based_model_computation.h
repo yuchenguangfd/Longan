@@ -9,7 +9,7 @@
 
 #include "item_based_model.h"
 #include "recsys/base/rating_matrix_as_items.h"
-#include "common/threading/object_buffer.h"
+#include "common/threading/pipelined_scheduler.h"
 #include "common/lang/types.h"
 
 namespace longan {
@@ -18,8 +18,8 @@ namespace ItemBased {
 
 class ModelComputation {
 public:
-    ModelComputation();
-    virtual ~ModelComputation();
+    ModelComputation() { };
+    virtual ~ModelComputation() { };
     virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) = 0;
 protected:
     float ComputeSimilarity(const ItemVector<>& firstItemVector, const ItemVector<>& secondItemVector);
@@ -41,59 +41,43 @@ protected:
     std::vector<std::mutex*> mUpdateModelMutexs;
 };
 
-class DynamicScheduledModelComputation : public ModelComputation {
+class DynamicScheduledModelComputation : public ModelComputation, public PipelinedSchedulerClient {
 public:
-    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model);
+    DynamicScheduledModelComputation(int numThread) : ModelComputation(), mNumThread(numThread) {
+        assert(numThread > 0);
+    }
+    virtual void ComputeModel(RatingMatrixAsItems<> *ratingMatrix, ModelTrain *model) override;
+    virtual std::thread* CreateProducerThread() {
+        return new std::thread(&DynamicScheduledModelComputation::ProducerRun, this);
+    }
+    virtual std::thread* CreateWorkerThread() {
+        return new std::thread(&DynamicScheduledModelComputation::WorkerRun, this);
+    }
+    virtual std::thread* CreateConsumerThread() {
+        return new std::thread(&DynamicScheduledModelComputation::ConsumerRun, this);
+    }
+    virtual std::thread* CreateMonitorThread() {
+        return new std::thread(&DynamicScheduledModelComputation::MonitorRun, this);
+    }
 protected:
-    void DoGeneratePairWork();
-    void DoComputeSimilarityWork();
-    void DoUpdateModelWork();
-    void DoMonitorProgress();
+    void ProducerRun();
+    void WorkerRun();
+    void ConsumerRun();
+    void MonitorRun();
 protected:
     struct Task {
         int firstItemId;
         int secondItemId;
         float similarity;
-        Task(int iid1, int iid2) :
-            firstItemId(iid1),
-            secondItemId(iid2),
-            similarity(0.0f) { }
+        Task(int iid1, int iid2) : firstItemId(iid1), secondItemId(iid2), similarity(0.0f) { }
     };
     static const int TASK_BUNDLE_SIZE = 16384;
     typedef std::vector<Task> TaskBundle;
-    class Scheduler {
-    public:
-        Scheduler();
-        ~Scheduler();
-        void PutComputeSimilarityWork(TaskBundle* bundle);
-        TaskBundle* GetComputeSimilarityWork();
-        void PutUpdateModelWork(TaskBundle* bundle);
-        TaskBundle* GetUpdateModelWork();
-        void GeneratePairDone();
-        void ComputeSimilarityDone();
-        void UpdateModelDone();
-        int NumGeneratePairWorker() const {
-            return mNumGeneratePairWorker;
-        }
-        int NumComputeSimilarityWorker() const {
-            return mNumComputeSimilarityWorker;
-        }
-        int NumUpdateModelWorker() const {
-            return mNumUpdateModelWorker;
-        }
-    private:
-        static const int BUFFER_SIZE = 100;
-        int mNumGeneratePairWorker;
-        int mNumComputeSimilarityWorker;
-        int mNumUpdateModelWorker;
-        ObjectBuffer<TaskBundle*> *mObjectBuffer1;
-        ObjectBuffer<TaskBundle*> *mObjectBuffer2;
-    };
-protected:
-    RatingMatrixAsItems<> *mRatingMatrix;
-    ModelTrain *mModel;
-    Scheduler *mScheduler;
-    double mCurrentProgress;
+    RatingMatrixAsItems<> *mRatingMatrix = nullptr;
+    ModelTrain *mModel = nullptr;
+    PipelinedScheduler<TaskBundle> *mScheduler = nullptr;
+    int mNumThread;
+    double mCurrentProgress = 0.0;
 };
 
 } //~ namespace ItemBased

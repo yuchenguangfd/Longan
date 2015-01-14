@@ -17,7 +17,7 @@
 
 namespace longan {
 
-template <class ItemVectorAlloc = std::allocator<UserRating> >
+template <class ItemVectorAlloc = std::allocator<UserRating>>
 class RatingMatrixAsItems {
 public:
     RatingMatrixAsItems();
@@ -41,7 +41,7 @@ public:
 protected:
     int mNumUser;
     int mNumItem;
-    std::vector<ItemVector<ItemVectorAlloc> > mItemVectors;
+    std::vector<ItemVector<ItemVectorAlloc>> mItemVectors;
 };
 
 template <class ItemVectorAlloc>

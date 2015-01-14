@@ -1,9 +1,17 @@
 {
-	"similarityType": "correlation",
-	"modelType": "fixedSimilarityThreshold",
-	"similarityThreshold": 0.2,
-	"modelComputation": "dynamicScheduled",
-	"evaluateRating": true,
-	"evaluateRanking": true,
-	"rankingListSize": 100
+	"parameter": {
+		"similarityType": "correlation",
+		"modelType": "fixedSimilarityThreshold",
+		"similarityThreshold": 0.9
+	},
+	"trainOption": {
+		"accelerate": true,
+		"numThread": 4
+	},
+	"evaluateOption": {
+		"accelerate": true, 
+		"evaluateRating": true,
+		"evaluateRanking": true,
+		"rankingListSize": 100
+	}
 }

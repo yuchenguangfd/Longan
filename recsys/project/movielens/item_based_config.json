@@ -1,9 +1,17 @@
 {
-	"similarityType": "adjustedCosine",
-	"modelType": "fixedNeighborSize",
-	"neighborSize": 2000,
-	"modelComputation": "dynamicScheduled",
-	"evaluateRating": true,
-	"evaluateRanking": true,
-	"rankingListSize": 100
+	"parameter": {
+		"similarityType": "adjustedCosine",
+		"modelType": "fixedNeighborSize",
+		"neighborSize": 2000
+	},
+	"trainOption": {
+		"accelerate": true,
+		"numThread": 4
+	},
+	"evaluateOption": {
+		"accelerate": true, 
+		"evaluateRating": true,
+		"evaluateRanking": true,
+		"rankingListSize": 100
+	}
 }

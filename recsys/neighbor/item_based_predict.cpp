@@ -17,6 +17,7 @@
 namespace longan {
 
 void ItemBasedPredict::Init() {
+    Log::I("recsys", "ItemBasedPredict::Init()");
     LoadConfig();
     LoadRatings();
     AdjustRating();
@@ -24,6 +25,7 @@ void ItemBasedPredict::Init() {
 }
 
 void ItemBasedPredict::Cleanup() {
+    Log::I("recsys", "ItemBasedPredict::Cleanup()");
     delete mModel;
     delete mRatingMatrix;
     delete mRatingTrait;
@@ -42,13 +44,14 @@ void ItemBasedPredict::LoadRatings() {
 }
 
 void ItemBasedPredict::AdjustRating() {
-    if (mConfig["similarityType"].asString() == "adjustedCosine") {
+    Log::I("recsys", "ItemBasedPredict::AdjustRating()");
+    if (mConfig["parameter"]["similarityType"].asString() == "adjustedCosine") {
         mSimTpye = SIM_TYPE_ADJUSTED_COSINE;
         AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrix);
-    } else if (mConfig["similarityType"].asString() == "correlation") {
+    } else if (mConfig["parameter"]["similarityType"].asString() == "correlation") {
         mSimTpye = SIM_TYPE_CORRELATION;
         AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrix);
-    } else { // (mConfig["similarityType"].asString() == "cosine")
+    } else { // (mConfig["parameter"]["similarityType"].asString() == "cosine")
         mSimTpye = SIM_TYPE_COSINE;
     }
 }

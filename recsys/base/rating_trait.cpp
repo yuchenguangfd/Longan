@@ -25,12 +25,12 @@ void RatingTrait::Init(const RatingList& rlist) {
     RunningMin<float> runningAllMin;
     RunningMax<float> runningAllMax;
     RunningStd<float> runningAllStd(0.0f);
-    std::vector<RunningMin<float> > userRunningMins(mNumUser);
-    std::vector<RunningMax<float> > userRunningMaxs(mNumUser);
-    std::vector<RunningMin<float> > itemRunningMins(mNumItem);
-    std::vector<RunningMax<float> > itemRunningMaxs(mNumItem);
-    std::vector<RunningStd<float> > userRunningStds(mNumUser);
-    std::vector<RunningStd<float> > itemRunningStds(mNumItem);
+    std::vector<RunningMin<float>> userRunningMins(mNumUser);
+    std::vector<RunningMax<float>> userRunningMaxs(mNumUser);
+    std::vector<RunningMin<float>> itemRunningMins(mNumItem);
+    std::vector<RunningMax<float>> itemRunningMaxs(mNumItem);
+    std::vector<RunningStd<float>> userRunningStds(mNumUser);
+    std::vector<RunningStd<float>> itemRunningStds(mNumItem);
     for (int i = 0; i < rlist.Size(); ++i) {
         const RatingRecord& record = rlist[i];
         runningAllMin.Add(record.Rating());

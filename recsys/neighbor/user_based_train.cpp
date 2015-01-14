@@ -8,6 +8,7 @@
 #include "recsys/base/rating_adjust.h"
 #include "common/system/file_util.h"
 #include "common/logging/logging.h"
+#include "common/system/system_info.h"
 #include "common/error.h"
 
 namespace longan {
@@ -35,20 +36,22 @@ void UserBasedTrain::LoadRatings() {
 }
 
 void UserBasedTrain::AdjustRating() {
-    if (mConfig["similarityType"].asString() == "adjustedCosine") {
+    Log::I("recsys", "UserBasedTrain::AdjustRating()");
+    if (mConfig["parameter"]["similarityType"].asString() == "adjustedCosine") {
         AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrix);
-    } else if (mConfig["similarityType"].asString() == "correlation") {
+    } else if (mConfig["parameter"]["similarityType"].asString() == "correlation") {
         AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrix);
+    } else { // if (mConfig["parameter"]["similarityType"].asString() == "cosine")
     }
 }
 
 void UserBasedTrain::InitModel() {
     Log::I("recsys", "UserBasedTrain::InitModel()");
-    if (mConfig["modelType"].asString() == "fixedNeighborSize") {
-        int neighborSize = mConfig["neighborSize"].asInt();
+    if (mConfig["parameter"]["modelType"].asString() == "fixedNeighborSize") {
+        int neighborSize = mConfig["parameter"]["neighborSize"].asInt();
         mModel = new UserBased::FixedNeighborSizeModel(mRatingMatrix->NumUser(), neighborSize);
-    } else if (mConfig["modelType"].asString() == "fixedSimilarityThreshold") {
-        float threshold = (float)mConfig["similarityThreshold"].asDouble();
+    } else if (mConfig["parameter"]["modelType"].asString() == "fixedSimilarityThreshold") {
+        float threshold = static_cast<float>(mConfig["parameter"]["similarityThreshold"].asDouble());
         mModel = new UserBased::FixedSimilarityThresholdModel(mRatingMatrix->NumUser(), threshold);
     } else {
         throw LonganConfigError("No Such modelType");
@@ -57,14 +60,14 @@ void UserBasedTrain::InitModel() {
 
 void UserBasedTrain::ComputeModel() {
     Log::I("recsys", "UserBasedTrain::ComputeModel()");
-      if (mConfig["modelComputation"].asString() == "simple") {
-          mModelComputationDelegate = new UserBased::SimpleModelComputation();
-      } else if (mConfig["modelComputation"].asString() == "staticScheduled") {
-          mModelComputationDelegate = new UserBased::StaticScheduledModelComputation();
-      } else if (mConfig["modelComputation"].asString() == "dynamicScheduled") {
-          mModelComputationDelegate = new UserBased::DynamicScheduledModelComputation();
+      if (mConfig["trainOption"]["accelerate"].asBool()) {
+          int numThread = mConfig["trainOption"]["numThread"].asInt();
+          if (numThread == 0) {
+              numThread = SystemInfo::GetNumCPUCore();
+          }
+          mModelComputationDelegate = new UserBased::DynamicScheduledModelComputation(numThread);
       } else {
-          mModelComputationDelegate = new UserBased::DynamicScheduledModelComputation();
+          mModelComputationDelegate = new UserBased::SimpleModelComputation();
       }
       mModelComputationDelegate->ComputeModel(mRatingMatrix, mModel);
 }

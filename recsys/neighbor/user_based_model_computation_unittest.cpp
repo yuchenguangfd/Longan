@@ -7,6 +7,7 @@
 #include "user_based_model_computation.h"
 #include "recsys/util/recsys_test_helper.h"
 #include "common/time/stopwatch.h"
+#include "common/system/system_info.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -38,7 +39,7 @@ TEST(DynamicScheduledModelComputationTest, DynamicScheduledAndSimpleResultSame) 
     sw.Start();
     comp1.ComputeModel(&rmat, &model1);
     printf("Simple ModelComputation time cost = %.0lfms\n", sw.ElapsedMilliseconds());
-    DynamicScheduledModelComputation comp2;
+    DynamicScheduledModelComputation comp2(SystemInfo::GetNumCPUCore());
     sw.Reset(); sw.Start();
     comp2.ComputeModel(&rmat, &model2);
     printf("DynamicScheduled ModelComputation time cost =%.0lfms\n", sw.ElapsedMilliseconds());
@@ -73,7 +74,7 @@ TEST(StaticScheduledModelComputationTest, StaticScheduledAndSimpleResultSame) {
     comp1.ComputeModel(&rmat, &model1);
     printf("StaticScheduled ModelComputation time cost = %.0lfms\n", sw.ElapsedMilliseconds());
 
-    DynamicScheduledModelComputation comp2;
+    DynamicScheduledModelComputation comp2(SystemInfo::GetNumCPUCore());
     sw.Reset(); sw.Start();
     comp2.ComputeModel(&rmat, &model2);
     printf("DynamicScheduled ModelComputation time cost =%.0lfms\n", sw.ElapsedMilliseconds());

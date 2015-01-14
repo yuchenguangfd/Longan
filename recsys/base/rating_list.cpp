@@ -61,7 +61,7 @@ RatingList RatingList::LoadFromTextFile(const std::string& ratingTextFilepath) {
     return std::move(ratingList);
 }
 
-RatingList longan::RatingList::LoadFromBinaryFile(const std::string& ratingBinaryFilepath) {
+RatingList RatingList::LoadFromBinaryFile(const std::string& ratingBinaryFilepath) {
     BinaryInputStream bis(ratingBinaryFilepath);
     int numRating, numUser, numItem;
     bis >> numRating >> numUser >> numItem;
@@ -79,7 +79,7 @@ void RatingList::WriteToTextFile(const RatingList& rlist, const std::string& rat
     int rtn;
     FILE *fp = fopen(ratingTextFilepath.c_str(), "w");
     assert(fp != nullptr);
-    rtn = fprintf(fp, "%d,%d,%d\n",rlist.NumRating(), rlist.NumUser(), rlist.NumItem());
+    rtn = fprintf(fp, "%d,%d,%d\n", rlist.NumRating(), rlist.NumUser(), rlist.NumItem());
     assert(rtn >= 0);
     for (int i = 0; i < rlist.NumRating(); ++i) {
         const RatingRecord& rr = rlist[i];

@@ -36,18 +36,20 @@ protected:
 };
 
 TEST_F(BasicEvaluateTest, EvaluateRatingOK) {
+    mConfig["evaluateOption"]["evaluateRating"] = true;
     for (int i = 0; i < 10; ++i) {
         mTestRatingList.Add(RatingRecord(i, i, (i%2==0)?(float)i:(float)(-i)));
     }
     CreatePredict();
     EvaluateRating();
-    DestroyPredict();
+    Cleanup();
     ASSERT_DOUBLE_EQ(4.5, mMAE);
     ASSERT_DOUBLE_EQ(5.338539126015656, mRMSE);
 }
 
 TEST_F(BasicEvaluateTest, EvaluateRankingOK) {
-    mConfig["rankingListSize"] = 10;
+    mConfig["evaluateOption"]["evaluateRanking"] = true;
+    mConfig["evaluateOption"]["rankingListSize"] = 10;
     RatingList rlist(2, 40);
     for (int i = 0; i < 30; i += 2) {
         rlist.Add(RatingRecord(0, i, 1.0f));
@@ -58,7 +60,7 @@ TEST_F(BasicEvaluateTest, EvaluateRankingOK) {
     mTestRatingList = std::move(rlist);
     CreatePredict();
     EvaluateRanking();
-    DestroyPredict();
+    Cleanup();
     ASSERT_DOUBLE_EQ(0.45, mPrecision);
     ASSERT_DOUBLE_EQ(0.30952380952380953, mRecall);
 }

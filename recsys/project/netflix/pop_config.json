@@ -1,5 +1,8 @@
 {
-	"evaluateRating": true,
-	"evaluateRanking": true,
-	"rankingListSize": 100
+	"evaluateOption": {
+		"accelerate": true, 
+		"evaluateRating": true,
+		"evaluateRanking": true,
+		"rankingListSize": 100
+	}
 }

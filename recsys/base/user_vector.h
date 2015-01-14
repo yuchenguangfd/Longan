@@ -14,7 +14,7 @@
 namespace longan {
 
 // all items' ratings for one user
-template <class Alloc = std::allocator<ItemRating> >
+template <class Alloc = std::allocator<ItemRating>>
 class UserVector {
 public:
     UserVector();
