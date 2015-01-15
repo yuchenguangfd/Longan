@@ -19,7 +19,10 @@ class SVDTrain;
 
 namespace SVD {
 
+class ModelComputation;
+class SimpleModelComputation;
 class FPSGDModelComputation;
+
 class Model {
 public:
     Model(const Parameter& param);
@@ -47,6 +50,8 @@ public:
     ModelTrain(const Parameter& param, int numUser, int numItem, float ratingAvg);
     void RandomInit();
     void Save(const std::string& filename);
+    friend ModelComputation;
+    friend SimpleModelComputation;
     friend FPSGDModelComputation;
     friend SVDTrain;
 };

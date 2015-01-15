@@ -1,12 +1,13 @@
 {
 	"parameter": {
-		"dim": 100,
+		"dim": 40,
 	    "lambdaP": 0.05,
    		"lambdaQ": 0.05,
 		"lambdaUserBias": 0.001,
 		"lambdaItemBias": 0.001
 	},
 	"trainOption": {
+		"accelerate": true, 
 	    "iterations": 100,
 	    "learningRate": 0.003,
 	    "accelerate": true, 

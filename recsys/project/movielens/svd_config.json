@@ -7,6 +7,7 @@
 		"lambdaItemBias": 0.0001
 	},
 	"trainOption": {
+		"accelerate": true, 
 	    "iterations": 100,
 	    "learningRate": 0.003,
 	    "numThread": 4,

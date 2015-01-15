@@ -8,13 +8,66 @@
 #include "common/lang/integer.h"
 #include "common/math/math.h"
 #include "common/util/random.h"
+#include "common/util/array_helper.h"
 #include "common/logging/logging.h"
 
 namespace longan {
 
 namespace SVD {
 
-void FPSGDModelComputation::ComputeModel(const TrainOption* trainOption, const GriddedMatrix* griddedMatrix, ModelTrain* model) {
+void SimpleModelComputation::ComputeModel(const TrainOption *trainOption, const GriddedMatrix *griddedMatrix,
+        ModelTrain *model) {
+    Log::I("recsys", "SimpleModelComputation::ComputeModel()");
+    int dim = model->mParameter.Dim();
+    bool enableUserBias = (model->mParameter.LambdaUserBias() >= 0.0f);
+    bool enableItemBias = (model->mParameter.LambdaItemBias() >= 0.0f);
+    float ratingAverage = trainOption->UseRatingAverage() ? model->mRatingAverage : 0.0f;
+    float learningRate = trainOption->LearningRate();
+    float glp = 1 - learningRate * (model->mParameter.LambdaUserFeature());
+    float glq = 1 - learningRate * (model->mParameter.LambdaItemFeature());
+    float glub = 1 - learningRate * (model->mParameter.LambdaUserBias());
+    float glib = 1 - learningRate * (model->mParameter.LambdaItemBias());
+    float *ub, *ib;
+    std::vector<int> gridIdOrder(trainOption->NumUserBlock() * trainOption->NumItemBlock());
+    ArrayHelper::FillRange(gridIdOrder.data(), gridIdOrder.size());
+    for (int iter = 0; iter < trainOption->Iterations(); ++iter) {
+        Log::I("recsys", "iteration " + Integer::ToString(iter));
+        ArrayHelper::RandomShuffle(gridIdOrder.data(), gridIdOrder.size());
+        for (int ii = 0; ii < gridIdOrder.size(); ++ii) {
+            const Matrix& mat = griddedMatrix->Grid(gridIdOrder[ii]);
+            for(int i = 0; i < mat.NumRating(); ++i) {
+                const Node& node = mat.Get(i);
+                Vector<float>& userFeature = model->mUserFeatures[node.UserId()];
+                Vector<float>& itemFeature = model->mItemFeatures[node.ItemId()];
+                float ge = InnerProd(userFeature, itemFeature) + ratingAverage;
+                if (enableUserBias) {
+                    ub = &(model->mUserBiases[node.UserId()]);
+                    ge += *ub;
+                }
+                if (enableItemBias) {
+                    ib = &(model->mItemBiases[node.ItemId()]);
+                    ge += *ib;
+                }
+                ge = node.Rating() - ge;
+                ge *= learningRate;
+                for (int d = 0; d < dim; d++) {
+                    float tmp = userFeature[d];
+                    userFeature[d] = ge*itemFeature[d] + glp * userFeature[d];
+                    itemFeature[d] = ge*tmp + glq*itemFeature[d];
+                }
+                if (enableUserBias) {
+                    *ub = glub * (*ub) + ge;
+                }
+                if (enableItemBias) {
+                    *ib = glib * (*ib) + ge;
+                }
+            }
+        }
+    }
+}
+
+void FPSGDModelComputation::ComputeModel(const TrainOption *trainOption, const GriddedMatrix *griddedMatrix,
+        ModelTrain *model) {
     Log::I("recsys", "FPSGDModelComputation::ComputeModel()");
     mTrainOption = trainOption;
     mGriddedMatrix = griddedMatrix;
@@ -73,14 +126,17 @@ void FPSGDModelComputation::ProducerRun() {
         }
         if (candidates.size() > 0) {
             int chosenGridId = candidates[Random::Instance().Uniform(0, candidates.size())];
-            mGridRowBlocked[chosenGridId / cols] = true;
-            mGridColBlocked[chosenGridId % cols] = true;
+            {
+                std::unique_lock<std::mutex> lock(mGridBlockedMutex);
+                mGridRowBlocked[chosenGridId / cols] = true;
+                mGridColBlocked[chosenGridId % cols] = true;
+            }
             ++mGridIterationCount[chosenGridId];
             Task* task = new Task();
             task->gridId = chosenGridId;
             mScheduler->ProducerPutTask(task);
         } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
         mCurrentIteration = Math::MinInRange(mGridIterationCount.begin(), mGridIterationCount.end());
         if (mCurrentIteration >= iterationLimit) break;
@@ -143,8 +199,11 @@ void FPSGDModelComputation::ConsumerRun() {
         Task *task = mScheduler->ConsumerGetTask();
         if (task == nullptr) break;
         int gridId = task->gridId;
-        mGridRowBlocked[gridId / cols] = false;
-        mGridColBlocked[gridId % cols] = false;
+        {
+            std::unique_lock<std::mutex> lock(mGridBlockedMutex);
+            mGridRowBlocked[gridId / cols] = false;
+            mGridColBlocked[gridId % cols] = false;
+        }
         delete task;
     }
     mScheduler->ConsumerDone();
@@ -161,99 +220,6 @@ void FPSGDModelComputation::MonitorRun() {
 }
 
 } //~ namespace SVD
-
-//void Monitor::print(int const iter, float const time, double const loss,
-//                    float const tr_rmse)
-//{
-//    char output[1024];
-//    sprintf(output, "%-4d %10.2f", iter, time);
-//    if(show_tr_rmse)
-//        sprintf(output+strlen(output), " %10.3f", tr_rmse);
-//    if(Va != nullptr)
-//        sprintf(output+strlen(output), " %10.3f", calc_rmse(*model, *Va));
-//    if(show_obj)
-//    {
-//        double const reg = calc_reg();
-//        sprintf(output+strlen(output), " %13.3e %13.3e %13.3e", loss, reg,
-//                loss+reg);
-//    }
-//    printf("%s\n", output);
-//    fflush(stdout);
-//}
-//
-//double Monitor::calc_reg()
-//{
-//    int const dim_aligned = get_aligned_dim(model->param.dim);
-//    double reg = 0;
-//
-//    {
-//        float * const P = model->P;
-//        double reg_p = 0;
-//        for(int u = 0; u < model->nr_users; u++)
-//        {
-//            float * const p = P+u*dim_aligned;
-//            reg_p += nr_ratings_per_user[u] *
-//                     std::inner_product(p, p+model->param.dim, p, 0.0);
-//        }
-//        reg += reg_p*model->param.lp;
-//    }
-//
-//    {
-//        float * const Q = model->Q;
-//        double reg_q = 0;
-//        for(int i = 0; i < model->nr_items; i++)
-//        {
-//            float * const q = Q+i*dim_aligned;
-//            reg_q += nr_ratings_per_item[i] *
-//                     std::inner_product(q, q+model->param.dim, q, 0.0);
-//        }
-//        reg += reg_q*model->param.lq;
-//    }
-//
-//    if(model->param.lub >= 0)
-//    {
-//        double reg_ub = 0;
-//        for(int u = 0; u < model->nr_users; u++)
-//            reg_ub += nr_ratings_per_user[u] * model->UB[u] * model->UB[u];
-//        reg += reg_ub*model->param.lub;
-//    }
-//
-//    if(model->param.lib >= 0)
-//    {
-//        double reg_ib = 0;
-//        for(int i = 0; i < model->nr_items; i++)
-//            reg_ib += nr_ratings_per_item[i] * model->UB[i] * model->UB[i];
-//        reg += reg_ib*model->param.lib;
-//    }
-//
-//    return reg;
-//}
-//float  Monitor::calc_rate(Model const &model, Node const &r)
-//{
-//    int const dim_aligned = get_aligned_dim(model.param.dim);
-//    float rate = std::inner_product(
-//                     model.P+r.uid*dim_aligned,
-//                     model.P+r.uid*dim_aligned + model.param.dim,
-//                     model.Q+r.iid*dim_aligned,
-//                     0.0);
-//    rate += model.avg;
-//    if(model.param.lub >= 0)
-//        rate += model.UB[r.uid];
-//    if(model.param.lib >= 0)
-//        rate += model.IB[r.iid];
-//    return rate;
-//}
-//
-//float  Monitor::calc_rmse(const Model& model, Matrix const &M)
-//{
-//    double loss = 0;
-//    for(auto r = M.R.begin(); r != M.R.end(); r++)
-//    {
-//        float const e = r->rate - calc_rate(model, *r);
-//        loss += e*e;
-//    }
-//    return sqrt(loss/M.nr_ratings);
-//}
 
 } //~ namespace longan
 

@@ -51,7 +51,11 @@ void SVDTrain::LoadRatings() {
 
 void SVDTrain::ComputeModel() {
     Log::I("recsys", "SVDTrain::ComputeModel()");
-    mModelComputationDelegate = new SVD::FPSGDModelComputation();
+    if (mTrainOption->Accelerate()) {
+        mModelComputationDelegate = new SVD::FPSGDModelComputation();
+    } else {
+        mModelComputationDelegate = new SVD::SimpleModelComputation();
+    }
     mModelComputationDelegate->ComputeModel(mTrainOption, &mGriddedMatrix, mModel);
 }
 

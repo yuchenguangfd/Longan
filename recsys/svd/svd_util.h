@@ -42,6 +42,7 @@ public:
     int NumItemBlock() const { return mNumItemBlock; }
     bool UseRandomShuffle() const { return mUseRandomShuffle; }
     bool UseRatingAverage() const { return mUseRatingAverage; }
+    bool Accelerate() const { return mAccelerate; }
 private:
     int mIterations;
     float mLearningRate;
@@ -50,6 +51,7 @@ private:
     int mNumItemBlock;
     bool mUseRandomShuffle;
     bool mUseRatingAverage;
+    bool mAccelerate;
 };
 
 class Node {

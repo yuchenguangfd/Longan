@@ -10,7 +10,7 @@ env_cv.lib_objects = []
 # import OpenCV Library
 env_cv.Prepend(CPPPATH = ["#/external/opencv/include"])
 env_cv.Prepend(LIBPATH = ["#/external/opencv/lib"])
-env_cv.Prepend(LIBS=["opencv_core", "opencv_highgui"])
+env_cv.Prepend(LIBS=["opencv_core", "opencv_highgui", "opencv_imgproc"])
 
 env_cv.Program("hello_cv", ["hello_cv.cpp"])
 

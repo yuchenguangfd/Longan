@@ -22,7 +22,10 @@ public:
 };
 
 class SimpleModelComputation : public ModelComputation {
+public:
     virtual void ComputeModel(const TrainOption *trainOption, const GriddedMatrix *griddedMatrix, ModelTrain *model) override;
+private:
+    void SGDOnGrid(const Matrix& mat);
 };
 
 class FPSGDModelComputation : public ModelComputation, public PipelinedSchedulerClient {
@@ -61,6 +64,7 @@ private:
     std::vector<bool> mGridColBlocked;
     std::vector<int> mGridIterationCount;
     int mCurrentIteration = 0;
+    std::mutex mGridBlockedMutex;
 };
 
 } //~ namespace SVD

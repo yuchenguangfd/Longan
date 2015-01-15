@@ -46,6 +46,7 @@ TrainOption::TrainOption(const Json::Value& config) {
     assert(mNumItemBlock > mNumThread);
     mUseRandomShuffle = trainOption["useRandomShuffle"].asBool();
     mUseRatingAverage = trainOption["useRatingAverage"].asBool();
+    mAccelerate = trainOption["accelerate"].asBool();
 }
 
 Matrix::Matrix() :
