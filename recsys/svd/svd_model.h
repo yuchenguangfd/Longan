@@ -7,32 +7,57 @@
 #ifndef RECSYS_SVD_SVD_MODEL_H
 #define RECSYS_SVD_SVD_MODEL_H
 
+#include "svd_util.h"
+#include "common/math/vector.h"
 #include <string>
 #include <vector>
+#include <cassert>
 
 namespace longan {
 
-struct SVDParameter {
-    int dim;
-    float lp, lq, lub, lib, gamma;
-    SVDParameter() : dim(40), lp(1), lq(1), lub(-1), lib(-1), gamma(0.001) {}
-};
+class SVDTrain;
 
-class SVDModelPredict {
+namespace SVD {
+
+class FPSGDModelComputation;
+class Model {
 public:
-    SVDModelPredict();
-    ~SVDModelPredict();
-    void Load(const std::string& filename);
-public:
-    SVDParameter mParam;
+    Model(const Parameter& param);
+    ~Model();
+    int NumUser() const { return mNumUser; }
+    int NumItem() const { return mNumItem; }
+    float RatingAverage() const { return mRatingAverage; }
+    const Vector<float>& UserFeature(int userId) const { return mUserFeatures[userId]; }
+    const Vector<float>& ItemFeature(int itemId) const { return mItemFeatures[itemId]; }
+    float UserBias(int userId) const { return mUserBiases[userId]; }
+    float ItemBias(int itemId) const { return mItemBiases[itemId]; }
+protected:
+    const Parameter& mParameter;
     int mNumUser;
     int mNumItem;
-    float mAvg;
-    float *P;
-    float *Q;
-    std::vector<float> UB;
-    std::vector<float> IB;
+    float mRatingAverage;
+    std::vector<Vector<float>> mUserFeatures;
+    std::vector<Vector<float>> mItemFeatures;
+    std::vector<float> mUserBiases;
+    std::vector<float> mItemBiases;
 };
+
+class ModelTrain : public Model {
+public:
+    ModelTrain(const Parameter& param, int numUser, int numItem, float ratingAvg);
+    void RandomInit();
+    void Save(const std::string& filename);
+    friend FPSGDModelComputation;
+    friend SVDTrain;
+};
+
+class ModelPredict : public Model {
+public:
+    using Model::Model;
+    void Load(const std::string& filename);
+};
+
+} //~ namespace SVD
 
 } //~ namespace longan
 

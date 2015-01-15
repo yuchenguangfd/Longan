@@ -9,3 +9,7 @@
 /svd_train_longan
 /svd_train_longan.o
 /svd_train.o
+/svd_predict_unittest
+/svd_predict_unittest.o
+/svd_util.o
+/svd_model_computation.o

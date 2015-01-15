@@ -14,6 +14,8 @@
 namespace longan {
 
 void SVDPredict::Init() {
+    Log::I("recsys", "SVDPredict::Init()");
+    LoadConfig();
     LoadRatings();
     LoadModel();
 }
@@ -22,10 +24,9 @@ void SVDPredict::LoadRatings() {
     Log::I("recsys", "SVDPredict::LoadRatings()");
     Log::I("recsys", "rating file = " + mRatingTrainFilepath);
     BinaryInputStream bis(mRatingTrainFilepath);
-    int numUser, numItem;
-    int64 numRating;
+    int numRating, numUser, numItem;
     float avgRating;
-    bis >> numUser >> numItem >> numRating
+    bis >> numRating >> numUser >> numItem
         >> avgRating;
     RatingList rlist(numUser, numItem, numRating);
     for (int i = 0; i < numRating; ++i) {
@@ -37,40 +38,40 @@ void SVDPredict::LoadRatings() {
     Log::I("recsys", "create rating matrix");
     mRatingMatrix = new RatingMatrixAsUsers<>();
     mRatingMatrix->Init(rlist);
+    mRatingAverage = (SVD::TrainOption(mConfig).UseRatingAverage())? avgRating : 0.0f;
 }
 
 void SVDPredict::LoadModel() {
-    mModel = new SVDModelPredict();
+    mParameter = new SVD::Parameter(mConfig);
+    mModel = new SVD::ModelPredict(*mParameter);
     mModel->Load(mModelFilepath);
 }
 
 void SVDPredict::Cleanup() {
+    delete mParameter;
     delete mModel;
 }
 
 float SVDPredict::PredictRating(int userId, int itemId) const {
-    assert(userId >= 0 && userId < mModel->mNumUser);
-    assert(itemId >= 0 && itemId < mModel->mNumItem);
-    int dim = mModel->mParam.dim;
-    float predRating = std::inner_product(
-        mModel->P + userId * dim,
-        mModel->P + userId * dim + dim,
-        mModel->Q + itemId * dim,
-        0.0);
-    predRating += mModel->mAvg;
-    if (mModel->mParam.lub >= 0) {
-        predRating += mModel->UB[userId];
+    assert(userId >= 0 && userId < mModel->NumUser());
+    assert(itemId >= 0 && itemId < mModel->NumItem());
+    const auto& uvec = mModel->UserFeature(userId);
+    const auto& ivec = mModel->ItemFeature(itemId);
+    float predRating = InnerProd(uvec, ivec);
+    if (mParameter->LambdaUserBias() >= 0.0f) {
+        predRating += mModel->UserBias(userId);
     }
-    if (mModel->mParam.lib >= 0) {
-        predRating += mModel->IB[itemId];
+    if (mParameter->LambdaItemBias() >= 0.0f) {
+        predRating += mModel->ItemBias(itemId);
     }
+    predRating += mRatingAverage;
     return predRating;
 }
 
 ItemIdList SVDPredict::PredictTopNItem(int userId, int listSize) const {
-    assert(userId >= 0 && userId < mModel->mNumUser);
+    assert(userId >= 0 && userId < mRatingMatrix->NumUser());
     assert(listSize > 0);
-    int numItem = mModel->mNumItem;
+    int numItem = mRatingMatrix->NumItem();
     const auto& uv = mRatingMatrix->GetUserVector(userId);
     const ItemRating *data1 = uv.Data();
     int size1 = uv.Size();

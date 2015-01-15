@@ -20,10 +20,9 @@ void SVDEvaluate::CreatePredict() {
 void SVDEvaluate::LoadTestRatings() {
     Log::I("recsys", "SVDEvaluate::LoadTestRatings()");
     BinaryInputStream bis(mRatingTestFilepath);
-    int numUser, numItem;
-    int64 numRating;
+    int numRating, numUser, numItem;
     float avgRating;
-    bis >> numUser >> numItem >> numRating
+    bis >> numRating >> numUser >> numItem
         >> avgRating;
     RatingList rlist(numUser, numItem, numRating);
     for (int i = 0; i < numRating; ++i) {

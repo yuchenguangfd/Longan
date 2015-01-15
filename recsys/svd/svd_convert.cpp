@@ -1,8 +1,7 @@
 /*
- * svdconvert.cpp
- *
- *  Created on: Dec 11, 2014
- *      Author: chenguangyu
+ * svd_convert.cpp
+ * Created on: Dec 11, 2014
+ * Author: chenguangyu
  */
 
 #include "svd_convert.h"
@@ -14,13 +13,13 @@ namespace longan {
 
 void SVDConvert::Convert() {
     RatingList rlist = RatingList::LoadFromTextFile(mRatingTextFilepath);
-    RunningAverage<double> raAvgRating;
+    RunningAverage<double> runningAvgerage;
     for (int i = 0; i < rlist.NumRating(); ++i) {
-        raAvgRating.Add(rlist[i].Rating());
+        runningAvgerage.Add(rlist[i].Rating());
     }
     BinaryOutputStream bos(mRatingBinaryFilepath);
-    bos << rlist.NumUser() << rlist.NumItem() << (int64)rlist.NumRating();
-    bos << (float)raAvgRating.CurrentAverage();
+    bos << rlist.NumRating() << rlist.NumUser() << rlist.NumItem();
+    bos << static_cast<float>(runningAvgerage.CurrentAverage());
     for (int i = 0; i < rlist.NumRating(); ++i) {
         const RatingRecord& rr = rlist[i];
         bos << rr.UserId() << rr.ItemId() << rr.Rating();

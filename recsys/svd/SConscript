@@ -3,8 +3,6 @@ Import("env_recsys")
 build_env = env_recsys.Clone()
 build_env.Append(CCFLAGS = [
     "-O3", "-march=native", "-funroll-loops"])
-build_env.Append(CPPDEFINES = ["NOSSE"])
-# build_env.Append(CPPDEFINES = ["USEAVX"])
 
 # add glog support
 build_env.Prepend(CPPPATH = "#/external/glog/include")
@@ -14,16 +12,31 @@ build_env.Prepend(LIBS = "glog")
 build_env.Prepend(CPPPATH = "#/external/gflags/include")
 build_env.Prepend(LIBPATH = "#/external/gflags")
 build_env.Prepend(LIBS = "gflags")
+# add gtest support
+build_env.Prepend(CPPPATH = "#/external/gtest/include")
+build_env.Prepend(LIBPATH = "#/external/gtest")
+build_env.Prepend(LIBS = "gtest")
+build_env.Prepend(LINKFLAGS = "-pthread")
+
+build_env.Program("svd_predict_unittest", 
+                 ["svd_predict_unittest.cpp",
+                  "svd_predict.cpp",
+                  "svd_model.cpp",
+                  "svd_util.cpp"])
 
 build_env.Program("svd_convert_longan", 
                  ["svd_convert_longan.cpp",
                   "svd_convert.cpp"])
 build_env.Program("svd_train_longan",
                  ["svd_train_longan.cpp",
-                  "svd_train.cpp"])
+                  "svd_train.cpp",
+                  "svd_model.cpp",
+                  "svd_model_computation.cpp",
+                  "svd_util.cpp"])
 build_env.Program("svd_evaluate_longan",
                  ["svd_evaluate_longan.cpp",
                   "svd_evaluate.cpp",
                   "svd_predict.cpp",
-                  "svd_model.cpp"])
+                  "svd_model.cpp",
+                  "svd_util.cpp"])
 

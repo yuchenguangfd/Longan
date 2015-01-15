@@ -1,10 +1,10 @@
 {
 	"parameter": {
-		"dim": 40,
+		"dim": 100,
 	    "lambdaP": 0.05,
    		"lambdaQ": 0.05,
-		"lambdaUserBias": -1.0,
-		"lambdaItemBias": -1.0
+		"lambdaUserBias": 0.001,
+		"lambdaItemBias": 0.001
 	},
 	"trainOption": {
 	    "iterations": 100,
@@ -13,7 +13,8 @@
 	    "numThread": 4,
 	    "numUserBlock": 8,
 	    "numItemBlock": 8,
-	    "useRandomShuffle": true
+	    "useRandomShuffle": true,
+	    "useRatingAverage": true 
 	},
 	"evaluateOption": {
 		"accelerate": true, 

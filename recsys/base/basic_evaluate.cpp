@@ -58,6 +58,7 @@ void BasicEvaluate::LoadConfig() {
 
 void BasicEvaluate::LoadTestRatings() {
     Log::I("recsys", "BasicEvaluate::LoadTestRatings()");
+    Log::I("recsys", "test rating file = " + mRatingTestFilepath);
     mTestRatingList = RatingList::LoadFromBinaryFile(mRatingTestFilepath);
 }
 

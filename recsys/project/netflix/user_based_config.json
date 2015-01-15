@@ -1,8 +1,8 @@
 {
 	"parameter": {
 		"similarityType": "correlation",
-		"modelType": "fixedSimilarityThreshold",
-		"similarityThreshold": 0.9
+		"modelType": "fixedNeighborSize",
+		"neighborSize": 3000
 	},
 	"trainOption": {
 		"accelerate": true,
