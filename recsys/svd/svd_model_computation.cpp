@@ -211,9 +211,7 @@ void FPSGDModelComputation::ConsumerRun() {
 
 void FPSGDModelComputation::MonitorRun() {
     while (true) {
-        ConsoleLog::I("recsys", "Computing Model...iteration at "
-                       + Integer::ToString(mCurrentIteration) + "/"
-                       + Integer::ToString(mTrainOption->Iterations()));
+        Log::Console("recsys", "Computing Model...iteration at %d/%d", mCurrentIteration, mTrainOption->Iterations());
         if (mCurrentIteration >= mTrainOption->Iterations() - 1) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }

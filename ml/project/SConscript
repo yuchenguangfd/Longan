@@ -1,0 +1,4 @@
+Import("env_ml")
+Export("env_ml")
+
+SConscript("mnist/SConscript")

@@ -22,7 +22,7 @@ public:
     Vector();
 	Vector(int size, bool init = false, T initValue = T());
     template <class Iterator>
-	Vector(int size, Iterator begin, Iterator end);
+	Vector(Iterator begin, Iterator end);
 	Vector(const Vector<T, Alloc>& orig);
     Vector(Vector<T, Alloc>&& orig);
 	~Vector();
@@ -83,9 +83,9 @@ Vector<T, Alloc>::Vector(int size, bool init, T initValue) :
 
 template <class T, class Alloc>
 template <class Iterator>
-Vector<T, Alloc>::Vector(int size, Iterator begin, Iterator end) :
-    mSize(size) {
-    assert(mSize == end - begin);
+Vector<T, Alloc>::Vector(Iterator begin, Iterator end) :
+    mSize(end - begin) {
+    assert(mSize >= 0);
     Alloc alloc;
     mData = alloc.allocate(mSize);
     std::copy(begin, end, mData);

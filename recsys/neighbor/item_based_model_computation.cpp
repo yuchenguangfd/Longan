@@ -175,8 +175,7 @@ void DynamicScheduledModelComputation::ConsumerRun() {
 
 void DynamicScheduledModelComputation::MonitorRun() {
     while (true) {
-        ConsoleLog::I("recsys", "Computing Model..."
-                + Integer::ToString((int)(mCurrentProgress*100)) + "% done.");
+        Log::Console("recsys", "Computing Model... %d%% done.", (int)(mCurrentProgress*100));
         if (mCurrentProgress > 0.99) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }

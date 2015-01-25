@@ -17,4 +17,7 @@ env_ml.Prepend(LIBPATH = ["#/ml"])
 env_ml.Prepend(LIBS=["libml.a"])
 env_ml.lib_objects = []
 
+SConscript("base/SConscript")
+SConscript("project/SConscript")
+
 env_ml.StaticLibrary("ml", env_ml.lib_objects)

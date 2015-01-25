@@ -30,7 +30,7 @@ TEST(VectorTest, ConstructorOK) {
     ASSERT_EQ(42, v3[1]);
 
     int data[] = {1, 23, 456};
-    Vector<int> v4(3, std::begin(data), std::end(data));
+    Vector<int> v4(std::begin(data), std::end(data));
     ASSERT_EQ(1, v4[0]);
     ASSERT_EQ(23, v4[1]);
     ASSERT_EQ(456, v4[2]);
@@ -50,7 +50,7 @@ TEST(VectorTest, ConstructorOK) {
 
 TEST(VectorTest, CopyAndMoveOK) {
     int data[] = {1, 23, 456};
-    Vector<int> v0(3, std::begin(data), std::end(data));
+    Vector<int> v0(std::begin(data), std::end(data));
     Vector<int> v1, v2;
     v1 = v0;
     ASSERT_EQ(3, v0.Size());
@@ -63,7 +63,7 @@ TEST(VectorTest, CopyAndMoveOK) {
 
 TEST(VectorTest, EqualAndNotEqualOK) {
     int data[] = {42, 43, 44};
-    Vector<int> v1(3, data, data + 3), v2(3, data, data + 3);
+    Vector<int> v1(data, data + 3), v2(data, data + 3);
     ASSERT_TRUE(v1 == v2);
     v2[1] = -v2[1];
     ASSERT_TRUE(v1 != v2);
@@ -73,7 +73,7 @@ TEST(VectorTest, BinaryAddOK) {
     int data1[] = {1, 2, 3};
     int data2[] = {4, 5, 6};
     int data3[] = {5, 7, 9};
-    Vector<int> v1(3, data1, data1+3), v2(3, data2, data2+3), v3(3, data3, data3+3);
+    Vector<int> v1(data1, data1+3), v2(data2, data2+3), v3(data3, data3+3);
     ASSERT_EQ(v3, v1 + v2);
 }
 
@@ -81,14 +81,14 @@ TEST(VectorTest, BinarySubOK) {
     int data1[] = {1, 2, 3};
     int data2[] = {4, 5, 6};
     int data3[] = {-3, -3, -3};
-    Vector<int> v1(3, data1, data1+3), v2(3, data2, data2+3), v3(3, data3, data3+3);
+    Vector<int> v1(data1, data1+3), v2(data2, data2+3), v3(data3, data3+3);
     ASSERT_EQ(v3, v1 - v2);
 }
 
 TEST(VectorTest, InnerProdOK) {
     double data1[] = {1.0, 2.0, 3.0};
     double data2[] = {4.0, 5.0, 6.0};
-    Vector<double> v1(3, data1, data1+3), v2(3, data2, data2+3);
+    Vector<double> v1(data1, data1+3), v2(data2, data2+3);
     ASSERT_DOUBLE_EQ(32.0, InnerProd(v1, v2));
 }
 

@@ -4,8 +4,8 @@
  * Author: chenguangyu
  */
 
-#ifndef COMMON_LANG_BINARY_OUTPUTSTREAM_H
-#define COMMON_LANG_BINARY_OUTPUTSTREAM_H
+#ifndef COMMON_LANG_BINARY_OUTPUT_STREAM_H
+#define COMMON_LANG_BINARY_OUTPUT_STREAM_H
 
 #include "types.h"
 #include "defines.h"
@@ -63,4 +63,4 @@ inline BinaryOutputStream& operator << (BinaryOutputStream& bos, float64 f) {
 
 } //~ namespace longan
 
-#endif /* COMMON_LANG_BINARY_OUTPUTSTREAM_H */
+#endif /* COMMON_LANG_BINARY_OUTPUT_STREAM_H */

@@ -6,3 +6,4 @@
 /double.o
 /binary_output_stream.o
 /binary_input_stream.o
+/text_output_stream.o

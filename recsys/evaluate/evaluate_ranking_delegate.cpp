@@ -120,7 +120,7 @@ void DynamicScheduledEvaluateRankingDelegate::ConsumerRun() {
 
 void DynamicScheduledEvaluateRankingDelegate::MonitorRun() {
     while (true) {
-        ConsoleLog::I("recsys", "Evaluate Ranking..." + Integer::ToString((int)(mProgress*100)) + "% done.");
+        Log::Console("recsys", "Evaluate Ranking...%d%% done.", (int)(mProgress*100));
         if (mProgress > 0.99) break;
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }

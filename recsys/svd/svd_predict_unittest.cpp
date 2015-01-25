@@ -22,11 +22,11 @@ TEST(SVDPredictTest, PredictRatingOK) {
             mNumUser = 2;
             mNumItem = 2;
             mUserFeatures.resize(2);
-            mUserFeatures[0] = Vector<float>(3, data1, data1 + 3);
-            mUserFeatures[1] = Vector<float>(3, data2, data2 + 3);
+            mUserFeatures[0] = Vector<float>(data1, data1 + 3);
+            mUserFeatures[1] = Vector<float>(data2, data2 + 3);
             mItemFeatures.resize(2);
-            mItemFeatures[0] = Vector<float>(3, data3, data3 + 3);
-            mItemFeatures[1] = Vector<float>(3, data4, data4 + 3);
+            mItemFeatures[0] = Vector<float>(data3, data3 + 3);
+            mItemFeatures[1] = Vector<float>(data4, data4 + 3);
             mUserBiases.resize(2);
             mUserBiases[0] = 100;
             mUserBiases[1] = 200;
