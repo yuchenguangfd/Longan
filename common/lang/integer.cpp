@@ -22,6 +22,12 @@ std::string Integer::ToString(int num) {
     return std::string(buff);
 }
 
+std::string Integer::ToString(int num, int fieldWidth) {
+    char buff[16];
+    sprintf(buff, "%0*d", fieldWidth, num);
+    return std::string(buff);
+}
+
 int Integer::ReverseByteOrder(int x) {
     return ((x & 0xFF) << 24)
          + ((x & 0xFF00) << 8)

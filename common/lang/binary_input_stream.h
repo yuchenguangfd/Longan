@@ -21,6 +21,7 @@ public:
 	BinaryInputStream(const std::string& filename);
 	virtual ~BinaryInputStream();
 	void Close();
+	friend BinaryInputStream& operator>> (BinaryInputStream& bis, uint8& i);
 	friend BinaryInputStream& operator>> (BinaryInputStream& bis, int32& i);
 	friend BinaryInputStream& operator>> (BinaryInputStream& bis, int64& i);
 	friend BinaryInputStream& operator>> (BinaryInputStream& bis, float32& f);
@@ -32,6 +33,13 @@ protected:
 	FILE* mStream;
 	DISALLOW_COPY_AND_ASSIGN(BinaryInputStream);
 };
+
+inline BinaryInputStream& operator>> (BinaryInputStream& bis, uint8& i) {
+    if (fread((void*)&i, (uint64)sizeof(uint8), 1, bis.mStream) != 1) {
+        throw LonganFileReadError();
+    }
+    return bis;
+}
 
 inline BinaryInputStream& operator>> (BinaryInputStream& bis, int32& i) {
     if (fread((void*)&i, (uint64)sizeof(int32), 1, bis.mStream) != 1) {

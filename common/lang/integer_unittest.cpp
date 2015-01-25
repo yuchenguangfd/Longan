@@ -27,6 +27,7 @@ TEST(IntegerTest, ToStringOK) {
     int i3 = +2147483647;
     EXPECT_EQ("0", Integer::ToString(i0));
     EXPECT_EQ("1234", Integer::ToString(i1));
+    EXPECT_EQ("0001234", Integer::ToString(i1, 7));
     EXPECT_EQ("-4321", Integer::ToString(i2));
     EXPECT_EQ("2147483647", Integer::ToString(i3));
 }

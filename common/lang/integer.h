@@ -16,6 +16,7 @@ class Integer {
 public:
     static const int MAX = std::numeric_limits<int>::max();
     static std::string ToString(int num);
+    static std::string ToString(int num, int fieldWidth);
     static int ParseInt(const std::string& s);
     static int ReverseByteOrder(int x);
 public:

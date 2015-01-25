@@ -1,0 +1,23 @@
+Import("env_ml")
+
+build_env = env_ml.Clone()
+# add glog support
+build_env.Prepend(CPPPATH = "#/external/glog/include")
+build_env.Prepend(LIBPATH = "#/external/glog")
+build_env.Prepend(LIBS = "glog")
+# add gflags support
+build_env.Prepend(CPPPATH = "#/external/gflags/include")
+build_env.Prepend(LIBPATH = "#/external/gflags")
+build_env.Prepend(LIBS = "gflags")
+# add jsoncpp support
+build_env.Prepend(CPPPATH = "#/external/jsoncpp/include")
+build_env.Prepend(LIBPATH = "#/external/jsoncpp")
+build_env.Prepend(LIBS = "json")
+# import OpenCV Library
+build_env.Prepend(CPPPATH = ["#/external/opencv/include"])
+build_env.Prepend(LIBPATH = ["#/external/opencv/lib"])
+build_env.Prepend(LIBS=["opencv_core", "opencv_highgui", "opencv_imgproc"])
+
+build_env.Program("mnist_prepare_longan", 
+                 ["mnist_prepare_longan.cpp",
+                  "mnist_prepare.cpp"])
