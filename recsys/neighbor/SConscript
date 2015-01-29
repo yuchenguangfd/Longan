@@ -2,22 +2,14 @@ Import("env_recsys")
 
 build_env = env_recsys.Clone()
 # add gtest support
-build_env.Prepend(CPPPATH = "#/external/gtest/include")
-build_env.Prepend(LIBPATH = "#/external/gtest")
-build_env.Prepend(LIBS = "gtest")
-build_env.Prepend(LINKFLAGS = "-pthread")
-# add glog support
-build_env.Prepend(CPPPATH = "#/external/glog/include")
-build_env.Prepend(LIBPATH = "#/external/glog")
-build_env.Prepend(LIBS = "glog")
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
 # add gflags support
-build_env.Prepend(CPPPATH = "#/external/gflags/include")
-build_env.Prepend(LIBPATH = "#/external/gflags")
-build_env.Prepend(LIBS = "gflags")
-# add jsoncpp support
-build_env.Prepend(CPPPATH = "#/external/jsoncpp/include")
-build_env.Prepend(LIBPATH = "#/external/jsoncpp")
-build_env.Prepend(LIBS = "json")
+build_env.Prepend(CPPPATH = "#/external/gflags/include",
+                  LIBPATH = "#/external/gflags",
+                  LIBS = "gflags")
 
 build_env.Program("item_based_model_unittest",
                   ["item_based_model_unittest.cpp", 

@@ -83,6 +83,21 @@ TEST(VectorTest, BinarySubOK) {
     int data3[] = {-3, -3, -3};
     Vector<int> v1(data1, data1+3), v2(data2, data2+3), v3(data3, data3+3);
     ASSERT_EQ(v3, v1 - v2);
+    int data4[] = {-3, -4, -5};
+    Vector<int> v4(data4, data4+3);
+    ASSERT_EQ(v4, 1 - v2);
+}
+
+TEST(VectorTest, ElementWiseOperationOK) {
+    int data1[] = {1, 2, 3};
+    int data2[] = {4, 5, 6};
+    int data3[] = {4, 10, 18};
+    int data4[] = {16, 100, 324};
+    Vector<int> v1(data1, data1+3), v2(data2, data2+3);
+    Vector<int> v3(data3, data3+3);
+    ASSERT_EQ(v3, MultiplyElementWise(v1, v2));
+    Vector<int> v4(data4, data4+3);
+    ASSERT_EQ(v4, MultiplyElementWise(v1, v2, v3));
 }
 
 TEST(VectorTest, InnerProdOK) {
@@ -90,6 +105,14 @@ TEST(VectorTest, InnerProdOK) {
     double data2[] = {4.0, 5.0, 6.0};
     Vector<double> v1(data1, data1+3), v2(data2, data2+3);
     ASSERT_DOUBLE_EQ(32.0, InnerProd(v1, v2));
+}
+
+TEST(VectorTest, NormOK) {
+    Vector<double> v1(2);
+    v1[0] = -3; v1[1] = 4;
+    ASSERT_EQ(7, NormL1(v1));
+    ASSERT_EQ(25.0, NormL2Sqr(v1));
+    ASSERT_EQ(5.0, NormL2(v1));
 }
 
 TEST(VectorTest, StaticFactoryOK) {

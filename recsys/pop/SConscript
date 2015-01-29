@@ -1,19 +1,10 @@
 Import("env_recsys")
 
 build_env = env_recsys.Clone()
-# add glog support
-build_env.Prepend(CPPPATH = "#/external/glog/include")
-build_env.Prepend(LIBPATH = "#/external/glog")
-build_env.Prepend(LIBS = "glog")
-build_env.Prepend(LINKFLAGS = "-pthread")
 # add gflags support
-build_env.Prepend(CPPPATH = "#/external/gflags/include")
-build_env.Prepend(LIBPATH = "#/external/gflags")
-build_env.Prepend(LIBS = "gflags")
-# add jsoncpp support
-build_env.Prepend(CPPPATH = "#/external/jsoncpp/include")
-build_env.Prepend(LIBPATH = "#/external/jsoncpp")
-build_env.Prepend(LIBS = "json")
+build_env.Prepend(CPPPATH = "#/external/gflags/include",
+                  LIBPATH = "#/external/gflags",
+                  LIBS = "gflags")
 
 build_env.Program("pop_convert_longan",
                   ["pop_convert_longan.cpp"])

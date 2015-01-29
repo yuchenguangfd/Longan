@@ -80,6 +80,47 @@ TEST(MatrixTest, BinaryMulMatrixOK) {
     Matrix<int> m2(3, 2, std::begin(data2), std::end(data2));
     Matrix<int> m3(2, 2, std::begin(data3), std::end(data3));
     ASSERT_EQ(m3, m1 * m2);
+
+    int data4[] = {1, 3, 5};
+    int data5[] = {22, 49};
+    Vector<int> v1(std::begin(data4), std::end(data4));
+    Vector<int> v2(std::begin(data5), std::end(data5));
+    ASSERT_EQ(v2, m1 * v1);
+
+    int data6[] = {1, 2, 3, 4, 3, 8, 9, 64};
+    Matrix<int> m4(1, 2, data6, data6+2);
+    Matrix<int> m5(1, 2, data6+2, data6+4);
+    Matrix<int> m6(1, 2, data6+4, data6+6);
+    Matrix<int> m7(1, 2, data6+6, data6+8);
+    ASSERT_EQ(m6, MultiplyElementWise(m4, m5));
+    ASSERT_EQ(m7, MultiplyElementWise(m4, m5, m6));
+}
+
+TEST(MatrixTest, OutterProdOK) {
+    int data1[] = {1, 2, 3};
+    int data2[] = {4, 5, 6};
+    int data3[] = {4, 5, 6,
+                   8,10,12,
+                  12,15,18};
+    Vector<int> v1(data1, data1+3), v2(data2, data2+3);
+    Matrix<int> m3(3, 3, data3, data3+9);
+    ASSERT_EQ(m3, OutterProd(v1, v2));
+}
+
+TEST(MatrixTest, NormOK) {
+    Matrix<double> m1(2, 2);
+    m1[0][0] = -3; m1[0][1] = 4;
+    m1[1][0] = 5; m1[1][1] = 6;
+    ASSERT_EQ(86.0, NormFSqr(m1));
+    ASSERT_DOUBLE_EQ(9.273618495495704, NormF(m1));
+}
+
+TEST(MatrixTest, TransposeOK) {
+    int data1[] = {1, 2, 3, 4, 5, 6};
+    int data2[] = {1, 4, 2, 5, 3, 6};
+    Matrix<int> m1(2, 3, std::begin(data1), std::end(data1));
+    Matrix<int> m2(3, 2, std::begin(data2), std::end(data2));
+    ASSERT_EQ(m2, m1.Transpose());
 }
 
 int main(int argc, char **argv) {

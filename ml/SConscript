@@ -4,20 +4,21 @@ env_ml = env.Clone()
 Export("env_ml")
 
 # add jsoncpp support
-env_ml.Prepend(CPPPATH = "#/external/jsoncpp/include")
-env_ml.Prepend(LIBPATH = "#/external/jsoncpp")
-env_ml.Prepend(LIBS = "json")
+env_ml.Prepend(CPPPATH = "#/external/jsoncpp/include",
+               LIBPATH = "#/external/jsoncpp",
+               LIBS = "json")
 # add glog support
-env_ml.Prepend(CPPPATH = "#/external/glog/include")
-env_ml.Prepend(LIBPATH = "#/external/glog")
-env_ml.Prepend(LIBS = "glog")
-env_ml.Prepend(LINKFLAGS = "-pthread")
+env_ml.Prepend(CPPPATH = "#/external/glog/include",
+               LIBPATH = "#/external/glog",
+               LIBS = "glog",
+               LINKFLAGS = "-pthread")
 
 env_ml.Prepend(LIBPATH = ["#/ml"])
 env_ml.Prepend(LIBS=["libml.a"])
 env_ml.lib_objects = []
 
 SConscript("base/SConscript")
+SConscript("neural_network/SConscript")
 SConscript("project/SConscript")
 
 env_ml.StaticLibrary("ml", env_ml.lib_objects)

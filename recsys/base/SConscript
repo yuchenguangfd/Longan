@@ -10,10 +10,10 @@ env_recsys.lib_objects.append(env_recsys.Object("basic_evaluate.cpp"))
 
 build_env = env_recsys.Clone()
 # add gtest support
-build_env.Prepend(CPPPATH = "#/external/gtest/include")
-build_env.Prepend(LIBPATH = "#/external/gtest")
-build_env.Prepend(LIBS = "gtest")
-build_env.Prepend(LINKFLAGS = "-pthread")
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
 
 build_env.Program("rating_list_unittest", ["rating_list_unittest.cpp"])
 build_env.Program("rating_matrix_as_items_unittest", ["rating_matrix_as_items_unittest.cpp"])

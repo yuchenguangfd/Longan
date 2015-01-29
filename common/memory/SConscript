@@ -2,10 +2,10 @@ Import("env_common")
 
 build_env = env_common.Clone()
 # add gtest support
-build_env.Prepend(CPPPATH = "#/external/gtest/include")
-build_env.Prepend(LIBPATH = "#/external/gtest")
-build_env.Prepend(LIBS = "gtest")
-build_env.Prepend(LINKFLAGS = "-pthread")
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
 
 build_env.Program("small_memory_allocator_unittest", ["small_memory_allocator_unittest.cpp"])
 build_env.Program("preferred_size_allocator_unittest", ["preferred_size_allocator_unittest.cpp"])

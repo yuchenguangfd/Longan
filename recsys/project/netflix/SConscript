@@ -1,20 +1,15 @@
 Import("env_recsys")
 
 build_env = env_recsys.Clone()
-# add glog support
-build_env.Prepend(CPPPATH = "#/external/glog/include")
-build_env.Prepend(LIBPATH = "#/external/glog")
-build_env.Prepend(LIBS = "glog")
-build_env.Prepend(LINKFLAGS = "-pthread")
 # add gflags support
-build_env.Prepend(CPPPATH = "#/external/gflags/include")
-build_env.Prepend(LIBPATH = "#/external/gflags")
-build_env.Prepend(LIBS = "gflags")
-
+build_env.Prepend(CPPPATH = "#/external/gflags/include",
+                  LIBPATH = "#/external/gflags",
+                  LIBS = "gflags")
 # add boost library
-build_env.Append(CPPPATH = "#/external/boost/include")
-build_env.Append(LIBPATH = "#/external/boost/lib")
-build_env.Append(LIBS = ["boost_system", "boost_filesystem"])
+build_env.Append(CPPPATH = "#/external/boost/include",
+                 LIBPATH = "#/external/boost/lib",
+                 LIBS = ["boost_system", "boost_filesystem"])
 
 build_env.Program("netflix_prepare_longan", 
-                  ["netflix_prepare_longan.cpp", "netflix_prepare.cpp"]);
+                 ["netflix_prepare_longan.cpp", 
+                  "netflix_prepare.cpp"]);

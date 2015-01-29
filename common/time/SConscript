@@ -3,9 +3,9 @@ env_common.lib_objects.append(env_common.Object("stopwatch.cpp"))
 
 build_env = env_common.Clone()
 # add gtest support
-build_env.Prepend(CPPPATH = "#/external/gtest/include")
-build_env.Prepend(LIBPATH = "#/external/gtest")
-build_env.Prepend(LIBS = "gtest")
-build_env.Prepend(LINKFLAGS = "-pthread")
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
 
 build_env.Program("stopwatch_unittest", ["stopwatch_unittest.cpp"])

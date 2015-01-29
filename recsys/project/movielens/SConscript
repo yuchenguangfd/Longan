@@ -2,9 +2,10 @@ Import("env_recsys")
 
 build_env = env_recsys.Clone()
 # add gflags support
-build_env.Prepend(CPPPATH = "#/external/gflags/include")
-build_env.Prepend(LIBPATH = "#/external/gflags")
-build_env.Prepend(LIBS = "gflags")
+build_env.Prepend(CPPPATH = "#/external/gflags/include",
+                  LIBPATH = "#/external/gflags",
+                  LIBS = "gflags")
 
 build_env.Program("movielens_prepare_longan", 
-                  ["movielens_prepare_longan.cpp", "movielens_prepare.cpp"])
+                 ["movielens_prepare_longan.cpp", 
+                  "movielens_prepare.cpp"])

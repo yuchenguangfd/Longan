@@ -4,14 +4,14 @@ env_recsys = env.Clone()
 Export("env_recsys")
 
 # add jsoncpp support
-env_recsys.Prepend(CPPPATH = "#/external/jsoncpp/include")
-env_recsys.Prepend(LIBPATH = "#/external/jsoncpp")
-env_recsys.Prepend(LIBS = "json")
+env_recsys.Prepend(CPPPATH = "#/external/jsoncpp/include",
+                   LIBPATH = "#/external/jsoncpp",
+                   LIBS = "json")
 # add glog support
-env_recsys.Prepend(CPPPATH = "#/external/glog/include")
-env_recsys.Prepend(LIBPATH = "#/external/glog")
-env_recsys.Prepend(LIBS = "glog")
-env_recsys.Prepend(LINKFLAGS = "-pthread")
+env_recsys.Prepend(CPPPATH = "#/external/glog/include",
+                   LIBPATH = "#/external/glog",
+                   LIBS = "glog",
+                   LINKFLAGS = "-pthread")
 
 env_recsys.Prepend(LIBPATH = ["#/recsys"])
 env_recsys.Prepend(LIBS=["librecsys.a"])

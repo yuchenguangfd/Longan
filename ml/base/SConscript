@@ -4,9 +4,9 @@ env_ml.lib_objects.append(env_ml.Object("datamodel.cpp"))
 
 build_env = env_ml.Clone()
 # add gtest support
-build_env.Prepend(CPPPATH = "#/external/gtest/include")
-build_env.Prepend(LIBPATH = "#/external/gtest")
-build_env.Prepend(LIBS = "gtest")
-build_env.Prepend(LINKFLAGS = "-pthread")
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
 
 build_env.Program("datamodel_unittest", ["datamodel_unittest.cpp"])

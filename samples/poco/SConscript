@@ -2,10 +2,10 @@ Import("env_samples")
 
 build_env = env_samples.Clone()
 # add poco support
-build_env.Append(CPPPATH = "#/external/poco/include")
-build_env.Append(LIBPATH = "#/external/poco")
-build_env.Append(LIBS = ["PocoNet", "PocoUtil", "PocoXML", "PocoFoundation"])
-build_env.Append(LINKFLAGS = "-pthread")
+build_env.Append(CPPPATH = "#/external/poco/include",
+                 LIBPATH = "#/external/poco",
+                 LIBS = ["PocoNet", "PocoUtil", "PocoXML", "PocoFoundation"],
+                 LINKFLAGS = "-pthread")
 
 build_env.Program("poco_event", "poco_event.cpp")
 build_env.Program("poco_threading", "poco_threading.cpp")

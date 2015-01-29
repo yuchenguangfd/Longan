@@ -4,19 +4,15 @@ build_env = env_recsys.Clone()
 build_env.Append(CCFLAGS = [
     "-O3", "-march=native", "-funroll-loops"])
 
-# add glog support
-build_env.Prepend(CPPPATH = "#/external/glog/include")
-build_env.Prepend(LIBPATH = "#/external/glog")
-build_env.Prepend(LIBS = "glog")
 # add gflags support
-build_env.Prepend(CPPPATH = "#/external/gflags/include")
-build_env.Prepend(LIBPATH = "#/external/gflags")
-build_env.Prepend(LIBS = "gflags")
+build_env.Prepend(CPPPATH = "#/external/gflags/include",
+                  LIBPATH = "#/external/gflags",
+                  LIBS = "gflags")
 # add gtest support
-build_env.Prepend(CPPPATH = "#/external/gtest/include")
-build_env.Prepend(LIBPATH = "#/external/gtest")
-build_env.Prepend(LIBS = "gtest")
-build_env.Prepend(LINKFLAGS = "-pthread")
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
 
 build_env.Program("svd_predict_unittest", 
                  ["svd_predict_unittest.cpp",

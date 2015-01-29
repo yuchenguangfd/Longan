@@ -16,6 +16,9 @@
 
 namespace longan {
 
+template <class T, class Alloc>
+class Matrix;
+
 template <class T, class Alloc = std::allocator<T>>
 class Vector {
 public:
@@ -28,34 +31,54 @@ public:
 	~Vector();
     Vector<T, Alloc>& operator= (const Vector<T, Alloc>& rhs);
     Vector<T, Alloc>& operator= (Vector<T, Alloc>&& rhs);
+    Vector<T, Alloc>& operator+= (const Vector<T, Alloc>& rhs);
+    Vector<T, Alloc>& operator-= (const Vector<T, Alloc>& rhs);
+    Vector<T, Alloc>& operator*= (T rhs);
+    Vector<T, Alloc>& operator/= (T rhs);
 
     template <class T1, class Alloc1>
     friend bool operator== (const Vector<T1, Alloc1>& lhs, const Vector<T1, Alloc1>& rhs);
     template <class T1, class Alloc1>
     friend bool operator!= (const Vector<T1, Alloc1>& lhs, const Vector<T1, Alloc1>& rhs);
-
     template <class T1, class Alloc1>
     friend Vector<T1, Alloc1> operator+ (const Vector<T1, Alloc1>& lhs, const Vector<T1, Alloc1>& rhs);
     template <class T1, class Alloc1>
     friend Vector<T1, Alloc1> operator- (const Vector<T1, Alloc1>& lhs, const Vector<T1, Alloc1>& rhs);
     template <class T1, class Alloc1>
+    friend Vector<T1, Alloc1> operator- (T1 lhs, const Vector<T1, Alloc1>& rhs);
+    template <class T1, class Alloc1>
+    friend Vector<T1, Alloc1> operator* (T1 lhs, const Vector<T1, Alloc1>& rhs);
+    template <class T1, class Alloc1>
+    friend Vector<T1, Alloc1> operator* (const Vector<T1, Alloc1>& lhs, T1 rhs);
+    template <class T1, class Alloc1>
+    friend Vector<T1, Alloc1> operator* (const Matrix<T1, Alloc1>& lhs, const Vector<T1, Alloc1>& rhs);
+    template <class T1, class Alloc1>
+    friend Vector<T1, Alloc1> operator/ (const Vector<T1, Alloc1>& lhs, T1 rhs);
+    template <class T1, class Alloc1>
+    friend Vector<T1, Alloc1> MultiplyElementWise(const Vector<T1, Alloc1>& v1, const Vector<T1, Alloc1>& v2);
+    template <class T1, class Alloc1>
+    friend Vector<T1, Alloc1> MultiplyElementWise(const Vector<T1, Alloc1>& v1,
+        const Vector<T1, Alloc1>& v2, const Vector<T1, Alloc1>& v3);
+    template <class T1, class Alloc1>
     friend T1 InnerProd(const Vector<T1, Alloc1>& lhs, const Vector<T1, Alloc1>& rhs);
+    template <class T1, class Alloc1>
+    friend Matrix<T1, Alloc1> OutterProd(const Vector<T1, Alloc1>& lhs, const Vector<T1, Alloc1>& rhs);
+    template <class T1, class Alloc1>
+    friend T1 NormL1(const Vector<T1, Alloc1>& vec);
+    template <class T1, class Alloc1>
+    friend T1 NormL2Sqr(const Vector<T1, Alloc1>& vec);
+    template <class T1, class Alloc1>
+    friend T1 NormL2(const Vector<T1, Alloc1>& vec);
 
-    int Size() const {
-	    return mSize;
-	};
-	T* Data() {
-	    return mData;
-	}
-	const T* Data() const {
-	    return mData;
-	}
-    T& operator[] (int index) {
-        return mData[index];
-    }
-    const T& operator[] (int index) const {
-        return mData[index];
-    }
+    int Size() const { return mSize; }
+	T* Data() { return mData; }
+	const T* Data() const { return mData; }
+    T* Begin() { return mData; }
+    const T* Begin() const { return mData; }
+    T* End() { return mData + mSize; }
+    const T* End() const { return mData + mSize; }
+    T& operator[] (int index) { return mData[index]; }
+    const T& operator[] (int index) const { return mData[index]; }
 public:
     static Vector<T, Alloc> Zeros(int size);
     static Vector<T, Alloc> Rand(int size);
@@ -139,6 +162,40 @@ Vector<T, Alloc>& Vector<T, Alloc>::operator= (Vector<T, Alloc>&& rhs) {
 }
 
 template <class T, class Alloc>
+Vector<T, Alloc>& Vector<T, Alloc>::operator+= (const Vector<T, Alloc>& rhs) {
+    assert(this->mSize == rhs.mSize);
+    for (int i = 0; i < mSize; ++i) {
+        mData[i] += rhs.mData[i];
+    }
+    return *this;
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc>& Vector<T, Alloc>::operator-= (const Vector<T, Alloc>& rhs) {
+    assert(this->mSize == rhs.mSize);
+    for (int i = 0; i < mSize; ++i) {
+        mData[i] -= rhs.mData[i];
+    }
+    return *this;
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc>& Vector<T, Alloc>::operator*= (T rhs) {
+    for (int i = 0; i < mSize; ++i) {
+        mData[i] *= rhs;
+    }
+    return *this;
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc>& Vector<T, Alloc>::operator/= (T rhs) {
+    for (int i = 0; i < mSize; ++i) {
+        mData[i] /= rhs;
+    }
+    return *this;
+}
+
+template <class T, class Alloc>
 bool operator== (const Vector<T, Alloc>& lhs, const Vector<T, Alloc>& rhs) {
     if (lhs.mSize != rhs.mSize) return false;
     for (int i = 0; i < lhs.mSize; ++i) {
@@ -169,6 +226,63 @@ Vector<T, Alloc> operator- (const Vector<T, Alloc>& lhs, const Vector<T, Alloc>&
     Vector<T, Alloc> result(lhs.mSize);
     for (int i = 0; i < lhs.mSize; ++i) {
         result.mData[i] = lhs.mData[i] - rhs.mData[i];
+    }
+    return std::move(result);
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc> operator- (T lhs, const Vector<T, Alloc>& rhs) {
+    Vector<T, Alloc> result(rhs.mSize);
+    for (int i = 0; i < rhs.mSize; ++i) {
+        result.mData[i] = lhs - rhs.mData[i];
+    }
+    return std::move(result);
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc> operator* (T lhs, const Vector<T, Alloc>& rhs) {
+    Vector<T, Alloc> result(rhs.mSize);
+    for (int i = 0; i < rhs.mSize; ++i) {
+        result.mData[i] = lhs * rhs.mData[i];
+    }
+    return std::move(result);
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc> operator* (const Vector<T, Alloc>& lhs, T rhs) {
+    Vector<T, Alloc> result(lhs.mSize);
+    for (int i = 0; i < lhs.mSize; ++i) {
+        result.mData[i] = lhs * rhs.mData[i];
+    }
+    return std::move(result);
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc> operator/ (const Vector<T, Alloc>& lhs, T rhs) {
+    Vector<T, Alloc> result(lhs.mSize);
+    for (int i = 0; i < lhs.mSize; ++i) {
+        result.mData[i] = lhs.mData[i] / rhs;
+    }
+    return std::move(result);
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc> MultiplyElementWise(const Vector<T, Alloc>& v1, const Vector<T, Alloc>& v2) {
+    assert(v1.mSize == v2.mSize);
+    Vector<T, Alloc> result(v1.mSize);
+    for (int i = 0; i < result.mSize; ++i) {
+        result.mData[i] = v1.mData[i] * v2.mData[i];
+    }
+    return std::move(result);
+}
+
+template <class T, class Alloc>
+Vector<T, Alloc> MultiplyElementWise(const Vector<T, Alloc>& v1,
+    const Vector<T, Alloc>& v2, const Vector<T, Alloc>& v3) {
+    assert(v1.mSize == v2.mSize && v1.mSize == v3.mSize);
+    Vector<T, Alloc> result(v1.mSize);
+    for (int i = 0; i < result.mSize; ++i) {
+        result.mData[i] = v1.mData[i] * v2.mData[i] * v3.mData[i];
     }
     return std::move(result);
 }
@@ -220,7 +334,30 @@ Vector<T, Alloc> Vector<T, Alloc>::Randn(int size) {
 }
 
 template <class T, class Alloc>
-std::ostream& operator << (std::ostream& os, const Vector<T, Alloc>& vec) {
+T NormL1(const Vector<T, Alloc>& vec) {
+    T sum = T();
+    for (int i = 0; i < vec.mSize; ++i) {
+        sum += Math::Abs(vec.mData[i]);
+    }
+    return sum;
+}
+
+template <class T, class Alloc>
+T NormL2Sqr(const Vector<T, Alloc>& vec) {
+    T sum = T();
+    for (int i = 0; i < vec.mSize; ++i) {
+        sum += Math::Sqr(vec.mData[i]);
+    }
+    return sum;
+}
+
+template <class T, class Alloc>
+T NormL2(const Vector<T, Alloc>& vec) {
+    return Math::Sqrt(NormL2Sqr<T, Alloc>(vec));
+}
+
+template <class T, class Alloc>
+std::ostream& operator<< (std::ostream& os, const Vector<T, Alloc>& vec) {
     if (vec.Size() == 0) return os;
     os << "(" << vec[0];
     for (int i = 1; i < vec.Size(); ++i) {

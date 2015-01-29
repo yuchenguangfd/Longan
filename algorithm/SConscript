@@ -3,8 +3,8 @@ Import("env")
 env_algorithm = env.Clone()
 Export("env_algorithm")
 
-env_algorithm.Prepend(LIBPATH = ["#/algorithm"])
-env_algorithm.Prepend(LIBS = ["algorithm"])
+env_algorithm.Prepend(LIBPATH = ["#/algorithm"],
+                      LIBS = ["algorithm"])
 env_algorithm.lib_objects = []
 
 SConscript("data_structure/SConscript")
