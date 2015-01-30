@@ -4,7 +4,7 @@ env_ml = env.Clone()
 Export("env_ml")
 
 # add jsoncpp support
-env_ml.Prepend(CPPPATH = "#/external/jsoncpp/include",
+env_ml.Append(CPPPATH = "#/external/jsoncpp/include",
                LIBPATH = "#/external/jsoncpp",
                LIBS = "json")
 # add glog support

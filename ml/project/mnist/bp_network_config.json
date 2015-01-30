@@ -1,0 +1,14 @@
+{
+    "architecture" : {
+    	"numLayer": 3,
+    	"numLayerUnits": [784, 300, 10]
+	},
+    "trainOption" : {
+    	"isRandomInit": true,
+   		"iterations" : 10,
+   		"lambda" : 0.00001,
+   		"learningRate" : 0.01,
+   		"accelerate": false,
+		"numThread": 4
+	}
+}

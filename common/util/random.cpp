@@ -5,6 +5,8 @@
  */
 
 #include "random.h"
+#include <cmath>
+#include <ctime>
 
 namespace longan {
 

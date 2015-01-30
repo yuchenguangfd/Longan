@@ -1,0 +1,33 @@
+Import("env_ml")
+
+build_env = env_ml.Clone()
+build_env.Append(CCFLAGS = [
+    "-O3", "-march=native", "-funroll-loops"])
+# add gtest support
+build_env.Prepend(CPPPATH = "#/external/gtest/include", 
+				  LIBPATH = "#/external/gtest",
+				  LIBS = "gtest", 
+				  LINKFLAGS = "-pthread")
+# add gflags support
+build_env.Prepend(CPPPATH = "#/external/gflags/include",
+				  LIBPATH = "#/external/gflags",
+				  LIBS = "gflags")
+
+build_env.Program("bp_network_unittest", 
+                 ["bp_network_unittest.cpp",
+                  "bp_network.cpp",
+                  "bp_network_computation.cpp",
+                  "bp_network_util.cpp"])
+
+build_env.Program("bp_network_train_longan", 
+				 ["bp_network_train_longan.cpp",
+                  "bp_network_train.cpp",
+				  "bp_network.cpp",
+                  "bp_network_computation.cpp",
+                  "bp_network_util.cpp"])
+build_env.Program("bp_network_evaluate_longan",
+				 ["bp_network_evaluate_longan.cpp",
+                  "bp_network_evaluate.cpp",
+				  "bp_network.cpp",
+                  "bp_network_computation.cpp",
+                  "bp_network_util.cpp"])

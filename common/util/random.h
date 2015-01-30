@@ -8,8 +8,6 @@
 #define COMMON_UTIL_RANDOM_H
 
 #include "common/lang/types.h"
-#include <cmath>
-#include <ctime>
 
 namespace longan {
 

@@ -1,0 +1,11 @@
+/bp_network_evaluate_longan
+/bp_network_evaluate_longan.o
+/bp_network_train_longan
+/bp_network_train_longan.o
+/bp_network_unittest
+/bp_network_unittest.o
+/bp_network.o
+/bp_network_evaluate.o
+/bp_network_train.o
+/bp_network_util.o
+/bp_network_computation.o

@@ -3,10 +3,16 @@ env.Append(LIBPATH = ["#/common"])
 env.Append(LIBS=["common"])
 
 env_common = env.Clone()
+# add jsoncpp support
+env_common.Append(CPPPATH = "#/external/jsoncpp/include",
+                  LIBPATH = "#/external/jsoncpp",
+                  LIBS = "json")
 env_common.lib_objects = []
+
 Export("env_common")
 
 SConscript("base/SConscript")
+SConscript("config/SConscript")
 SConscript("lang/SConscript")
 SConscript("logging/SConscript")
 SConscript("math/SConscript")

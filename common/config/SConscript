@@ -1,0 +1,4 @@
+Import("env_common")
+env_common.lib_objects.append(env_common.Object("json_config_helper.cpp"))
+
+build_env = env_common.Clone()
