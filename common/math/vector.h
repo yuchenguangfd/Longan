@@ -358,12 +358,10 @@ T NormL2(const Vector<T, Alloc>& vec) {
 
 template <class T, class Alloc>
 std::ostream& operator<< (std::ostream& os, const Vector<T, Alloc>& vec) {
-    if (vec.Size() == 0) return os;
-    os << "(" << vec[0];
+    os << vec[0];
     for (int i = 1; i < vec.Size(); ++i) {
         os << "," << vec[i];
     }
-    os << ")";
     return os;
 }
 

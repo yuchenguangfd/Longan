@@ -53,7 +53,6 @@ void BpNetworkComputationSimple::Train(BpNetwork* network,
             Backward();
             ComputeGradient();
             AdjustNetwork();
-            if (i%1000==0) Log::Console("ml", "using sample %d", i);
         }
         ComputeTotalCost();
         Log::Console("ml", "finish iteration %d, cost func = %lf, time = %.2lfs",
@@ -138,6 +137,26 @@ void BpNetworkComputationSimple::ComputeTotalCost() {
     }
     regCost *= 0.5 * mTrainOption->Lambda();
     mTotalCost = dataCost + regCost;
+}
+
+void BpNetworkComputationST::Train(BpNetwork* network,
+        const BpNetworkTrainOption* trainOption, const SupervisedDatamodel* datamodel) {
+    mNetwork = network;
+    mTrainOption = trainOption;
+    mDatamodel = datamodel;
+    if (mTrainOption->IsRandomInit()) {
+        RandomInit();
+    }
+}
+
+void BpNetworkComputationMT::Train(BpNetwork* network,
+        const BpNetworkTrainOption* trainOption, const SupervisedDatamodel* datamodel) {
+    mNetwork = network;
+    mTrainOption = trainOption;
+    mDatamodel = datamodel;
+    if (mTrainOption->IsRandomInit()) {
+        RandomInit();
+    }
 }
 
 } //~ namespace longan

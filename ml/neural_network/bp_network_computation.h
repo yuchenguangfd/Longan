@@ -53,10 +53,16 @@ private:
     double mTotalCost;
 };
 
+class BpNetworkComputationST : public BpNetworkComputation {
+public:
+    virtual void Train(BpNetwork *network, const BpNetworkTrainOption *trainOption,
+              const SupervisedDatamodel *datamodel) override;
+};
+
 class BpNetworkComputationMT : public BpNetworkComputation {
 public:
     virtual void Train(BpNetwork *network, const BpNetworkTrainOption *trainOption,
-               const SupervisedDatamodel *datamodel) override;
+              const SupervisedDatamodel *datamodel) override;
 private:
 
 };

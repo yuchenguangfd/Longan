@@ -2,3 +2,5 @@
 /point_unittest.o
 /polygon_unittest
 /polygon_unittest.o
+/rect_union_area_unittest
+/rect_union_area_unittest.o

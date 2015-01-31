@@ -293,6 +293,18 @@ Matrix<T, Alloc> Matrix<T, Alloc>::Transpose() const {
     return std::move(result);
 }
 
+template <class T, class Alloc>
+std::ostream& operator<< (std::ostream& os, const Matrix<T, Alloc>& mat) {
+    for (int i = 0; i < mat.Rows(); ++i) {
+        os << mat[i][0];
+        for (int j = 1; j < mat.Cols(); ++j) {
+            os << "," << mat[i][j];
+        }
+        os << "\n";
+    }
+    return os;
+}
+
 typedef Matrix<int> Matrix32I;
 typedef Matrix<float> Matrix32F;
 typedef Matrix<double> Matrix64F;

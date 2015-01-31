@@ -55,6 +55,34 @@ inline const T& Min(const T& a, const T& b, const T& c) {
     }
 }
 
+template <class T>
+int MaxIndex(const T *array, int size) {
+    assert(size > 0);
+    T max = array[0];
+    int idx = 0;
+    for (int i = 1; i < size; ++i) {
+        if (max < array[i]) {
+            max = array[i];
+            idx = i;
+        }
+    }
+    return idx;
+}
+
+template <class T>
+int MinIndex(const T *array, int size) {
+    assert(size > 0);
+    T min = array[0];
+    int idx = 0;
+    for (int i = 1; i < size; ++i) {
+        if (array[i] < min) {
+            min = array[i];
+            idx = i;
+        }
+    }
+    return idx;
+}
+
 template <class Iterator>
 const typename std::iterator_traits<Iterator>::value_type&
     MaxInRange(Iterator begin, Iterator end, Iterator& maxPos) {

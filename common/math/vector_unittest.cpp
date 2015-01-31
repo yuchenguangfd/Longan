@@ -130,7 +130,7 @@ TEST(VectorTest, OutputFormatOK) {
     vec[0] = 12; vec[1] = 34, vec[2] = 5;
     std::ostringstream oss;
     oss << vec;
-    ASSERT_EQ("(12,34,5)", oss.str());
+    ASSERT_EQ("12,34,5", oss.str());
 }
 
 int main(int argc, char **argv) {

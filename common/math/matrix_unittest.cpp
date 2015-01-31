@@ -123,6 +123,15 @@ TEST(MatrixTest, TransposeOK) {
     ASSERT_EQ(m2, m1.Transpose());
 }
 
+TEST(MatrixTest, OutputFormatOK) {
+    Matrix<int> mat(2,2);
+    mat[0][0] = 1; mat[0][1] = 2;
+    mat[1][0] = 3; mat[1][1] = 5;
+    std::ostringstream oss;
+    oss << mat;
+    ASSERT_EQ("1,2\n3,5\n", oss.str());
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

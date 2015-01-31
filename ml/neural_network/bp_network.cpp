@@ -41,7 +41,11 @@ void BpNetwork::Train(const BpNetworkTrainOption *trainOption,
     if (trainOption->Accelerate()) {
         computationDelegate = new BpNetworkComputationSimple();
     } else {
-        computationDelegate = new BpNetworkComputationSimple();
+        if (trainOption->NumThread() <= 1) {
+            computationDelegate = new BpNetworkComputationSimple();
+        } else {
+            computationDelegate = new BpNetworkComputationSimple();
+        }
     }
     computationDelegate->Train(this, trainOption, datamodel);
     delete computationDelegate;
