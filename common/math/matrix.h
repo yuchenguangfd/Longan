@@ -182,7 +182,7 @@ bool operator== (const Matrix<T, Alloc>& lhs, const Matrix<T, Alloc>& rhs) {
     for (int i = 0; i < lhs.mSize; ++i) {
         if (lhs.mData[i] != rhs.mData[i]) return false;
     }
-    return true;;
+    return true;
 }
 
 template <class T, class Alloc>

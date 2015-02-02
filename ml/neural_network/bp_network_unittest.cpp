@@ -66,7 +66,7 @@ TEST(BpNetworkTest, ModelXorOK) {
         ASSERT_TRUE(ans1 == ans2);
     }
 
-    trainOptionConfig["accelerate"] = false;
+    trainOptionConfig["accelerate"] = true;
     trainOptionConfig["numThread"] = 8;
     BpNetworkTrainOption trainOpt3(trainOptionConfig);
     network.Train(&trainOpt3, &datamodel);
@@ -121,8 +121,9 @@ TEST(BpNetworkTest, ModelIntegerSignAndParityOK) {
     trainOptionConfig["isRandomInit"] = true;
     trainOptionConfig["lambda"] = 0.00001;
     trainOptionConfig["learningRate"] = 0.01;
-    trainOptionConfig["iterations"] = 500;
+    trainOptionConfig["iterations"] = 1000;
     trainOptionConfig["accelerate"] = false;
+    trainOptionConfig["iterationCheckStep"] = 10;
     BpNetworkTrainOption trainOpt(trainOptionConfig);
     network.Train(&trainOpt, &datamodel);
 
@@ -141,7 +142,8 @@ TEST(BpNetworkTest, ModelIntegerSignAndParityOK) {
     ASSERT_LE(errorRate, 0.0001);
 
     trainOptionConfig["accelerate"] = true;
-    trainOptionConfig["numThread"] = 1;
+    trainOptionConfig["useOpenMP"] = true;
+    trainOptionConfig["numThread"] = 2;
     BpNetworkTrainOption trainOpt2(trainOptionConfig);
     network.Train(&trainOpt2, &datamodel);
 
@@ -159,7 +161,8 @@ TEST(BpNetworkTest, ModelIntegerSignAndParityOK) {
     ASSERT_LE(errorRate, 0.0001);
 
     trainOptionConfig["accelerate"] = true;
-    trainOptionConfig["numThread"] = 8;
+    trainOptionConfig["useOpenMP"] = false;
+    trainOptionConfig["numThread"] = 4;
     BpNetworkTrainOption trainOpt3(trainOptionConfig);
     network.Train(&trainOpt3, &datamodel);
 

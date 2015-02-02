@@ -25,30 +25,15 @@ public:
     void Add(const RatingRecord& record) {
         mRatingRecords.push_back(record);
     }
-    int NumUser() const { 
-        return mNumUser;
-    }
-    int NumItem() const { 
-        return mNumItem; 
-    }
-    int NumRating() const {
-        return mRatingRecords.size();
-    }
-    int Size() const {
-        return mRatingRecords.size();
-    }
-    const RatingRecord& At(int i) const {
-        return mRatingRecords[i];
-    }
-    RatingRecord& At(int i) {
-        return mRatingRecords[i];
-    }
-    const RatingRecord& operator[] (int i) const {
-        return mRatingRecords[i];
-    }
-    RatingRecord& operator[] (int i) {
-        return mRatingRecords[i];
-    }
+    int NumUser() const { return mNumUser; }
+    int NumItem() const { return mNumItem; }
+    int NumRating() const { return mRatingRecords.size(); }
+    int Size() const { return mRatingRecords.size(); }
+    const RatingRecord& At(int i) const { return mRatingRecords[i]; }
+    RatingRecord& At(int i) { return mRatingRecords[i]; }
+    const RatingRecord& operator[] (int i) const { return mRatingRecords[i]; }
+    RatingRecord& operator[] (int i) { return mRatingRecords[i]; }
+    double GetSparsity() const { return static_cast<double>(NumRating()) / NumUser() / NumItem(); }
 public:
     static RatingList LoadFromTextFile(const std::string& ratingTextFilepath);
     static RatingList LoadFromBinaryFile(const std::string& ratingBinaryFilepath);

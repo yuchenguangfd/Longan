@@ -38,13 +38,13 @@ void BpNetwork::Train(const BpNetworkTrainOption *trainOption,
     assert(datamodel->TargetDim() == mArchitecture.NumOutputLayerUnit());
     Log::I("ml", "BpNetwork::Train()");
     BpNetworkComputation *computationDelegate;
-    if (trainOption->Accelerate()) {
+    if (!trainOption->Accelerate()) {
         computationDelegate = new BpNetworkComputationSimple();
     } else {
-        if (trainOption->NumThread() <= 1) {
-            computationDelegate = new BpNetworkComputationSimple();
+        if (trainOption->UseOpenMP()) {
+            computationDelegate = new BpNetworkComputationOpenMP();
         } else {
-            computationDelegate = new BpNetworkComputationSimple();
+            computationDelegate = new BpNetworkComputationMT();
         }
     }
     computationDelegate->Train(this, trainOption, datamodel);

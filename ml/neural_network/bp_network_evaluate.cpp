@@ -61,11 +61,8 @@ void BpNetworkEvaluate::EvaluateAccuracy() {
         const Vector64F& feature = mTestData->Feature(i);
         const Vector64F& target = mTestData->Target(i);
         const Vector64F predTarget = mModel->Predict(feature);
-        const double *pos1, *pos2;
-        Math::MaxInRange(target.Begin(), target.End(), pos1);
-        Math::MaxInRange(predTarget.Begin(), predTarget.End(), pos2);
-        int trueLabel = pos1 - target.Begin();
-        int predLabel = pos2 - predTarget.Begin();
+        int trueLabel = Math::MaxIndex(target.Data(), target.Size());
+        int predLabel = Math::MaxIndex(predTarget.Data(), predTarget.Size());
         if (trueLabel != predLabel) {
             ++wrongLabelCount;
         }

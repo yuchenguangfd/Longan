@@ -1,8 +1,11 @@
 Import("env_ml")
 
 build_env = env_ml.Clone()
-build_env.Append(CCFLAGS = [
-    "-O3", "-march=native", "-funroll-loops"])
+# g++ optimize option
+build_env.Append(CCFLAGS = ["-O3", "-march=native", "-funroll-loops"])
+# add openmp support
+build_env.Prepend(CCFLAGS = "-fopenmp",
+                  LINKFLAGS = "-fopenmp")
 # add gtest support
 build_env.Prepend(CPPPATH = "#/external/gtest/include", 
 				  LIBPATH = "#/external/gtest",

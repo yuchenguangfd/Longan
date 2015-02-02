@@ -30,14 +30,18 @@ public:
     double Lambda() const { return mLambda; }
     double LearningRate() const { return mLearningRate; }
     bool Accelerate() const { return mAccelerate; }
+    bool UseOpenMP() const { return mUseOpenMP; }
     int NumThread() const { return mNumThread; }
+    int IterationCheckStep() const { return mIterationCheckStep; }
 private:
     bool mIsRandomInit;
     int mIterations;
     double mLambda;
     double mLearningRate;
     bool mAccelerate;
+    bool mUseOpenMP;
     int mNumThread;
+    int mIterationCheckStep;
 };
 
 } //~ namespace longan

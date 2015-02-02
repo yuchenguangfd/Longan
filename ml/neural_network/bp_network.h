@@ -28,6 +28,7 @@ public:
     void Save(const std::string& filename) const;
     friend class BpNetworkComputation;
     friend class BpNetworkComputationSimple;
+    friend class BpNetworkComputationOpenMP;
     friend class BpNetworkComputationMT;
 private:
     BpNetworkArchitecture mArchitecture;
