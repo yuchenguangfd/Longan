@@ -5,12 +5,12 @@
 	},
     "trainOption" : {
     	"isRandomInit": true,
-   		"iterations" : 50,
-   		"lambda" : 0.00000001,
-   		"learningRate" : 0.01,
-   		"accelerate": true,
-   		"useOpenMP": false,
-		"numThread": 4,
-		"iterationCheckStep": 1
-	}
+        "iterations" : 50,
+        "lambda" : 0.000001,
+        "learningRate" : 0.01,
+        "accelerate": true,
+        "useOpenMP": false,
+        "numThread": 8,
+        "iterationCheckStep": 1
+    }
 }

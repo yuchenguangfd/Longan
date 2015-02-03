@@ -44,21 +44,23 @@ void BpNetworkComputationSimple::Train(BpNetwork* network,
     InitResource();
     std::vector<int> sampleOrder(mDatamodel->NumSample());
     ArrayHelper::FillRange(sampleOrder.data(), sampleOrder.size());
-    Stopwatch sw;
+    Stopwatch stopwatch;
     for (int iter = 0; iter < mTrainOption->Iterations(); ++iter) {
         ArrayHelper::RandomShuffle(sampleOrder.data(), sampleOrder.size());
         for (int i = 0; i < mDatamodel->NumSample(); ++i) {
-            mActivations[0] = mDatamodel->Feature(sampleOrder[i]);
-            mTarget = mDatamodel->Target(sampleOrder[i]);
+        	mCurrentSampleId = sampleOrder[i];
+            mActivations[0] = mDatamodel->Feature(mCurrentSampleId);
+            mTarget = mDatamodel->Target(mCurrentSampleId);
             Forward();
             Backward();
             ComputeGradient();
             AdjustNetwork();
         }
         if (mTrainOption->IterationCheckStep() > 0 && iter % mTrainOption->IterationCheckStep() == 0) {
-            ComputeTotalCost();
-            Log::I("ml", "iter %d, loss=%lf, time=%.2lfs", iter, mTotalCost, sw.Toc());
-            sw.Tic();
+            ComputeTotalLoss();
+            Log::I("ml", "[Simple]iter %d, dataLoss=%lf, regLoss=%lf, "
+                   "totalLoss=%lf, time=%.2lfs", iter, mDataLoss, mRegLoss, mTotalLoss, stopwatch.Toc());
+            stopwatch.Tic();
         }
     }
 }
@@ -79,6 +81,7 @@ void BpNetworkComputationSimple::InitResource() {
         mWeightGradients[i] = std::move(Matrix64F(rows, cols));
         mBiasGradients[i] = std::move(Vector64F(rows));
     }
+    mSampleLosses.resize(mDatamodel->NumSample());
 }
 
 void BpNetworkComputationSimple::Forward() {
@@ -88,8 +91,10 @@ void BpNetworkComputationSimple::Forward() {
 }
 
 void BpNetworkComputationSimple::Backward() {
+	Vector64F error = mActivations[mNetwork->mNumLayer - 1] - mTarget;
+	mSampleLosses[mCurrentSampleId] = NormL2Sqr(error);
     mDeltas[mNetwork->mNumLayer - 2] = MultiplyElementWise(
-            mActivations[mNetwork->mNumLayer - 1] - mTarget,
+            error,
             mActivations[mNetwork->mNumLayer - 1],
             1.0 - mActivations[mNetwork->mNumLayer - 1]);
     for (int i = mNetwork->mNumLayer - 3; i >= 0; --i) {
@@ -116,20 +121,18 @@ void BpNetworkComputationSimple::AdjustNetwork() {
     }
 }
 
-void BpNetworkComputationSimple::ComputeTotalCost() {
-    double dataCost = 0.0;
+void BpNetworkComputationSimple::ComputeTotalLoss() {
+    mDataLoss = 0.0;
     for (int i = 0; i < mDatamodel->NumSample(); ++i) {
-        mActivations[0] = mDatamodel->Feature(i);
-        Forward();
-        dataCost += NormL2Sqr(mActivations[mNetwork->mNumLayer-1] - mDatamodel->Target(i));
+        mDataLoss += mSampleLosses[i];
     }
-    dataCost /= 2.0 * mDatamodel->NumSample();
-    double regCost = 0.0;
+    mDataLoss /= 2.0 * mDatamodel->NumSample();
+    mRegLoss = 0.0;
     for (const Matrix64F& weight : mNetwork->mWeights) {
-        regCost +=  NormFSqr(weight);
+        mRegLoss += NormFSqr(weight);
     }
-    regCost *= 0.5 * mTrainOption->Lambda();
-    mTotalCost = dataCost + regCost;
+    mRegLoss *= 0.5 * mTrainOption->Lambda();
+    mTotalLoss = mDataLoss + mRegLoss;
 }
 
 //============================================================
@@ -161,8 +164,8 @@ void BpNetworkComputationOpenMP::Train(BpNetwork* network,
         }
         if (mTrainOption->IterationCheckStep() > 0 && iter % mTrainOption->IterationCheckStep() == 0) {
             ComputeTotalLoss();
-            Log::I("ml", "[OpenMP]iter %d, data loss=%lf, reg loss=%lf, "
-                   "total loss=%lf, time=%.2lfs", iter, mDataLoss, mRegLoss, mTotalLoss,
+            Log::I("ml", "[OpenMP]iter %d, dataLoss=%lf, regLoss=%lf, "
+                   "totalLoss=%lf, time=%.2lfs", iter, mDataLoss, mRegLoss, mTotalLoss,
                    stopwatch.Toc());
             stopwatch.Tic();
         }
@@ -428,8 +431,8 @@ void BpNetworkComputationMT::ConsumerRun() {
             Task& task = currentBundle->at(i);
             if (task.type == TaskTypeMonitor) {
                 ComputeTotalLoss();
-                Log::I("ml", "[MT]iter %d, data loss=%lf, reg loss=%lf, "
-                       "total loss=%lf, time=%.2lfs", task.iter, mDataLoss, mRegLoss, mTotalLoss,
+                Log::I("ml", "[MT]iter %d, dataLoss=%lf, regLoss=%lf, "
+                       "totalLoss=%lf, time=%.2lfs", task.iter, mDataLoss, mRegLoss, mTotalLoss,
                        stopwatch.Toc());
                 stopwatch.Tic();
             } else {

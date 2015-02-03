@@ -41,14 +41,18 @@ private:
     void Backward();
     void ComputeGradient();
     void AdjustNetwork();
-    void ComputeTotalCost();
+    void ComputeTotalLoss();
 private:
     Vector64F mTarget;
     std::vector<Vector64F> mActivations;
     std::vector<Vector64F> mDeltas;
     std::vector<Matrix64F> mWeightGradients;
     std::vector<Vector64F> mBiasGradients;
-    double mTotalCost;
+    std::vector<double> mSampleLosses;
+    int mCurrentSampleId;
+    double mDataLoss;
+    double mRegLoss;
+    double mTotalLoss;
 };
 
 class BpNetworkComputationOpenMP : public BpNetworkComputation {

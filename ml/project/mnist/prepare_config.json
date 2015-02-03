@@ -1,4 +1,4 @@
 {
-	"datasetType": "supervised",
-	"outputImage" : false
+    "datasetType": "supervised",
+    "outputImage" : false
 }
