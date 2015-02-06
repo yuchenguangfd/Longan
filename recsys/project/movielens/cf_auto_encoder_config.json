@@ -1,0 +1,25 @@
+{
+    "architecture" : {
+    	"numHiddenUnit": 300
+	},
+	"parameter": {
+        "encodeFeature": "user",
+		"ratingRepresentBy": "softMax",
+		"possibleRatings": 5
+	},
+    "trainOption" : {
+    	"isRandomInit": true,
+        "iterations" : 50,
+        "lambda" : 0.00000001,
+        "learningRate" : 0.01,
+        "accelerate": false,
+        "numThread": 8,
+        "iterationCheckStep": 1
+    },
+   	"evaluateOption": {
+		"accelerate": true, 
+		"evaluateRating": true,
+		"evaluateRanking": false,
+		"rankingListSize": 100
+	}
+}

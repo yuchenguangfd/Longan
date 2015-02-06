@@ -20,6 +20,7 @@ env_recsys.lib_objects = []
 SConscript("base/SConscript")
 SConscript("evaluate/SConscript")
 SConscript("neighbor/SConscript")
+SConscript("neural_network/SConscript")
 SConscript("pop/SConscript")
 SConscript("project/SConscript")
 SConscript("svd/SConscript")

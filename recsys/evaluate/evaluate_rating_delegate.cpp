@@ -11,7 +11,6 @@
 #include "common/lang/integer.h"
 #include "common/logging/logging.h"
 #include "common/system/system_info.h"
-#include "common/util/running_statistic.h"
 
 namespace longan {
 
@@ -72,29 +71,28 @@ void DynamicScheduledEvaluateRatingDelegate::WorkerRun() {
 void DynamicScheduledEvaluateRatingDelegate::ConsumerRun() {
     int totoalTask = mTestRatingList->NumRating();
     int processedTask = 0;
-    double sumAbs = 0.0;
-    double sumSqr = 0.0;
     while (true) {
         TaskBundle *currentBundle = mScheduler->ConsumerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
             float error = task.predictedRating - task.trueRating;
-            sumAbs += Math::Abs(error);
-            sumSqr += Math::Sqr(error);
+            mMAERunningAvg.Add(Math::Abs(error));
+            mRMSERunningAvg.Add(Math::Sqr(error));
         }
         processedTask += currentBundle->size();
         mProgress = static_cast<double>(processedTask)/totoalTask;
         delete currentBundle;
     }
-    mMAE = sumAbs / mTestRatingList->NumRating();
-    mRMSE = Math::Sqrt(sumSqr / mTestRatingList->NumRating());
+    mMAE = mMAERunningAvg.CurrentAverage();
+    mRMSE = mRMSERunningAvg.CurrentAverage();
     mScheduler->ConsumerDone();
 }
 
 void DynamicScheduledEvaluateRatingDelegate::MonitorRun() {
     while (true) {
-        Log::Console("recsys", "Evaluate Rating...%d%% done.", (int)(mProgress*100));
+        Log::Console("recsys", "Evaluate Rating...%d%% done. MAE=%lf, RMSE=%lf", (int)(mProgress*100),
+                mMAERunningAvg.CurrentAverage(), mRMSERunningAvg.CurrentAverage());
         if (mProgress > 0.99) break;
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }

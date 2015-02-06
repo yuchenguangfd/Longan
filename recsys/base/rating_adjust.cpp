@@ -5,6 +5,7 @@
  */
 
 #include "rating_adjust.h"
+#include "common/math/math.h"
 
 namespace longan {
 
@@ -44,7 +45,7 @@ void AdjustRatingByMinusUserAverage(const RatingTrait& ratingTrait, RatingMatrix
             float uavg = ratingTrait.UserAverage(ur.UserId());
             ur.SetRating(ur.Rating() - uavg);
        }
-   }
+    }
 }
 
 void AdjustRatingByMinusItemAverage(const RatingTrait& ratingTrait, RatingMatrixAsItems<> *ratingMatrix) {
@@ -60,4 +61,21 @@ void AdjustRatingByMinusItemAverage(const RatingTrait& ratingTrait, RatingMatrix
     }
 }
 
+void AdjustRatingByNormalizeUserMaxAbs(RatingMatrixAsUsers<>* ratingMatrix) {
+    for (int uid = 0; uid < ratingMatrix->NumUser(); ++uid) {
+        auto& uvec = ratingMatrix->GetUserVector(uid);
+        ItemRating *data = uvec.Data();
+        int size = uvec.Size();
+        float maxAbs = 1e-10;
+        for (int i = 0; i < size; ++i) {
+            maxAbs = Math::Max(Math::Abs(data[i].Rating()), maxAbs);
+        }
+        for (int i = 0; i < size; ++i) {
+            auto& ir = data[i];
+            ir.SetRating(ir.Rating() / maxAbs);
+        }
+    }
+}
+
 } //~ namespace longan
+

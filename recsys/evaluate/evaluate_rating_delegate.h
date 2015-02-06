@@ -8,6 +8,7 @@
 #define RECSYS_EVALUATE_EVALUATE_RATING_DELEGATE_H
 
 #include "common/threading/pipelined_scheduler.h"
+#include "common/util/running_statistic.h"
 
 namespace longan {
 
@@ -67,6 +68,8 @@ private:
     typedef std::vector<Task> TaskBundle;
     PipelinedScheduler<TaskBundle> *mScheduler;
     double mProgress;
+    RunningAverage<float> mMAERunningAvg;
+    RunningAverage<float> mRMSERunningAvg;
 };
 
 } //~ namespace longan

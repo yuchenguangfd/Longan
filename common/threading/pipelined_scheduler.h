@@ -120,8 +120,10 @@ void PipelinedScheduler<Task>::Start() {
 template <class Task>
 void PipelinedScheduler<Task>::WaitFinish() {
     for (std::thread* th : mThreads) {
-        th->join();
-        delete th;
+        if (th != nullptr) {
+            th->join();
+            delete th;
+        }
     }
 }
 

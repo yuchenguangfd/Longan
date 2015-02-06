@@ -12,3 +12,5 @@
 /item_based_result.json
 /svd_model.dat
 /svd_result.json
+/cf_auto_encoder_model.dat
+/cf_auto_encoder_result.json

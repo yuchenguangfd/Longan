@@ -15,4 +15,6 @@ void AdjustRatingByMinusItemAverage(const RatingTrait& ratingTrait, RatingMatrix
 void AdjustRatingByMinusUserAverage(const RatingTrait& ratingTrait, RatingMatrixAsItems<> *ratingMatrix);
 void AdjustRatingByMinusItemAverage(const RatingTrait& ratingTrait, RatingMatrixAsItems<> *ratingMatrix);
 
+void AdjustRatingByNormalizeUserMaxAbs(RatingMatrixAsUsers<> *ratingMatrix);
+
 } //~ namespace longan
