@@ -5,7 +5,7 @@
  */
 
 #include "basic_train.h"
-#include "common/system/file_util.h"
+#include "common/config/json_config_helper.h"
 #include "common/logging/logging.h"
 #include "common/error.h"
 
@@ -21,11 +21,7 @@ BasicTrain::~BasicTrain() { }
 void BasicTrain::LoadConfig() {
     Log::I("recsys", "BasicTrain::LoadConfig()");
     Log::I("recsys", "config file = " + mConfigFilepath);
-    std::string content = FileUtil::LoadFileContent(mConfigFilepath);
-    Json::Reader reader;
-    if (!reader.parse(content, mConfig)) {
-        throw LonganFileFormatError();
-    }
+    JsonConfigHelper::LoadFromFile(mConfigFilepath, mConfig);
 }
 
 } //~ namespace longan

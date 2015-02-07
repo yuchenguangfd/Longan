@@ -34,27 +34,27 @@ protected:
     double mF1Score;
 };
 
-class SimpleEvaluateRankingDelegate : public EvaluateRankingDelegate {
+class EvaluateRankingDelegateST : public EvaluateRankingDelegate {
 public:
     using EvaluateRankingDelegate::EvaluateRankingDelegate;
     virtual void Evaluate(const BasicPredict *predict, const RatingMatrixAsUsers<> *rmat, int listSize) override;
 };
 
-class DynamicScheduledEvaluateRankingDelegate : public EvaluateRankingDelegate, public PipelinedSchedulerClient {
+class EvaluateRankingDelegateMT : public EvaluateRankingDelegate, public PipelinedSchedulerClient {
 public:
     using EvaluateRankingDelegate::EvaluateRankingDelegate;
     virtual void Evaluate(const BasicPredict *predict, const RatingMatrixAsUsers<> *rmat, int listSize) override;
     virtual std::thread* CreateProducerThread() {
-        return new std::thread(&DynamicScheduledEvaluateRankingDelegate::ProducerRun, this);
+        return new std::thread(&EvaluateRankingDelegateMT::ProducerRun, this);
     }
     virtual std::thread* CreateWorkerThread() {
-        return new std::thread(&DynamicScheduledEvaluateRankingDelegate::WorkerRun, this);
+        return new std::thread(&EvaluateRankingDelegateMT::WorkerRun, this);
     }
     virtual std::thread* CreateConsumerThread() {
-        return new std::thread(&DynamicScheduledEvaluateRankingDelegate::ConsumerRun, this);
+        return new std::thread(&EvaluateRankingDelegateMT::ConsumerRun, this);
     }
     virtual std::thread* CreateMonitorThread() {
-        return new std::thread(&DynamicScheduledEvaluateRankingDelegate::MonitorRun, this);
+        return new std::thread(&EvaluateRankingDelegateMT::MonitorRun, this);
     }
 private:
     void ProducerRun();

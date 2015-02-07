@@ -14,7 +14,8 @@ namespace longan {
 
 namespace JsonConfigHelper {
 
-void LoadFromFile(const std::string& filename, Json::Value& mConfig);
+void LoadFromFile(const std::string& filename, Json::Value& config);
+void WriteToFile(const std::string& filename, const Json::Value& config, bool styled = true);
 
 } //~ namespace JsonConfigHelper
 

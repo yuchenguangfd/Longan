@@ -20,6 +20,11 @@ void LoadFromFile(const std::string& filename, Json::Value& config) {
     }
 }
 
+void WriteToFile(const std::string& filename, const Json::Value& config, bool styled) {
+    std::string output = styled ? config.toStyledString() : config.asString();
+    FileUtil::SaveFileContent(filename, output);
+}
+
 }  //~ namespace JsonConfigHelper
 
 } //~ namespace longan

@@ -14,7 +14,7 @@
 
 namespace longan {
 
-void SimpleEvaluateRatingDelegate::Evaluate(const BasicPredict *predict, const RatingList *testRatingList) {
+void EvaluateRatingDelegateST::Evaluate(const BasicPredict *predict, const RatingList *testRatingList) {
     double sumAbs = 0.0;
     double sumSqr = 0.0;
     for (int i = 0; i < testRatingList->NumRating(); ++i) {
@@ -29,7 +29,7 @@ void SimpleEvaluateRatingDelegate::Evaluate(const BasicPredict *predict, const R
     mRMSE = Math::Sqrt(sumSqr / testRatingList->NumRating());
 }
 
-void DynamicScheduledEvaluateRatingDelegate::Evaluate(const BasicPredict *predict, const RatingList *testRatingList) {
+void EvaluateRatingDelegateMT::Evaluate(const BasicPredict *predict, const RatingList *testRatingList) {
     mPredict = predict;
     mTestRatingList = testRatingList;
     int numWorker = SystemInfo::GetNumCPUCore();
@@ -39,7 +39,7 @@ void DynamicScheduledEvaluateRatingDelegate::Evaluate(const BasicPredict *predic
     delete mScheduler;
 }
 
-void DynamicScheduledEvaluateRatingDelegate::ProducerRun() {
+void EvaluateRatingDelegateMT::ProducerRun() {
     TaskBundle *currentBundle = new TaskBundle();
     currentBundle->reserve(TASK_BUNDLE_SIZE);
     for (int i = 0; i < mTestRatingList->NumRating(); ++i) {
@@ -55,7 +55,7 @@ void DynamicScheduledEvaluateRatingDelegate::ProducerRun() {
     mScheduler->ProducerDone();
 }
 
-void DynamicScheduledEvaluateRatingDelegate::WorkerRun() {
+void EvaluateRatingDelegateMT::WorkerRun() {
     while (true) {
         TaskBundle *currentBundle = mScheduler->WorkerGetTask();
         if (currentBundle == nullptr) break;
@@ -68,7 +68,7 @@ void DynamicScheduledEvaluateRatingDelegate::WorkerRun() {
     mScheduler->WorkerDone();
 }
 
-void DynamicScheduledEvaluateRatingDelegate::ConsumerRun() {
+void EvaluateRatingDelegateMT::ConsumerRun() {
     int totoalTask = mTestRatingList->NumRating();
     int processedTask = 0;
     while (true) {
@@ -85,14 +85,14 @@ void DynamicScheduledEvaluateRatingDelegate::ConsumerRun() {
         delete currentBundle;
     }
     mMAE = mMAERunningAvg.CurrentAverage();
-    mRMSE = mRMSERunningAvg.CurrentAverage();
+    mRMSE = Math::Sqrt(mRMSERunningAvg.CurrentAverage());
     mScheduler->ConsumerDone();
 }
 
-void DynamicScheduledEvaluateRatingDelegate::MonitorRun() {
+void EvaluateRatingDelegateMT::MonitorRun() {
     while (true) {
         Log::Console("recsys", "Evaluate Rating...%d%% done. MAE=%lf, RMSE=%lf", (int)(mProgress*100),
-                mMAERunningAvg.CurrentAverage(), mRMSERunningAvg.CurrentAverage());
+                mMAERunningAvg.CurrentAverage(), Math::Sqrt(mRMSERunningAvg.CurrentAverage()));
         if (mProgress > 0.99) break;
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }

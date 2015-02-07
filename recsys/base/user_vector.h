@@ -9,7 +9,9 @@
 
 #include "item_rating.h"
 #include "rating_record.h"
+#include "common/lang/defines.h"
 #include <memory>
+#include <cassert>
 
 namespace longan {
 
@@ -19,39 +21,38 @@ class UserVector {
 public:
     UserVector();
     UserVector(int userId, const RatingRecord *data, int size);
-    UserVector(const UserVector<Alloc>&) = delete;
     UserVector(UserVector<Alloc>&& orig) noexcept;
     ~UserVector();
-    UserVector<Alloc>& operator= (const UserVector<Alloc>& rhs) = delete;
     UserVector<Alloc>& operator= (UserVector<Alloc>&& rhs) noexcept;
-    const ItemRating* Data() const {
-        return mData;
-    }
-    ItemRating* Data() {
-        return mData;
-    }
-    int Size() const {
-        return mSize;
-    }
+    int UserId() const { return mUserId; }
+    const ItemRating* Data() const { return mData; }
+    ItemRating* Data() { return mData; }
+    int Size() const { return mSize; }
+    const ItemRating* Begin() const { return mData; }
+    ItemRating* Begin() { return mData; }
+    const ItemRating* End() const { return mData + mSize; }
+    ItemRating* End() { return mData + mSize; }
 protected:
     int mUserId;
     ItemRating *mData;
     int mSize;
+    DISALLOW_COPY_AND_ASSIGN(UserVector);
 };
 
 template <class Alloc>
-UserVector<Alloc>::UserVector() :
+inline UserVector<Alloc>::UserVector() :
     mUserId(0),
     mData(nullptr),
-    mSize(0) {}
+    mSize(0) { }
 
 template <class Alloc>
-UserVector<Alloc>::UserVector(int userId, const RatingRecord *data, int size) {
-    mUserId = userId;
-    mSize = size;
+UserVector<Alloc>::UserVector(int userId, const RatingRecord *data, int size) :
+    mUserId(userId),
+    mSize(size) {
     Alloc alloc;
     mData = alloc.allocate(mSize);
     for (int i = 0; i < size; ++i) {
+        assert(data[i].UserId() == mUserId);
         alloc.construct(&mData[i], ItemRating(data[i].ItemId(), data[i].Rating()));
     }
 }
@@ -73,7 +74,7 @@ UserVector<Alloc>::~UserVector() {
 }
 
 template <class Alloc>
-UserVector<Alloc>& UserVector<Alloc>::operator = (UserVector<Alloc>&& rhs) noexcept {
+UserVector<Alloc>& UserVector<Alloc>::operator= (UserVector<Alloc>&& rhs) noexcept {
     if (this == &rhs) return *this;
     if (mData != nullptr) {
         Alloc alloc;
@@ -87,6 +88,8 @@ UserVector<Alloc>& UserVector<Alloc>::operator = (UserVector<Alloc>&& rhs) noexc
     rhs.mSize = 0;
     return *this;
 }
+
+typedef UserVector<std::allocator<ItemRating>> UserVec;
 
 } //~ namespace longan
 

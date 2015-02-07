@@ -31,7 +31,7 @@ void SVDEvaluate::LoadTestRatings() {
         bis >> uid >> iid >> rating;
         rlist.Add(RatingRecord(uid, iid, rating));
     }
-    mTestRatingList = std::move(rlist);
+    mTestRatingList = new RatingList(std::move(rlist));
 }
 
 } //~ namespace longan

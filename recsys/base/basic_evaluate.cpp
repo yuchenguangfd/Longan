@@ -5,10 +5,11 @@
  */
 
 #include "basic_evaluate.h"
+#include "recsys/evaluate/evaluate_rating_delegate.h"
+#include "recsys/evaluate/evaluate_ranking_delegate.h"
+#include "common/config/json_config_helper.h"
 #include "common/logging/logging.h"
-#include "common/system/file_util.h"
 #include "common/error.h"
-#include <thread>
 #include <cassert>
 
 namespace longan {
@@ -23,15 +24,7 @@ BasicEvaluate::BasicEvaluate(
     mConfigFilepath(configFilepath),
     mModelFilepath(modelFilepath),
     mRatingTestFilepath(ratingTestFilepath),
-    mResultFilepath(resultFilepath),
-    mPredict(nullptr),
-    mEvaluateRatingDelegate(nullptr),
-    mEvaluateRankingDelegate(nullptr),
-    mMAE(0.0),
-    mRMSE(0.0),
-    mPrecision(0.0),
-    mRecall(0.0),
-    mF1Score(0.0) { }
+    mResultFilepath(resultFilepath) { }
 
 BasicEvaluate::~BasicEvaluate() { }
 
@@ -49,73 +42,76 @@ void BasicEvaluate::Evaluate() {
 void BasicEvaluate::LoadConfig() {
     Log::I("recsys", "BasicEvaluate::LoadConfig()");
     Log::I("recsys", "config file = " + mConfigFilepath);
-    std::string content = FileUtil::LoadFileContent(mConfigFilepath);
-    Json::Reader reader;
-    if (!reader.parse(content, mConfig)) {
-        throw LonganFileFormatError();
-    }
+    JsonConfigHelper::LoadFromFile(mConfigFilepath, mConfig);
 }
 
 void BasicEvaluate::LoadTestRatings() {
     Log::I("recsys", "BasicEvaluate::LoadTestRatings()");
     Log::I("recsys", "test rating file = " + mRatingTestFilepath);
-    mTestRatingList = RatingList::LoadFromBinaryFile(mRatingTestFilepath);
+    mTestRatingList = new RatingList(RatingList::LoadFromBinaryFile(mRatingTestFilepath));
 }
 
 void BasicEvaluate::EvaluateRating() {
-    if (!mConfig["evaluateOption"]["evaluateRating"].asBool()) return;
-    Log::I("recsys", "BasicEvaluate::EvaluateRating()");
-    if (mConfig["evaluateOption"]["accelerate"].asBool()) {
-        mEvaluateRatingDelegate = new DynamicScheduledEvaluateRatingDelegate();
-    } else {
-        mEvaluateRatingDelegate = new SimpleEvaluateRatingDelegate();
+    if (!mConfig["evaluateOption"]["evaluateRating"].asBool()) {
+        return;
     }
-    mEvaluateRatingDelegate->Evaluate(mPredict, &mTestRatingList);
-    mMAE = mEvaluateRatingDelegate->MAE();
-    mRMSE = mEvaluateRatingDelegate->RMSE();
-    delete mEvaluateRatingDelegate;
+    Log::I("recsys", "BasicEvaluate::EvaluateRating()");
+    EvaluateRatingDelegate *evaluate = nullptr;
+    if (mConfig["evaluateOption"]["accelerate"].asBool()) {
+        evaluate = new EvaluateRatingDelegateMT();
+    } else {
+        evaluate = new EvaluateRatingDelegateST();
+    }
+    evaluate->Evaluate(mPredict, mTestRatingList);
+    mEvaluateResult.mMAE = evaluate->MAE();
+    mEvaluateResult.mRMSE = evaluate->RMSE();
+    delete evaluate;
 }
 
 void BasicEvaluate::EvaluateRanking() {
-    if (!mConfig["evaluateOption"]["evaluateRanking"].asBool()) return;
-    Log::I("recsys", "BasicEvaluate::EvaluateRanking()");
-    RatingMatrixAsUsers<> ratingMatrix;
-    ratingMatrix.Init(mTestRatingList);
-    int listSize = mConfig["evaluateOption"]["rankingListSize"].asInt();
-    if (mConfig["evaluateOption"]["accelerate"].asBool()) {
-        mEvaluateRankingDelegate = new DynamicScheduledEvaluateRankingDelegate();
-    } else {
-        mEvaluateRankingDelegate = new SimpleEvaluateRankingDelegate();
+    if (!mConfig["evaluateOption"]["evaluateRanking"].asBool()) {
+        return;
     }
-    mEvaluateRankingDelegate->Evaluate(mPredict, &ratingMatrix, listSize);
-    mPrecision = mEvaluateRankingDelegate->Precision();
-    mRecall = mEvaluateRankingDelegate->Recall();
-    mF1Score = mEvaluateRankingDelegate->F1Score();
-    delete mEvaluateRankingDelegate;
+    Log::I("recsys", "BasicEvaluate::EvaluateRanking()");
+    EvaluateRankingDelegate *evaluate = nullptr;
+    RatingMatUsers *rmat = new RatingMatUsers();
+    rmat->Init(*mTestRatingList);
+    int listSize = mConfig["evaluateOption"]["rankingListSize"].asInt();
+    assert(listSize > 0);
+    if (mConfig["evaluateOption"]["accelerate"].asBool()) {
+        evaluate = new EvaluateRankingDelegateMT();
+    } else {
+        evaluate = new EvaluateRankingDelegateST();
+    }
+    evaluate->Evaluate(mPredict, rmat, listSize);
+    mEvaluateResult.mPrecision = evaluate->Precision();
+    mEvaluateResult.mRecall = evaluate->Recall();
+    mEvaluateResult.mF1Score = evaluate->F1Score();
+    delete rmat;
+    delete evaluate;
 }
 
 void BasicEvaluate::WriteResult() {
     Log::I("recsys", "BasicEvaluate::WriteResult()");
     Json::Value result;
     if (mConfig["evaluateOption"]["evaluateRating"].asBool()) {
-        result["ratingResult"]["MAE"] = mMAE;
-        result["ratingResult"]["RMSE"] = mRMSE;
+        result["ratingResult"]["MAE"] = mEvaluateResult.mMAE;
+        result["ratingResult"]["RMSE"] = mEvaluateResult.mRMSE;
     }
     if (mConfig["evaluateOption"]["evaluateRanking"].asBool()) {
-        result["rankingResult"]["Precision"] = mPrecision;
-        result["rankingResult"]["Recall"] = mRecall;
-        result["rankingResult"]["F1Score"] = mF1Score;
+        result["rankingResult"]["Precision"] = mEvaluateResult.mPrecision;
+        result["rankingResult"]["Recall"] = mEvaluateResult.mRecall;
+        result["rankingResult"]["F1Score"] = mEvaluateResult.mF1Score;
     }
-    std::string output = result.toStyledString();
-    Log::I("recsys", "result = \n" + output);
+    Log::I("recsys", "result = \n" + result.toStyledString());
     Log::I("recsys", "writing result to file = " + mResultFilepath);
-    FileUtil::SaveFileContent(mResultFilepath, output);
+    JsonConfigHelper::WriteToFile(mResultFilepath, result);
 }
 
 void BasicEvaluate::Cleanup() {
     mPredict->Cleanup();
     delete mPredict;
-    mPredict = nullptr;
+    delete mTestRatingList;
 }
 
 } //~ namespace longan

@@ -2,3 +2,10 @@ Import("env_common")
 env_common.lib_objects.append(env_common.Object("json_config_helper.cpp"))
 
 build_env = env_common.Clone()
+# add gtest support
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
+
+build_env.Program("json_config_helper_unittest", ["json_config_helper_unittest.cpp"])

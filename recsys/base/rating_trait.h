@@ -17,12 +17,8 @@ class RatingTrait {
 public:
     RatingTrait();
     void Init(const RatingList& rlist);
-    float Min() const {
-        return mMin;
-    }
-    float Max() const {
-        return mMax;
-    }
+    float Min() const { return mMin; }
+    float Max() const { return mMax; }
     float UserMin(int userId) const {
         assert(userId >= 0 && userId < mUserMins.size());
         return mUserMins[userId];

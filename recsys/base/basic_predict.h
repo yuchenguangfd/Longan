@@ -18,7 +18,8 @@ typedef std::vector<int> ItemIdList;
 
 class BasicPredict {
 public:
-    BasicPredict(const std::string& ratingTrainFilepath, const std::string& configFilepath, const std::string& modelFilepath);
+    BasicPredict(const std::string& ratingTrainFilepath, const std::string& configFilepath,
+            const std::string& modelFilepath);
     virtual ~BasicPredict();
     virtual void Init() = 0;
     virtual void Cleanup() = 0;

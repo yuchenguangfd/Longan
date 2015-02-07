@@ -5,9 +5,10 @@
  */
 
 #include "rating_list.h"
+#include "common/lang/text_input_stream.h"
+#include "common/lang/text_output_stream.h"
 #include "common/lang/binary_input_stream.h"
 #include "common/lang/binary_output_stream.h"
-#include <cstdio>
 #include <cassert>
 
 namespace longan {
@@ -42,27 +43,24 @@ RatingList& RatingList::operator= (RatingList&& rhs) noexcept {
     return *this;
 }
 
-RatingList RatingList::LoadFromTextFile(const std::string& ratingTextFilepath) {
-    int rtn;
-    FILE *fp = fopen(ratingTextFilepath.c_str(), "r");
-    assert(fp != nullptr);
+RatingList RatingList::LoadFromTextFile(const std::string& filename) {
+    TextInputStream tis(filename);
+    char sep;
     int numRating, numUser, numItem;
-    rtn = fscanf(fp, "%d,%d,%d", &numRating, &numUser, &numItem);
-    assert(rtn == 3);
+    tis >> numRating >> sep >> numUser >> sep >> numItem >> sep;
     RatingList ratingList(numUser, numItem, numRating);
     for (int i = 0; i < numRating; ++i) {
-       int userId, itemId, time;
+       int userId, itemId;
        float rating;
-       rtn = fscanf(fp, "%d,%d,%f,%d", &userId, &itemId, &rating, &time);
-       assert(rtn == 4);
-       ratingList.Add(RatingRecord(userId, itemId, rating));
+       int64 timestamp;
+       tis >> userId >> sep >> itemId >> sep >> rating >> sep >> timestamp >> sep;
+       ratingList.Add(RatingRecord(userId, itemId, rating)); // TODO discard timestamp for now
     }
-    fclose(fp);
     return std::move(ratingList);
 }
 
-RatingList RatingList::LoadFromBinaryFile(const std::string& ratingBinaryFilepath) {
-    BinaryInputStream bis(ratingBinaryFilepath);
+RatingList RatingList::LoadFromBinaryFile(const std::string& filename) {
+    BinaryInputStream bis(filename);
     int numRating, numUser, numItem;
     bis >> numRating >> numUser >> numItem;
     RatingList ratingList(numUser, numItem, numRating);
@@ -75,22 +73,19 @@ RatingList RatingList::LoadFromBinaryFile(const std::string& ratingBinaryFilepat
     return std::move(ratingList);
 }
 
-void RatingList::WriteToTextFile(const RatingList& rlist, const std::string& ratingTextFilepath) {
-    int rtn;
-    FILE *fp = fopen(ratingTextFilepath.c_str(), "w");
-    assert(fp != nullptr);
-    rtn = fprintf(fp, "%d,%d,%d\n", rlist.NumRating(), rlist.NumUser(), rlist.NumItem());
-    assert(rtn >= 0);
+void RatingList::WriteToTextFile(const RatingList& rlist, const std::string& filename) {
+    TextOutputStream tos(filename);
+    tos << rlist.NumRating() << ',' << rlist.NumUser() << ','
+        << rlist.NumItem() << '\n';
     for (int i = 0; i < rlist.NumRating(); ++i) {
         const RatingRecord& rr = rlist[i];
-        rtn = fprintf(fp,"%d,%d,%f,%d\n", rr.UserId(), rr.ItemId(), rr.Rating(), 0);
-        assert(rtn >= 0);
+        tos << rr.UserId() << ',' << rr.ItemId() << ','
+            << rr.Rating() << ',' << 0LL <<'\n';
     }
-    fclose(fp);
 }
 
-void RatingList::WriteToBinaryFile(const RatingList& rlist, const std::string& ratingBinaryFilepath) {
-    BinaryOutputStream bos(ratingBinaryFilepath);
+void RatingList::WriteToBinaryFile(const RatingList& rlist, const std::string& filename) {
+    BinaryOutputStream bos(filename);
     bos << rlist.NumRating() << rlist.NumUser() << rlist.NumItem();
     for (int i = 0; i < rlist.NumRating(); ++i) {
         const RatingRecord& rr = rlist[i];

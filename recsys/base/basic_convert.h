@@ -17,8 +17,8 @@ public:
     virtual ~BasicConvert();
     virtual void Convert();
 protected:
-    const std::string& mRatingTextFilepath;
-    const std::string& mRatingBinaryFilepath;
+    const std::string mRatingTextFilepath;
+    const std::string mRatingBinaryFilepath;
 };
 
 } //~ namespace longan

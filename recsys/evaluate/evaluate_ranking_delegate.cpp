@@ -35,7 +35,7 @@ void EvaluateRankingDelegate::EvaluateOneUser(int userId, const ItemRating* trut
     *recall = (truthDataSize == 0) ? 0.0 : static_cast<double>(hitCount) / truthDataSize;
 }
 
-void SimpleEvaluateRankingDelegate::Evaluate(const BasicPredict *predict, const RatingMatrixAsUsers<> *rmat, int listSize) {
+void EvaluateRankingDelegateST::Evaluate(const BasicPredict *predict, const RatingMatrixAsUsers<> *rmat, int listSize) {
     assert(listSize > 0);
     mPredict = predict;
     mTestRatingMatrix = rmat;
@@ -54,7 +54,7 @@ void SimpleEvaluateRankingDelegate::Evaluate(const BasicPredict *predict, const 
     mF1Score = 2.0 * (mPrecision * mRecall)/(mPrecision + mRecall);
 }
 
-void DynamicScheduledEvaluateRankingDelegate::Evaluate(const BasicPredict *predict, const RatingMatrixAsUsers<> *rmat, int listSize) {
+void EvaluateRankingDelegateMT::Evaluate(const BasicPredict *predict, const RatingMatrixAsUsers<> *rmat, int listSize) {
     assert(listSize > 0);
     mPredict = predict;
     mTestRatingMatrix = rmat;
@@ -66,7 +66,7 @@ void DynamicScheduledEvaluateRankingDelegate::Evaluate(const BasicPredict *predi
     delete mScheduler;
 }
 
-void DynamicScheduledEvaluateRankingDelegate::ProducerRun() {
+void EvaluateRankingDelegateMT::ProducerRun() {
     TaskBundle *currentBundle = new TaskBundle();
     currentBundle->reserve(TASK_BUNDLE_SIZE);
     for (int uid = 0; uid < mTestRatingMatrix->NumUser(); ++uid) {
@@ -81,7 +81,7 @@ void DynamicScheduledEvaluateRankingDelegate::ProducerRun() {
     mScheduler->ProducerDone();
 }
 
-void DynamicScheduledEvaluateRankingDelegate::WorkerRun() {
+void EvaluateRankingDelegateMT::WorkerRun() {
     while (true) {
         TaskBundle *currentBundle = mScheduler->WorkerGetTask();
         if (currentBundle == nullptr) break;
@@ -95,7 +95,7 @@ void DynamicScheduledEvaluateRankingDelegate::WorkerRun() {
     mScheduler->WorkerDone();
 }
 
-void DynamicScheduledEvaluateRankingDelegate::ConsumerRun() {
+void EvaluateRankingDelegateMT::ConsumerRun() {
     int totoalTask = mTestRatingMatrix->NumUser();
     int processedTask = 0;
     RunningAverage<double> raPrecision;
@@ -118,7 +118,7 @@ void DynamicScheduledEvaluateRankingDelegate::ConsumerRun() {
     mF1Score = 2.0 * (mPrecision * mRecall)/(mPrecision + mRecall);
 }
 
-void DynamicScheduledEvaluateRankingDelegate::MonitorRun() {
+void EvaluateRankingDelegateMT::MonitorRun() {
     while (true) {
         Log::Console("recsys", "Evaluate Ranking...%d%% done.", (int)(mProgress*100));
         if (mProgress > 0.99) break;

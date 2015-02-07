@@ -4,28 +4,25 @@
  * Author: chenguangyu
  */
 
-#ifndef RECSYS_UTIL_RATING_RECORD_WITH_TIME_H
-#define RECSYS_UTIL_RATING_RECORD_WITH_TIME_H
+#ifndef RECSYS_BASE_RATING_RECORD_WITH_TIME_H
+#define RECSYS_BASE_RATING_RECORD_WITH_TIME_H
 
 #include "rating_record.h"
+#include "common/lang/types.h"
 
 namespace longan {
 
 class RatingRecordWithTime : public RatingRecord {
 public:
-    RatingRecordWithTime() : RatingRecord(), mTimestamp(0) { }
-    RatingRecordWithTime(int userId, int itemId, float rating, int timestamp) :
+    RatingRecordWithTime() : RatingRecord(), mTimestamp(0LL) { }
+    RatingRecordWithTime(int userId, int itemId, float rating, int64 timestamp) :
         RatingRecord(userId, itemId, rating), mTimestamp(timestamp) { }
-    int Timestamp() const {
-        return mTimestamp;
-    }
-    void SetTimestamp(int timestamp) {
-        mTimestamp = timestamp;
-    }
+    int64 Timestamp() const { return mTimestamp; }
+    void SetTimestamp(int64 timestamp) { mTimestamp = timestamp; }
 private:
-    int mTimestamp;
+    int64 mTimestamp;
 };
 
 } //~ namespace longan
 
-#endif /* RATING_RECORD_WITH_TIME_H_ */
+#endif /* RECSYS_BASE_RATING_RECORD_WITH_TIME_H */

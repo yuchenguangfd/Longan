@@ -9,14 +9,19 @@
 
 #include "basic_predict.h"
 #include "rating_list.h"
-#include "rating_matrix_as_users.h"
-#include "recsys/evaluate/evaluate_rating_delegate.h"
-#include "recsys/evaluate/evaluate_ranking_delegate.h"
 #include "common/lang/defines.h"
 #include <json/json.h>
 #include <string>
 
 namespace longan {
+
+struct EvaluateResult {
+    double mMAE = 0.0;
+    double mRMSE = 0.0;
+    double mPrecision = 0.0;
+    double mRecall = 0.0;
+    double mF1Score = 0.0;
+};
 
 class BasicEvaluate {
 public:
@@ -40,15 +45,9 @@ protected:
     const std::string mRatingTestFilepath;
     const std::string mResultFilepath;
     Json::Value mConfig;
-    RatingList mTestRatingList;
-    BasicPredict *mPredict;
-    EvaluateRatingDelegate *mEvaluateRatingDelegate;
-    EvaluateRankingDelegate *mEvaluateRankingDelegate;
-    double mMAE;
-    double mRMSE;
-    double mPrecision;
-    double mRecall;
-    double mF1Score;
+    RatingList *mTestRatingList = nullptr;
+    BasicPredict *mPredict = nullptr;
+    EvaluateResult mEvaluateResult;
     DISALLOW_COPY_AND_ASSIGN(BasicEvaluate);
 };
 

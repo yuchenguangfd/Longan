@@ -9,7 +9,9 @@
 
 #include "user_rating.h"
 #include "rating_record.h"
+#include "common/lang/defines.h"
 #include <memory>
+#include <cassert>
 
 namespace longan {
 
@@ -19,39 +21,38 @@ class ItemVector {
 public:
     ItemVector();
     ItemVector(int itemId, const RatingRecord *data, int size);
-    ItemVector(const ItemVector<Alloc>&) = delete;
     ItemVector(ItemVector<Alloc>&& orig) noexcept;
     ~ItemVector();
-    ItemVector<Alloc>& operator= (const ItemVector<Alloc>& rhs) = delete;
     ItemVector<Alloc>& operator= (ItemVector<Alloc>&& rhs) noexcept;
-    const UserRating* Data() const {
-        return mData;
-    }
-    UserRating* Data() {
-        return mData;
-    }
-    int Size() const {
-        return mSize;
-    }
+    int ItemId() const { return mItemId; }
+    const UserRating* Data() const { return mData; }
+    UserRating* Data() { return mData; }
+    int Size() const { return mSize; }
+    const UserRating* Begin() const { return mData; }
+    UserRating* Begin() { return mData; }
+    const UserRating* End() const { return mData + mSize; }
+    UserRating* End() { return mData + mSize; }
 protected:
     int mItemId;
     UserRating *mData;
     int mSize;
+    DISALLOW_COPY_AND_ASSIGN(ItemVector);
 };
 
 template <class Alloc>
-ItemVector<Alloc>::ItemVector() :
+inline ItemVector<Alloc>::ItemVector() :
     mItemId(0),
     mData(nullptr),
     mSize(0) { }
 
 template <class Alloc>
-ItemVector<Alloc>::ItemVector(int itemId, const RatingRecord *data, int size) {
-    mItemId = itemId;
-    mSize = size;
+ItemVector<Alloc>::ItemVector(int itemId, const RatingRecord *data, int size) :
+    mItemId(itemId),
+    mSize(size) {
     Alloc alloc;
     mData = alloc.allocate(mSize);
     for (int i = 0; i < size; ++i) {
+        assert(data[i].ItemId() == mItemId);
         alloc.construct(&mData[i], UserRating(data[i].UserId(), data[i].Rating()));
     }
 }
@@ -87,6 +88,8 @@ ItemVector<Alloc>& ItemVector<Alloc>::operator= (ItemVector<Alloc>&& rhs) noexce
     rhs.mSize = 0;
     return *this;
 }
+
+typedef ItemVector<std::allocator<UserRating>> ItemVec;
 
 } //~ namespace longan
 

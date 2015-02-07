@@ -4,7 +4,7 @@ env_recsys = env.Clone()
 Export("env_recsys")
 
 # add jsoncpp support
-env_recsys.Prepend(CPPPATH = "#/external/jsoncpp/include",
+env_recsys.Append(CPPPATH = "#/external/jsoncpp/include",
                    LIBPATH = "#/external/jsoncpp",
                    LIBS = "json")
 # add glog support

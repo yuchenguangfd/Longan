@@ -10,11 +10,10 @@
 
 namespace longan {
 
-void AdjustRatingByMinusUserAverage(const RatingTrait& ratingTrait, RatingMatrixAsUsers<> *ratingMatrix);
-void AdjustRatingByMinusItemAverage(const RatingTrait& ratingTrait, RatingMatrixAsUsers<> *ratingMatrix);
-void AdjustRatingByMinusUserAverage(const RatingTrait& ratingTrait, RatingMatrixAsItems<> *ratingMatrix);
-void AdjustRatingByMinusItemAverage(const RatingTrait& ratingTrait, RatingMatrixAsItems<> *ratingMatrix);
+void AdjustRatingByMinusUserAverage(const RatingTrait& rtrait, RatingMatUsers *rmat);
+void AdjustRatingByMinusUserAverage(const RatingTrait& rtrait, RatingMatItems *rmat);
 
-void AdjustRatingByNormalizeUserMaxAbs(RatingMatrixAsUsers<> *ratingMatrix);
+void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatUsers *rmat);
+void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatItems *rmat);
 
 } //~ namespace longan

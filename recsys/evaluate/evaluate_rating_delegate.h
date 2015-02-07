@@ -29,27 +29,27 @@ protected:
     double mRMSE;
 };
 
-class SimpleEvaluateRatingDelegate : public EvaluateRatingDelegate {
+class EvaluateRatingDelegateST : public EvaluateRatingDelegate {
 public:
     using EvaluateRatingDelegate::EvaluateRatingDelegate;
     virtual void Evaluate(const BasicPredict *predict, const RatingList *testRatingList) override;
 };
 
-class DynamicScheduledEvaluateRatingDelegate : public EvaluateRatingDelegate , public PipelinedSchedulerClient {
+class EvaluateRatingDelegateMT : public EvaluateRatingDelegate , public PipelinedSchedulerClient {
 public:
     using EvaluateRatingDelegate::EvaluateRatingDelegate;
     virtual void Evaluate(const BasicPredict *predict, const RatingList *testRatingList) override;
     virtual std::thread* CreateProducerThread() {
-        return new std::thread(&DynamicScheduledEvaluateRatingDelegate::ProducerRun, this);
+        return new std::thread(&EvaluateRatingDelegateMT::ProducerRun, this);
     }
     virtual std::thread* CreateWorkerThread() {
-        return new std::thread(&DynamicScheduledEvaluateRatingDelegate::WorkerRun, this);
+        return new std::thread(&EvaluateRatingDelegateMT::WorkerRun, this);
     }
     virtual std::thread* CreateConsumerThread() {
-        return new std::thread(&DynamicScheduledEvaluateRatingDelegate::ConsumerRun, this);
+        return new std::thread(&EvaluateRatingDelegateMT::ConsumerRun, this);
     }
     virtual std::thread* CreateMonitorThread() {
-        return new std::thread(&DynamicScheduledEvaluateRatingDelegate::MonitorRun, this);
+        return new std::thread(&EvaluateRatingDelegateMT::MonitorRun, this);
     }
 private:
     void ProducerRun();

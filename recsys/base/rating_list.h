@@ -29,16 +29,20 @@ public:
     int NumItem() const { return mNumItem; }
     int NumRating() const { return mRatingRecords.size(); }
     int Size() const { return mRatingRecords.size(); }
+    RatingRecord* Data() { return mRatingRecords.data(); }
+    const RatingRecord* Data() const { return mRatingRecords.data(); }
     const RatingRecord& At(int i) const { return mRatingRecords[i]; }
     RatingRecord& At(int i) { return mRatingRecords[i]; }
     const RatingRecord& operator[] (int i) const { return mRatingRecords[i]; }
     RatingRecord& operator[] (int i) { return mRatingRecords[i]; }
-    double GetSparsity() const { return static_cast<double>(NumRating()) / NumUser() / NumItem(); }
+    double Sparsity() const {
+        return 1.0 - static_cast<double>(NumRating()) / mNumUser / mNumItem;
+    }
 public:
-    static RatingList LoadFromTextFile(const std::string& ratingTextFilepath);
-    static RatingList LoadFromBinaryFile(const std::string& ratingBinaryFilepath);
-    static void WriteToTextFile(const RatingList& rlist, const std::string& ratingTextFilepath);
-    static void WriteToBinaryFile(const RatingList& rlist, const std::string& ratingBinaryFilepath);
+    static RatingList LoadFromTextFile(const std::string& filename);
+    static RatingList LoadFromBinaryFile(const std::string& filename);
+    static void WriteToTextFile(const RatingList& rlist, const std::string& filename);
+    static void WriteToBinaryFile(const RatingList& rlist, const std::string& filename);
 private:
     int mNumUser;
     int mNumItem;

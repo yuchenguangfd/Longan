@@ -8,8 +8,6 @@
 /rating_trait_unittest
 /rating_trait_unittest.o
 /rating_trait.o
-/basic_evaluate_unittest
-/basic_evaluate_unittest.o
 /basic_evaluate.o
 /basic_predict.o
 /basic_train.o
