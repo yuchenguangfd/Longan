@@ -33,6 +33,7 @@ void BasicEvaluate::Evaluate() {
     LoadConfig();
     LoadTestRatings();
     CreatePredict();
+    CreateEvaluateOption();
     EvaluateRating();
     EvaluateRanking();
     WriteResult();
@@ -51,42 +52,41 @@ void BasicEvaluate::LoadTestRatings() {
     mTestRatingList = new RatingList(RatingList::LoadFromBinaryFile(mRatingTestFilepath));
 }
 
+void BasicEvaluate::CreateEvaluateOption() {
+    Log::I("recsys", "BasicEvaluate::CreateEvaluateOption()");
+    mEvaluateOption = new EvaluateOption(mConfig["evaluateOption"]);
+}
+
 void BasicEvaluate::EvaluateRating() {
-    if (!mConfig["evaluateOption"]["evaluateRating"].asBool()) {
-        return;
-    }
+    if (!mEvaluateOption->EvaluateRating()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateRating()");
     EvaluateRatingDelegate *evaluate = nullptr;
-    if (mConfig["evaluateOption"]["accelerate"].asBool()) {
+    if (mEvaluateOption->Accelerate()) {
         evaluate = new EvaluateRatingDelegateMT();
     } else {
         evaluate = new EvaluateRatingDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestRatingList);
-    mEvaluateResult.mMAE = evaluate->MAE();
-    mEvaluateResult.mRMSE = evaluate->RMSE();
+    evaluate->Evaluate(mPredict, mTestRatingList, mEvaluateOption);
+    mEvaluateResult.MAE = evaluate->MAE();
+    mEvaluateResult.RMSE = evaluate->RMSE();
     delete evaluate;
 }
 
 void BasicEvaluate::EvaluateRanking() {
-    if (!mConfig["evaluateOption"]["evaluateRanking"].asBool()) {
-        return;
-    }
+    if (!mEvaluateOption->EvaluateRanking()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateRanking()");
     EvaluateRankingDelegate *evaluate = nullptr;
     RatingMatUsers *rmat = new RatingMatUsers();
     rmat->Init(*mTestRatingList);
-    int listSize = mConfig["evaluateOption"]["rankingListSize"].asInt();
-    assert(listSize > 0);
-    if (mConfig["evaluateOption"]["accelerate"].asBool()) {
+    if (mEvaluateOption->Accelerate()) {
         evaluate = new EvaluateRankingDelegateMT();
     } else {
         evaluate = new EvaluateRankingDelegateST();
     }
-    evaluate->Evaluate(mPredict, rmat, listSize);
-    mEvaluateResult.mPrecision = evaluate->Precision();
-    mEvaluateResult.mRecall = evaluate->Recall();
-    mEvaluateResult.mF1Score = evaluate->F1Score();
+    evaluate->Evaluate(mPredict, rmat, mEvaluateOption);
+    mEvaluateResult.Precision = evaluate->Precision();
+    mEvaluateResult.Recall = evaluate->Recall();
+    mEvaluateResult.F1Score = evaluate->F1Score();
     delete rmat;
     delete evaluate;
 }
@@ -94,14 +94,14 @@ void BasicEvaluate::EvaluateRanking() {
 void BasicEvaluate::WriteResult() {
     Log::I("recsys", "BasicEvaluate::WriteResult()");
     Json::Value result;
-    if (mConfig["evaluateOption"]["evaluateRating"].asBool()) {
-        result["ratingResult"]["MAE"] = mEvaluateResult.mMAE;
-        result["ratingResult"]["RMSE"] = mEvaluateResult.mRMSE;
+    if (mEvaluateOption->EvaluateRating()) {
+        result["ratingResult"]["MAE"] = mEvaluateResult.MAE;
+        result["ratingResult"]["RMSE"] = mEvaluateResult.RMSE;
     }
-    if (mConfig["evaluateOption"]["evaluateRanking"].asBool()) {
-        result["rankingResult"]["Precision"] = mEvaluateResult.mPrecision;
-        result["rankingResult"]["Recall"] = mEvaluateResult.mRecall;
-        result["rankingResult"]["F1Score"] = mEvaluateResult.mF1Score;
+    if (mEvaluateOption->EvaluateRanking()) {
+        result["rankingResult"]["Precision"] = mEvaluateResult.Precision;
+        result["rankingResult"]["Recall"] = mEvaluateResult.Recall;
+        result["rankingResult"]["F1Score"] = mEvaluateResult.F1Score;
     }
     Log::I("recsys", "result = \n" + result.toStyledString());
     Log::I("recsys", "writing result to file = " + mResultFilepath);
@@ -111,6 +111,7 @@ void BasicEvaluate::WriteResult() {
 void BasicEvaluate::Cleanup() {
     mPredict->Cleanup();
     delete mPredict;
+    delete mEvaluateOption;
     delete mTestRatingList;
 }
 

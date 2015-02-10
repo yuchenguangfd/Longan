@@ -1,0 +1,33 @@
+/*
+ * evaluate_util.h
+ * Created on: Feb 9, 2015
+ * Author: chenguangyu
+ */
+
+#ifndef RECSYS_EVALUATE_EVALUATE_UTIL_H
+#define RECSYS_EVALUATE_EVALUATE_UTIL_H
+
+#include <json/json.h>
+
+namespace longan {
+
+class EvaluateOption {
+public:
+    EvaluateOption(const Json::Value& option);
+    bool Accelerate() const { return mAccelerate; }
+    int NumThread() const { return mNumThread; }
+    bool EvaluateRating() const { return mEvaluateRating; }
+    bool EvaluateRanking() const { return mEvaluateRanking; }
+    int RankingListSize() const { return mRankingListSize; }
+    bool MonitorProgress() const { return mMonitorProgress; }
+private:
+    bool mAccelerate;
+    int mNumThread;
+    bool mEvaluateRating;
+    bool mEvaluateRanking;
+    int  mRankingListSize;
+    bool mMonitorProgress;
+};
+} //~ namespace longan
+
+#endif /* RECSYS_EVALUATE_EVALUATE_UTIL_H */

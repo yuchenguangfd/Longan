@@ -7,8 +7,9 @@
 #ifndef RECSYS_EVALUATE_EVALUATE_RATING_DELEGATE_H
 #define RECSYS_EVALUATE_EVALUATE_RATING_DELEGATE_H
 
-#include "common/threading/pipelined_scheduler.h"
+#include "evaluate_util.h"
 #include "common/util/running_statistic.h"
+#include "common/threading/pipelined_scheduler.h"
 
 namespace longan {
 
@@ -17,28 +18,29 @@ class RatingList;
 
 class EvaluateRatingDelegate {
 public:
-    EvaluateRatingDelegate() : mPredict(nullptr), mTestRatingList(nullptr), mMAE(0.0), mRMSE(0.0) { }
     virtual ~EvaluateRatingDelegate() { }
-    virtual void Evaluate(const BasicPredict *predict, const RatingList *testRatingList) = 0;
+    virtual void Evaluate(const BasicPredict *predict, const RatingList *testData,
+            const EvaluateOption *option) = 0;
     double MAE() const { return mMAE; }
     double RMSE() const { return mRMSE; }
 protected:
-    const BasicPredict *mPredict;
-    const RatingList *mTestRatingList;
-    double mMAE;
-    double mRMSE;
+    const BasicPredict *mPredict = nullptr;
+    const RatingList *mTestData = nullptr;
+    const EvaluateOption *mOption = nullptr;
+    double mMAE = 0.0;
+    double mRMSE = 0.0;
 };
 
 class EvaluateRatingDelegateST : public EvaluateRatingDelegate {
 public:
-    using EvaluateRatingDelegate::EvaluateRatingDelegate;
-    virtual void Evaluate(const BasicPredict *predict, const RatingList *testRatingList) override;
+    virtual void Evaluate(const BasicPredict *predict, const RatingList *testData,
+            const EvaluateOption *option) override;
 };
 
 class EvaluateRatingDelegateMT : public EvaluateRatingDelegate , public PipelinedSchedulerClient {
 public:
-    using EvaluateRatingDelegate::EvaluateRatingDelegate;
-    virtual void Evaluate(const BasicPredict *predict, const RatingList *testRatingList) override;
+    virtual void Evaluate(const BasicPredict *predict, const RatingList *testData,
+            const EvaluateOption *option) override;
     virtual std::thread* CreateProducerThread() {
         return new std::thread(&EvaluateRatingDelegateMT::ProducerRun, this);
     }
@@ -49,27 +51,32 @@ public:
         return new std::thread(&EvaluateRatingDelegateMT::ConsumerRun, this);
     }
     virtual std::thread* CreateMonitorThread() {
-        return new std::thread(&EvaluateRatingDelegateMT::MonitorRun, this);
+        return mOption->MonitorProgress() ?
+               new std::thread(&EvaluateRatingDelegateMT::MonitorRun, this) :
+               nullptr;
     }
 private:
     void ProducerRun();
     void WorkerRun();
     void ConsumerRun();
     void MonitorRun();
+private:
     struct Task {
         int userId;
         int itemId;
         float trueRating;
-        float predictedRating;
-        Task(int uid, int iid, float rating): userId(uid), itemId(iid),
-                trueRating(rating), predictedRating(0.0f) { }
+        float predRating;
+        Task(int uid, int iid, float rating): userId(uid), itemId(iid), trueRating(rating),
+                predRating(0.0f) { }
     };
-    static const int TASK_BUNDLE_SIZE = 4096;
+    static const int TASK_BUNDLE_SIZE = 1024;
     typedef std::vector<Task> TaskBundle;
-    PipelinedScheduler<TaskBundle> *mScheduler;
-    double mProgress;
-    RunningAverage<float> mMAERunningAvg;
-    RunningAverage<float> mRMSERunningAvg;
+    PipelinedScheduler<TaskBundle> *mScheduler = nullptr;
+
+    int mTotoalTask = 0;
+    int mProcessedTask = 0;
+    RunningAverage<double> mMAERunningAvg;
+    RunningAverage<double> mMSERunningAvg;
 };
 
 } //~ namespace longan

@@ -8,32 +8,35 @@
 #include "recsys/base/rating_list.h"
 #include "recsys/base/basic_predict.h"
 #include "common/math/math.h"
-#include "common/lang/integer.h"
+#include "common/time/stopwatch.h"
 #include "common/logging/logging.h"
-#include "common/system/system_info.h"
+#include <cassert>
 
 namespace longan {
 
-void EvaluateRatingDelegateST::Evaluate(const BasicPredict *predict, const RatingList *testRatingList) {
+void EvaluateRatingDelegateST::Evaluate(const BasicPredict *predict, const RatingList *testData,
+        const EvaluateOption *option) {
+    assert(testData->NumRating() > 0);
     double sumAbs = 0.0;
     double sumSqr = 0.0;
-    for (int i = 0; i < testRatingList->NumRating(); ++i) {
-        const RatingRecord& rr = testRatingList->At(i);
-        float predictedRating = predict->PredictRating(rr.UserId(), rr.ItemId());
+    for (int i = 0; i < testData->NumRating(); ++i) {
+        const RatingRecord& rr = testData->At(i);
+        float predRating = predict->PredictRating(rr.UserId(), rr.ItemId());
         float trueRating = rr.Rating();
-        float error = predictedRating - trueRating;
+        float error = predRating - trueRating;
         sumAbs += Math::Abs(error);
         sumSqr += Math::Sqr(error);
     }
-    mMAE = sumAbs / testRatingList->NumRating();
-    mRMSE = Math::Sqrt(sumSqr / testRatingList->NumRating());
+    mMAE = sumAbs / testData->NumRating();
+    mRMSE = Math::Sqrt(sumSqr / testData->NumRating());
 }
 
-void EvaluateRatingDelegateMT::Evaluate(const BasicPredict *predict, const RatingList *testRatingList) {
+void EvaluateRatingDelegateMT::Evaluate(const BasicPredict *predict, const RatingList *testData,
+        const EvaluateOption *option) {
     mPredict = predict;
-    mTestRatingList = testRatingList;
-    int numWorker = SystemInfo::GetNumCPUCore();
-    mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, numWorker, 1);
+    mTestData = testData;
+    mOption = option;
+    mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, mOption->NumThread(), 1);
     mScheduler->Start();
     mScheduler->WaitFinish();
     delete mScheduler;
@@ -42,8 +45,8 @@ void EvaluateRatingDelegateMT::Evaluate(const BasicPredict *predict, const Ratin
 void EvaluateRatingDelegateMT::ProducerRun() {
     TaskBundle *currentBundle = new TaskBundle();
     currentBundle->reserve(TASK_BUNDLE_SIZE);
-    for (int i = 0; i < mTestRatingList->NumRating(); ++i) {
-        const RatingRecord& rr = mTestRatingList->At(i);
+    for (int i = 0; i < mTestData->NumRating(); ++i) {
+        const RatingRecord& rr = mTestData->At(i);
         if (currentBundle->size() == TASK_BUNDLE_SIZE) {
             mScheduler->ProducerPutTask(currentBundle);
             currentBundle = new TaskBundle();
@@ -61,7 +64,7 @@ void EvaluateRatingDelegateMT::WorkerRun() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            task.predictedRating = mPredict->PredictRating(task.userId, task.itemId);
+            task.predRating = mPredict->PredictRating(task.userId, task.itemId);
         }
         mScheduler->WorkerPutTask(currentBundle);
     }
@@ -69,32 +72,35 @@ void EvaluateRatingDelegateMT::WorkerRun() {
 }
 
 void EvaluateRatingDelegateMT::ConsumerRun() {
-    int totoalTask = mTestRatingList->NumRating();
-    int processedTask = 0;
+    mTotoalTask = mTestData->NumRating();
+    mProcessedTask = 0;
     while (true) {
         TaskBundle *currentBundle = mScheduler->ConsumerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            float error = task.predictedRating - task.trueRating;
+            double error = task.predRating - task.trueRating;
             mMAERunningAvg.Add(Math::Abs(error));
-            mRMSERunningAvg.Add(Math::Sqr(error));
+            mMSERunningAvg.Add(Math::Sqr(error));
         }
-        processedTask += currentBundle->size();
-        mProgress = static_cast<double>(processedTask)/totoalTask;
+        mProcessedTask += currentBundle->size();
         delete currentBundle;
     }
     mMAE = mMAERunningAvg.CurrentAverage();
-    mRMSE = Math::Sqrt(mRMSERunningAvg.CurrentAverage());
+    mRMSE = Math::Sqrt(mMSERunningAvg.CurrentAverage());
     mScheduler->ConsumerDone();
 }
 
 void EvaluateRatingDelegateMT::MonitorRun() {
+    Stopwatch stopwatch;
     while (true) {
-        Log::Console("recsys", "Evaluate Rating...%d%% done. MAE=%lf, RMSE=%lf", (int)(mProgress*100),
-                mMAERunningAvg.CurrentAverage(), Math::Sqrt(mRMSERunningAvg.CurrentAverage()));
-        if (mProgress > 0.99) break;
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        int progress = static_cast<int>(100.0 * mProcessedTask / mTotoalTask);
+        Log::Console("recsys", "Evaluate Rating...%d%%(%d/%d) done. current MAE=%lf, RMSE=%lf, total time=%.2lfs",
+                progress, mProcessedTask, mTotoalTask,
+                mMAERunningAvg.CurrentAverage(), Math::Sqrt(mMSERunningAvg.CurrentAverage()),
+                stopwatch.Toc());
+        if (mProcessedTask >= mTotoalTask) break;
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 }
 

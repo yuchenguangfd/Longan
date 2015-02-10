@@ -1,2 +1,7 @@
 /evaluate_ranking_delegate.o
 /evaluate_rating_delegate.o
+/evaluate_rating_delegate_unittest
+/evaluate_rating_delegate_unittest.o
+/evaluate_ranking_delegate_unittest
+/evaluate_ranking_delegate_unittest.o
+/evaluate_util.o

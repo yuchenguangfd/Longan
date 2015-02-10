@@ -9,6 +9,7 @@
 
 #include "basic_predict.h"
 #include "rating_list.h"
+#include "recsys/evaluate/evaluate_util.h"
 #include "common/lang/defines.h"
 #include <json/json.h>
 #include <string>
@@ -16,11 +17,11 @@
 namespace longan {
 
 struct EvaluateResult {
-    double mMAE = 0.0;
-    double mRMSE = 0.0;
-    double mPrecision = 0.0;
-    double mRecall = 0.0;
-    double mF1Score = 0.0;
+    double MAE = 0.0;
+    double RMSE = 0.0;
+    double Precision = 0.0;
+    double Recall = 0.0;
+    double F1Score = 0.0;
 };
 
 class BasicEvaluate {
@@ -31,9 +32,10 @@ public:
     virtual ~BasicEvaluate();
     virtual void Evaluate();
 protected:
-    virtual void CreatePredict() = 0;
     virtual void LoadConfig() final;
     virtual void LoadTestRatings();
+    virtual void CreatePredict() = 0;
+    virtual void CreateEvaluateOption();
     virtual void EvaluateRating();
     virtual void EvaluateRanking();
     virtual void WriteResult();
@@ -47,6 +49,7 @@ protected:
     Json::Value mConfig;
     RatingList *mTestRatingList = nullptr;
     BasicPredict *mPredict = nullptr;
+    EvaluateOption *mEvaluateOption = nullptr;
     EvaluateResult mEvaluateResult;
     DISALLOW_COPY_AND_ASSIGN(BasicEvaluate);
 };
