@@ -1,8 +1,6 @@
 Import("env_ml")
 
 build_env = env_ml.Clone()
-# g++ optimize option
-build_env.Append(CCFLAGS = ["-O3", "-march=native", "-funroll-loops"])
 # add openmp support
 build_env.Prepend(CCFLAGS = "-fopenmp",
                   LINKFLAGS = "-fopenmp")

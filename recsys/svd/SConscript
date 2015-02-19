@@ -1,9 +1,6 @@
 Import("env_recsys")
 
 build_env = env_recsys.Clone()
-build_env.Append(CCFLAGS = [
-    "-O3", "-march=native", "-funroll-loops"])
-
 # add gflags support
 build_env.Prepend(CPPPATH = "#/external/gflags/include",
                   LIBPATH = "#/external/gflags",

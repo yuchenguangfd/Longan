@@ -34,40 +34,30 @@ protected:
 	DISALLOW_COPY_AND_ASSIGN(BinaryInputStream);
 };
 
-inline BinaryInputStream& operator>> (BinaryInputStream& bis, uint8& i) {
-    if (fread((void*)&i, (uint64)sizeof(uint8), 1, bis.mStream) != 1) {
-        throw LonganFileReadError();
+#define DEFINE_BINARY_INPUT_STREAM_ONE_READ(TypeName) \
+    inline BinaryInputStream& operator>> (BinaryInputStream& bis, TypeName& arg) { \
+        if (fread((void*)&arg, (uint64)sizeof(TypeName), 1, bis.mStream) != 1) { \
+            throw LonganFileReadError(); \
+        } \
+        return bis; \
     }
-    return bis;
-}
 
-inline BinaryInputStream& operator>> (BinaryInputStream& bis, int32& i) {
-    if (fread((void*)&i, (uint64)sizeof(int32), 1, bis.mStream) != 1) {
-        throw LonganFileReadError();
+#define DEFINE_BINARY_INPUT_STREAM_MULTIPLE_READ(TypeName) \
+    inline void BinaryInputStream::Read(TypeName* data, int size) { \
+        if (fread((void*)data, (uint64)sizeof(TypeName), size, mStream) != size) { \
+            throw LonganFileReadError(); \
+        } \
     }
-    return bis;
-}
 
-inline BinaryInputStream& operator>> (BinaryInputStream& bis, int64& i) {
-    if (fread((void*)&i, (uint64)sizeof(int64), 1, bis.mStream) != 1) {
-        throw LonganFileReadError();
-    }
-    return bis;
-}
+DEFINE_BINARY_INPUT_STREAM_ONE_READ(uint8)
+DEFINE_BINARY_INPUT_STREAM_ONE_READ(int32)
+DEFINE_BINARY_INPUT_STREAM_ONE_READ(int64)
+DEFINE_BINARY_INPUT_STREAM_ONE_READ(float32)
+DEFINE_BINARY_INPUT_STREAM_ONE_READ(float64)
 
-inline BinaryInputStream& operator>> (BinaryInputStream& bis, float32& f) {
-    if (fread((void*)&f, (uint64)sizeof(float32), 1, bis.mStream) != 1) {
-        throw LonganFileReadError();
-    }
-    return bis;
-}
-
-inline BinaryInputStream& operator>> (BinaryInputStream& bis, float64& f) {
-    if (fread((void*)&f, (uint64)sizeof(float64), 1, bis.mStream) != 1) {
-        throw LonganFileReadError();
-    }
-    return bis;
-}
+DEFINE_BINARY_INPUT_STREAM_MULTIPLE_READ(int32)
+DEFINE_BINARY_INPUT_STREAM_MULTIPLE_READ(float32)
+DEFINE_BINARY_INPUT_STREAM_MULTIPLE_READ(float64)
 
 } //~ namespace longan
 

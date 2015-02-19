@@ -33,33 +33,29 @@ protected:
 	DISALLOW_COPY_AND_ASSIGN(BinaryOutputStream);
 };
 
-inline BinaryOutputStream& operator<< (BinaryOutputStream& bos, int32 i) {
-    if (fwrite((void*)&i, (uint64)sizeof(int32), 1, bos.mStream) != 1) {
-        throw LonganFileWriteError();
+#define DEFINE_BINARY_OUTPUT_STREAM_ONE_WRITE(TypeName) \
+    inline BinaryOutputStream& operator<< (BinaryOutputStream& bos, TypeName arg) { \
+        if (fwrite((void*)&arg, (uint64)sizeof(TypeName), 1, bos.mStream) != 1) { \
+            throw LonganFileWriteError(); \
+        } \
+        return bos; \
     }
-    return bos;
-}
 
-inline BinaryOutputStream& operator<< (BinaryOutputStream& bos, int64 i) {
-    if (fwrite((void*)&i, (uint64)sizeof(int64), 1, bos.mStream) != 1) {
-        throw LonganFileWriteError();
+#define DEFINE_BINARY_OUTPUT_STREAM_MULTIPLE_WRITE(TypeName) \
+    inline void BinaryOutputStream::Write(const TypeName* data, int size) { \
+        if (fwrite((void*)data, (uint64)sizeof(TypeName), size, mStream) != size) { \
+            throw LonganFileWriteError(); \
+        } \
     }
-    return bos;
-}
 
-inline BinaryOutputStream& operator << (BinaryOutputStream& bos, float32 f) {
-    if (fwrite((void*)&f, (uint64)sizeof(float32), 1, bos.mStream) != 1) {
-        throw LonganFileWriteError();
-    }
-    return bos;
-}
+DEFINE_BINARY_OUTPUT_STREAM_ONE_WRITE(int32)
+DEFINE_BINARY_OUTPUT_STREAM_ONE_WRITE(int64)
+DEFINE_BINARY_OUTPUT_STREAM_ONE_WRITE(float32)
+DEFINE_BINARY_OUTPUT_STREAM_ONE_WRITE(float64)
 
-inline BinaryOutputStream& operator << (BinaryOutputStream& bos, float64 f) {
-    if (fwrite((void*)&f, (uint64)sizeof(float64), 1, bos.mStream) != 1) {
-        throw LonganFileWriteError();
-    }
-    return bos;
-}
+DEFINE_BINARY_OUTPUT_STREAM_MULTIPLE_WRITE(int32)
+DEFINE_BINARY_OUTPUT_STREAM_MULTIPLE_WRITE(float32)
+DEFINE_BINARY_OUTPUT_STREAM_MULTIPLE_WRITE(float64)
 
 } //~ namespace longan
 
