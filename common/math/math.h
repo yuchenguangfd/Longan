@@ -140,6 +140,10 @@ inline double Sqrt(float x) {
     return ::sqrtf(x);
 }
 
+inline double Log(double x) {
+    return ::log(x);
+}
+
 inline int Round(double x) {
     return static_cast<int>(::round(x));
 }

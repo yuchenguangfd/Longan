@@ -1,8 +1,10 @@
 {
 	"evaluateOption": {
-		"accelerate": false, 
+		"accelerate": true, 
 		"evaluateRating": true,
 		"evaluateRanking": true,
-		"rankingListSize": 100
+		"evaluateCoverage": true,
+		"rankingListSize": 100,
+		"monitorProgress": true
 	}
 }

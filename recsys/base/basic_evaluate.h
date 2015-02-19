@@ -16,14 +16,6 @@
 
 namespace longan {
 
-struct EvaluateResult {
-    double MAE = 0.0;
-    double RMSE = 0.0;
-    double Precision = 0.0;
-    double Recall = 0.0;
-    double F1Score = 0.0;
-};
-
 class BasicEvaluate {
 public:
     BasicEvaluate(const std::string& ratingTrainFilepath, const std::string& configFilepath,
@@ -38,6 +30,7 @@ protected:
     virtual void CreateEvaluateOption();
     virtual void EvaluateRating();
     virtual void EvaluateRanking();
+    virtual void EvaluateCoverage();
     virtual void WriteResult();
     virtual void Cleanup();
 protected:
@@ -50,7 +43,7 @@ protected:
     RatingList *mTestRatingList = nullptr;
     BasicPredict *mPredict = nullptr;
     EvaluateOption *mEvaluateOption = nullptr;
-    EvaluateResult mEvaluateResult;
+    Json::Value mResult;
     DISALLOW_COPY_AND_ASSIGN(BasicEvaluate);
 };
 

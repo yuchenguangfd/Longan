@@ -7,6 +7,7 @@
 #include "basic_evaluate.h"
 #include "recsys/evaluate/evaluate_rating_delegate.h"
 #include "recsys/evaluate/evaluate_ranking_delegate.h"
+#include "recsys/evaluate/evaluate_coverage_delegate.h"
 #include "common/config/json_config_helper.h"
 #include "common/logging/logging.h"
 #include "common/error.h"
@@ -34,8 +35,10 @@ void BasicEvaluate::Evaluate() {
     LoadTestRatings();
     CreatePredict();
     CreateEvaluateOption();
+    mResult.clear();
     EvaluateRating();
     EvaluateRanking();
+    EvaluateCoverage();
     WriteResult();
     Cleanup();
 }
@@ -67,8 +70,9 @@ void BasicEvaluate::EvaluateRating() {
         evaluate = new EvaluateRatingDelegateST();
     }
     evaluate->Evaluate(mPredict, mTestRatingList, mEvaluateOption);
-    mEvaluateResult.MAE = evaluate->MAE();
-    mEvaluateResult.RMSE = evaluate->RMSE();
+    mResult["ratingResult"]["MAE"] = evaluate->MAE();
+    mResult["ratingResult"]["RMSE"] = evaluate->RMSE();
+    Log::I("recsys", "evaluate rating result = \n" + mResult["ratingResult"].toStyledString());
     delete evaluate;
 }
 
@@ -84,28 +88,36 @@ void BasicEvaluate::EvaluateRanking() {
         evaluate = new EvaluateRankingDelegateST();
     }
     evaluate->Evaluate(mPredict, rmat, mEvaluateOption);
-    mEvaluateResult.Precision = evaluate->Precision();
-    mEvaluateResult.Recall = evaluate->Recall();
-    mEvaluateResult.F1Score = evaluate->F1Score();
+    mResult["rankingResult"]["Precision"] = evaluate->Precision();
+    mResult["rankingResult"]["Recall"] = evaluate->Recall();
+    mResult["rankingResult"]["F1Score"] = evaluate->F1Score();
+    Log::I("recsys", "evaluate ranking result = \n" + mResult["rankingResult"].toStyledString());
     delete rmat;
+    delete evaluate;
+}
+
+void BasicEvaluate::EvaluateCoverage() {
+    if (!mEvaluateOption->EvaluateCoverage()) return;
+    Log::I("recsys", "BasicEvaluate::EvaluateCoverage()");
+    EvaluateCoverageDelegate *evaluate = nullptr;
+    if (mEvaluateOption->Accelerate()) {
+        evaluate = new EvaluateCoverageDelegateMT();
+    } else {
+        evaluate = new EvaluateCoverageDelegateST();
+    }
+    evaluate->Evaluate(mPredict, mTestRatingList, mEvaluateOption);
+    mResult["coverageResult"]["Coverage"] = evaluate->Coverage();
+    mResult["coverageResult"]["Entropy"] = evaluate->Entropy();
+    mResult["coverageResult"]["GiniIndex"] = evaluate->GiniIndex();
+    Log::I("recsys", "evaluate coverage result = \n" + mResult["coverageResult"].toStyledString());
     delete evaluate;
 }
 
 void BasicEvaluate::WriteResult() {
     Log::I("recsys", "BasicEvaluate::WriteResult()");
-    Json::Value result;
-    if (mEvaluateOption->EvaluateRating()) {
-        result["ratingResult"]["MAE"] = mEvaluateResult.MAE;
-        result["ratingResult"]["RMSE"] = mEvaluateResult.RMSE;
-    }
-    if (mEvaluateOption->EvaluateRanking()) {
-        result["rankingResult"]["Precision"] = mEvaluateResult.Precision;
-        result["rankingResult"]["Recall"] = mEvaluateResult.Recall;
-        result["rankingResult"]["F1Score"] = mEvaluateResult.F1Score;
-    }
-    Log::I("recsys", "result = \n" + result.toStyledString());
+    Log::I("recsys", "result = \n" + mResult.toStyledString());
     Log::I("recsys", "writing result to file = " + mResultFilepath);
-    JsonConfigHelper::WriteToFile(mResultFilepath, result);
+    JsonConfigHelper::WriteToFile(mResultFilepath, mResult);
 }
 
 void BasicEvaluate::Cleanup() {

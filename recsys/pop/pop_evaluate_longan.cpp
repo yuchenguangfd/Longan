@@ -18,7 +18,6 @@ int main(int argc, char **argv) {
     ::google::InitGoogleLogging(argv[0]);
     ::gflags::ParseCommandLineFlags(&argc, &argv, true);
     FLAGS_alsologtostderr = true;
-
     longan::PopEvaluate popEvaluate(
             FLAGS_ratingTrainFilepath, FLAGS_configFilepath,
             FLAGS_modelFilepath, FLAGS_ratingTestFilepath, FLAGS_resultFilepath);

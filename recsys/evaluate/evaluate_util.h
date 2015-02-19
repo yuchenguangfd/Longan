@@ -18,6 +18,8 @@ public:
     int NumThread() const { return mNumThread; }
     bool EvaluateRating() const { return mEvaluateRating; }
     bool EvaluateRanking() const { return mEvaluateRanking; }
+    bool EvaluateCoverage() const { return mEvaluateCoverage; }
+    bool EvaluateDiversity() const { return mEvaluateDiversity; }
     int RankingListSize() const { return mRankingListSize; }
     bool MonitorProgress() const { return mMonitorProgress; }
 private:
@@ -25,9 +27,12 @@ private:
     int mNumThread;
     bool mEvaluateRating;
     bool mEvaluateRanking;
+    bool mEvaluateCoverage;
+    bool mEvaluateDiversity;
     int  mRankingListSize;
     bool mMonitorProgress;
 };
+
 } //~ namespace longan
 
 #endif /* RECSYS_EVALUATE_EVALUATE_UTIL_H */

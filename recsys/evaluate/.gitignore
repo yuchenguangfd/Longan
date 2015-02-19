@@ -5,3 +5,6 @@
 /evaluate_ranking_delegate_unittest
 /evaluate_ranking_delegate_unittest.o
 /evaluate_util.o
+/evaluate_coverage_delegate_unittest
+/evaluate_coverage_delegate_unittest.o
+/evaluate_coverage_delegate.o

@@ -3,6 +3,7 @@ Import("env_recsys")
 env_recsys.lib_objects.append(env_recsys.Object("evaluate_util.cpp"))
 env_recsys.lib_objects.append(env_recsys.Object("evaluate_rating_delegate.cpp"))
 env_recsys.lib_objects.append(env_recsys.Object("evaluate_ranking_delegate.cpp"))
+env_recsys.lib_objects.append(env_recsys.Object("evaluate_coverage_delegate.cpp"))
 
 build_env = env_recsys.Clone()
 # add gtest support
@@ -15,3 +16,5 @@ build_env.Program("evaluate_rating_delegate_unittest",
                  ["evaluate_rating_delegate_unittest.cpp"])
 build_env.Program("evaluate_ranking_delegate_unittest",
                  ["evaluate_ranking_delegate_unittest.cpp"])
+build_env.Program("evaluate_coverage_delegate_unittest",
+                 ["evaluate_coverage_delegate_unittest.cpp"])

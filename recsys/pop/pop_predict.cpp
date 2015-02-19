@@ -8,26 +8,28 @@
 #include "common/logging/logging.h"
 #include "common/lang/binary_input_stream.h"
 #include "common/base/algorithm.h"
-#include "algorithm/sort/quick_sort.h"
+#include <algorithm>
 #include <cassert>
 
 namespace longan {
 
 void PopPredict::Init() {
     Log::I("recsys", "PopPredict::Init()");
-    LoadRatings();
+    LoadTrainRating();
     LoadModel();
-    SortItemAverages();
+    SortItemsByAverage();
 }
 
 void PopPredict::Cleanup() { }
 
-void PopPredict::LoadRatings() {
+void PopPredict::LoadTrainRating() {
+    Log::I("recsys", "PopPredict::LoadTrainRating()");
     RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    mRatingMatrix.Init(rlist);
+    mTrainRating.Init(rlist);
 }
 
 void PopPredict::LoadModel() {
+    Log::I("recsys", "PopPredict::LoadModel()");
     BinaryInputStream bis(mModelFilepath);
     int numItem;
     bis >> numItem;
@@ -35,33 +37,33 @@ void PopPredict::LoadModel() {
     for (int i = 0; i < numItem; ++i) {
         bis >> mItemAverages[i];
     }
-    assert(mItemAverages.size() == mRatingMatrix.NumItem());
+    assert(mItemAverages.size() == mTrainRating.NumItem());
 }
 
-void PopPredict::SortItemAverages() {
-    mSortedItemAverages.resize(mRatingMatrix.NumItem());
-    for (int i = 0; i < mRatingMatrix.NumItem(); ++i) {
+void PopPredict::SortItemsByAverage() {
+    Log::I("recsys", "PopPredict::SortItemsByAverage()");
+    mSortedItemAverages.resize(mTrainRating.NumItem());
+    for (int i = 0; i < mTrainRating.NumItem(); ++i) {
         mSortedItemAverages[i] = ItemRating(i, mItemAverages[i]);
     }
-    QuickSort sort;
-    sort(&mSortedItemAverages[0], mSortedItemAverages.size(),
-            [](const ItemRating& lhs, const ItemRating& rhs)->int {
-                return (lhs.Rating() > rhs.Rating()) ? -1: 1;
+    std::sort(mSortedItemAverages.begin(), mSortedItemAverages.end(),
+        [](const ItemRating& lhs, const ItemRating& rhs)->bool {
+            return (lhs.Rating() > rhs.Rating());
     });
 }
 
 float PopPredict::PredictRating(int userId, int itemId) const {
-    assert(itemId >= 0 && itemId < mRatingMatrix.NumItem());
-    float predictedRating = mItemAverages[itemId];
-    return predictedRating;
+    assert(itemId >= 0 && itemId < mTrainRating.NumItem());
+    float predRating = mItemAverages[itemId];
+    return predRating;
 }
 
 ItemIdList PopPredict::PredictTopNItem(int userId, int listSize) const {
-    assert(userId >= 0 && userId < mRatingMatrix.NumUser());
-    assert(listSize > 0 && listSize < mRatingMatrix.NumItem());
-    ItemIdList topNItem;
-    topNItem.reserve(listSize);
-    const auto& uv = mRatingMatrix.GetUserVector(userId);
+    assert(userId >= 0 && userId < mTrainRating.NumUser());
+    assert(listSize > 0);
+    ItemIdList topItems;
+    topItems.reserve(listSize);
+    const UserVec& uv = mTrainRating.GetUserVector(userId);
     for (int i = 0; i < mSortedItemAverages.size(); ++i) {
         int iid = mSortedItemAverages[i].ItemId();
         int pos = BSearch(iid, uv.Data(), uv.Size(),
@@ -69,16 +71,16 @@ ItemIdList PopPredict::PredictTopNItem(int userId, int listSize) const {
                 return lhs - rhs.ItemId();
             });
         if (pos == -1) {
-            topNItem.push_back(iid);
-            if (topNItem.size() == listSize) break;
+            topItems.push_back(iid);
+            if (topItems.size() == listSize) break;
         }
     }
-    if (topNItem.size() < listSize) {
-        for (int i = topNItem.size(); i < listSize; ++i) {
-            topNItem.push_back(-1);
+    if (topItems.size() < listSize) {
+        for (int i = topItems.size(); i < listSize; ++i) {
+            topItems.push_back(-1);
         }
     }
-    return std::move(topNItem);
+    return std::move(topItems);
 }
 
 } //~ namespace longan

@@ -9,7 +9,6 @@
 
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_matrix_as_users.h"
-#include <string>
 #include <vector>
 
 namespace longan {
@@ -22,11 +21,11 @@ public:
     virtual float PredictRating(int userId, int itemId) const override;
     virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
 private:
-    void LoadRatings();
+    void LoadTrainRating();
     void LoadModel();
-    void SortItemAverages();
+    void SortItemsByAverage();
 private:
-    RatingMatrixAsUsers<> mRatingMatrix;
+    RatingMatUsers mTrainRating;
     std::vector<float> mItemAverages;
     std::vector<ItemRating> mSortedItemAverages;
 };

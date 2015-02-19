@@ -78,6 +78,19 @@ TEST(RunningStd, All) {
     ASSERT_FLOAT_EQ(sqrt(8.25), rstd.CurrentStd());
 }
 
+TEST(RunningDistribution, All) {
+    RunningDistribution<int> rdist(10);
+    for (int i = 0; i < 100; ++i) {
+        rdist.Add(i, [](int val)->int {
+            return val / 10;
+        });
+    }
+    for (int i = 0; i < 10; ++i) {
+        ASSERT_EQ(10, rdist.CurrentFrequency(i));
+        ASSERT_DOUBLE_EQ(0.1, rdist.CurrentProbability(i));
+    }
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

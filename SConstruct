@@ -1,11 +1,13 @@
 Debug = True
-Release = not Debug
+CompileOptimize = True
 
 env = Environment()
 env.Append(CPPPATH = ["#"])
 env.Append(CCFLAGS = ["-std=c++0x"])  # C++11 support
-if (Release): 
+if not Debug: 
     env.Append(CPPDEFINES = ["NDEBUG"])
+if CompileOptimize:
+    env.Append(CCFLAGS = ["-O3", "-march=native", "-funroll-loops"])
 
 Export("env")
 

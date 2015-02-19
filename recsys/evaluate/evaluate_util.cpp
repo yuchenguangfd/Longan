@@ -22,7 +22,9 @@ EvaluateOption::EvaluateOption(const Json::Value& option) {
     }
     mEvaluateRating = option["evaluateRating"].asBool();
     mEvaluateRanking = option["evaluateRanking"].asBool();
-    if (mEvaluateRanking) {
+    mEvaluateCoverage = option["evaluateCoverage"].asBool();
+    mEvaluateDiversity = option["evaluateDiversity"].asBool();
+    if (mEvaluateRanking || mEvaluateCoverage || mEvaluateDiversity) {
         mRankingListSize = option["rankingListSize"].asInt();
         assert(mRankingListSize > 0);
     } else {

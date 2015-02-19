@@ -5,6 +5,8 @@
  */
 
 #include "pop_train.h"
+#include "recsys/base/rating_list.h"
+#include "recsys/base/rating_trait.h"
 #include "common/logging/logging.h"
 #include "common/lang/binary_output_stream.h"
 #include "common/error.h"
@@ -15,27 +17,16 @@ namespace longan {
 
 void PopTrain::Train() {
     Log::I("recsys", "PopTrain::Train()");
-    Log::I("recsys", "loading train rating, file = " + mRatingTrainFilepath);
-    mRatingList = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    Log::I("recsys", "compute average rating of items");
-    mItemsAverage.resize(mRatingList.NumItem());
-    for (int i = 0; i < mRatingList.NumRating(); ++i) {
-        const RatingRecord& rr = mRatingList[i];
-        mItemsAverage[rr.ItemId()].Add(rr.Rating());
-    }
-    SaveModel();
-}
-
-/**
- * Model file(a binary file) format layout:
- * numItem(int)|ItemAvg_0|ItemAvg_1|...|ItemAvg_n-1(float)
- */
-void PopTrain::SaveModel() {
-    Log::I("recsys", "saving model, file = " + mModelFilepath);
+    Log::I("recsys", "loading train rating from file %s...", mRatingTrainFilepath.c_str());
+    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
+    Log::I("recsys", "computing item average...");
+    RatingTrait trait;
+    trait.Init(rlist);
+    Log::I("recsys", "saving model to file %s...", mModelFilepath.c_str());
     BinaryOutputStream bos(mModelFilepath);
-    bos << mRatingList.NumItem();
-    for (int i = 0; i < mItemsAverage.size(); ++i) {
-        bos << mItemsAverage[i].CurrentAverage();
+    bos << rlist.NumItem();
+    for (int iid = 0; iid < rlist.NumItem(); ++iid) {
+        bos << trait.ItemAverage(iid);
     }
 }
 

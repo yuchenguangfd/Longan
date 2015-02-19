@@ -9,8 +9,8 @@
 
 #include "algorithm/data_structure/binary_heap.h"
 #include "common/math/math.h"
-#include <vector>
 #include <algorithm>
+#include <vector>
 #include <limits>
 
 namespace longan {
@@ -172,6 +172,26 @@ private:
     int mCount;
     T mSum;
     T mSqrSum;
+};
+
+template <class T>
+class RunningDistribution {
+public:
+    RunningDistribution(int binSize) : mCount(0), mFrequencies(binSize) { }
+    template <class CvtToBinId>
+    void Add(const T& val, CvtToBinId cvt) {
+        ++mFrequencies[cvt(val)];
+        ++mCount;
+    }
+    int CurrentFrequency(int binId) const {
+        return mFrequencies[binId];
+    }
+    double CurrentProbability(int binId) const {
+        return static_cast<double>(mFrequencies[binId]) / mCount;
+    }
+private:
+    int mCount;
+    std::vector<int> mFrequencies;
 };
 
 } //~ namespace longan
