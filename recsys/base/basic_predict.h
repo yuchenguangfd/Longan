@@ -25,6 +25,8 @@ public:
     virtual void Cleanup() = 0;
     virtual float PredictRating(int userId, int itemId) const = 0;
     virtual ItemIdList PredictTopNItem(int userId, int listSize) const = 0;
+    // return item-item similarity in range [0, 1]
+    virtual float ComputeItemSimilarity(int itemId1, int itemId2) const;
 protected:
     virtual void LoadConfig();
 protected:

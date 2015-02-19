@@ -20,6 +20,7 @@ public:
     bool EvaluateRanking() const { return mEvaluateRanking; }
     bool EvaluateCoverage() const { return mEvaluateCoverage; }
     bool EvaluateDiversity() const { return mEvaluateDiversity; }
+    bool EvaluateNovelty() const { return mEvaluateNovelty; }
     int RankingListSize() const { return mRankingListSize; }
     bool MonitorProgress() const { return mMonitorProgress; }
 private:
@@ -29,6 +30,7 @@ private:
     bool mEvaluateRanking;
     bool mEvaluateCoverage;
     bool mEvaluateDiversity;
+    bool mEvaluateNovelty;
     int  mRankingListSize;
     bool mMonitorProgress;
 };

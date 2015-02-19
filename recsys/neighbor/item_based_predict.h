@@ -24,6 +24,7 @@ public:
 	virtual void Cleanup() override;
     virtual float PredictRating(int userId, int itemId) const override;
     virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
+    virtual float ComputeItemSimilarity(int itemId1, int itemId2) const;
 private:
     void LoadRatings();
     void LoadModel();

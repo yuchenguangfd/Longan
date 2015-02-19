@@ -1,6 +1,6 @@
 /*
- * evaluate_rating_delegate.cpp
- * Created on: Jan 14, 2015
+ * evaluate_coverage_delegate.cpp
+ * Created on: Feb 19, 2015
  * Author: chenguangyu
  */
 

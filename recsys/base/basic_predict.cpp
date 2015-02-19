@@ -27,4 +27,8 @@ void BasicPredict::LoadConfig() {
     JsonConfigHelper::LoadFromFile(mConfigFilepath, mConfig);
 }
 
+float BasicPredict::ComputeItemSimilarity(int itemId1, int itemId2) const {
+    return 0.0f;
+}
+
 } //~ namespace longan

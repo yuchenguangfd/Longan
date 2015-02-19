@@ -166,4 +166,8 @@ ItemIdList ItemBasedPredict::PredictTopNItem(int userId, int listSize) const {
     return std::move(resultList);
 }
 
+float ItemBasedPredict::ComputeItemSimilarity(int itemId1, int itemId2) const {
+    // TODO
+    return 0.5;
+}
 } //~ namespace longan

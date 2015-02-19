@@ -8,6 +8,7 @@
 #include "recsys/evaluate/evaluate_rating_delegate.h"
 #include "recsys/evaluate/evaluate_ranking_delegate.h"
 #include "recsys/evaluate/evaluate_coverage_delegate.h"
+#include "recsys/evaluate/evaluate_diversity_delegate.h"
 #include "common/config/json_config_helper.h"
 #include "common/logging/logging.h"
 #include "common/error.h"
@@ -39,6 +40,7 @@ void BasicEvaluate::Evaluate() {
     EvaluateRating();
     EvaluateRanking();
     EvaluateCoverage();
+    EvaluateDiversity();
     WriteResult();
     Cleanup();
 }
@@ -57,19 +59,19 @@ void BasicEvaluate::LoadTestRatings() {
 
 void BasicEvaluate::CreateEvaluateOption() {
     Log::I("recsys", "BasicEvaluate::CreateEvaluateOption()");
-    mEvaluateOption = new EvaluateOption(mConfig["evaluateOption"]);
+    mOption = new EvaluateOption(mConfig["evaluateOption"]);
 }
 
 void BasicEvaluate::EvaluateRating() {
-    if (!mEvaluateOption->EvaluateRating()) return;
+    if (!mOption->EvaluateRating()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateRating()");
     EvaluateRatingDelegate *evaluate = nullptr;
-    if (mEvaluateOption->Accelerate()) {
+    if (mOption->Accelerate()) {
         evaluate = new EvaluateRatingDelegateMT();
     } else {
         evaluate = new EvaluateRatingDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestRatingList, mEvaluateOption);
+    evaluate->Evaluate(mPredict, mTestRatingList, mOption);
     mResult["ratingResult"]["MAE"] = evaluate->MAE();
     mResult["ratingResult"]["RMSE"] = evaluate->RMSE();
     Log::I("recsys", "evaluate rating result = \n" + mResult["ratingResult"].toStyledString());
@@ -77,17 +79,17 @@ void BasicEvaluate::EvaluateRating() {
 }
 
 void BasicEvaluate::EvaluateRanking() {
-    if (!mEvaluateOption->EvaluateRanking()) return;
+    if (!mOption->EvaluateRanking()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateRanking()");
     EvaluateRankingDelegate *evaluate = nullptr;
     RatingMatUsers *rmat = new RatingMatUsers();
     rmat->Init(*mTestRatingList);
-    if (mEvaluateOption->Accelerate()) {
+    if (mOption->Accelerate()) {
         evaluate = new EvaluateRankingDelegateMT();
     } else {
         evaluate = new EvaluateRankingDelegateST();
     }
-    evaluate->Evaluate(mPredict, rmat, mEvaluateOption);
+    evaluate->Evaluate(mPredict, rmat, mOption);
     mResult["rankingResult"]["Precision"] = evaluate->Precision();
     mResult["rankingResult"]["Recall"] = evaluate->Recall();
     mResult["rankingResult"]["F1Score"] = evaluate->F1Score();
@@ -97,19 +99,33 @@ void BasicEvaluate::EvaluateRanking() {
 }
 
 void BasicEvaluate::EvaluateCoverage() {
-    if (!mEvaluateOption->EvaluateCoverage()) return;
+    if (!mOption->EvaluateCoverage()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateCoverage()");
     EvaluateCoverageDelegate *evaluate = nullptr;
-    if (mEvaluateOption->Accelerate()) {
+    if (mOption->Accelerate()) {
         evaluate = new EvaluateCoverageDelegateMT();
     } else {
         evaluate = new EvaluateCoverageDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestRatingList, mEvaluateOption);
+    evaluate->Evaluate(mPredict, mTestRatingList, mOption);
     mResult["coverageResult"]["Coverage"] = evaluate->Coverage();
     mResult["coverageResult"]["Entropy"] = evaluate->Entropy();
     mResult["coverageResult"]["GiniIndex"] = evaluate->GiniIndex();
     Log::I("recsys", "evaluate coverage result = \n" + mResult["coverageResult"].toStyledString());
+    delete evaluate;
+}
+
+void BasicEvaluate::EvaluateDiversity() {
+    if (!mOption->EvaluateDiversity()) return;
+    Log::I("recsys", "BasicEvaluate::EvaluateDiversity()");
+    EvaluateDiversityDelegate *evaluate = nullptr;
+    if (mOption->Accelerate()) {
+        evaluate = new EvaluateDiversityDelegateMT();
+    } else {
+        evaluate = new EvaluateDiversityDelegateST();
+    }
+    evaluate->Evaluate(mPredict, mTestRatingList, mOption);
+    mResult["diversityResult"]["diversity"] = evaluate->Diversity();
     delete evaluate;
 }
 
@@ -123,7 +139,7 @@ void BasicEvaluate::WriteResult() {
 void BasicEvaluate::Cleanup() {
     mPredict->Cleanup();
     delete mPredict;
-    delete mEvaluateOption;
+    delete mOption;
     delete mTestRatingList;
 }
 

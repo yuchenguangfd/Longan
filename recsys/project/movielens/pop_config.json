@@ -4,7 +4,8 @@
 		"evaluateRating": true,
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
+		"evaluateDiversity": true,
 		"rankingListSize": 100,
-		"monitorProgress": true
+		"monitorProgress": false
 	}
 }

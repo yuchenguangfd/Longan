@@ -8,3 +8,6 @@
 /evaluate_coverage_delegate_unittest
 /evaluate_coverage_delegate_unittest.o
 /evaluate_coverage_delegate.o
+/evaluate_diversity_delegate_unittest
+/evaluate_diversity_delegate_unittest.o
+/evaluate_diversity_delegate.o

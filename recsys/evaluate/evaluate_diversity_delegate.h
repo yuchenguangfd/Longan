@@ -1,11 +1,11 @@
 /*
- * evaluate_coverage_delegate.h
- * Created on: Feb 12, 2015
+ * evaluate_diversity_delegate.h
+ * Created on: Feb 18, 2015
  * Author: chenguangyu
  */
 
-#ifndef RECSYS_EVALUATE_EVALUATE_COVERAGE_DELEGATE_H
-#define RECSYS_EVALUATE_EVALUATE_COVERAGE_DELEGATE_H
+#ifndef RECSYS_EVALUATE_EVALUATE_DIVERSITY_DELEGATE_H
+#define RECSYS_EVALUATE_EVALUATE_DIVERSITY_DELEGATE_H
 
 #include "evaluate_util.h"
 #include "common/threading/pipelined_scheduler.h"
@@ -15,45 +15,42 @@ namespace longan {
 class BasicPredict;
 class RatingList;
 
-class EvaluateCoverageDelegate {
+class EvaluateDiversityDelegate {
 public:
-    virtual ~EvaluateCoverageDelegate() { }
+    virtual ~EvaluateDiversityDelegate() { }
     virtual void Evaluate(const BasicPredict *predict, const RatingList *testData,
             const EvaluateOption *option) = 0;
-    double Coverage() const { return mCoverage; }
-    double Entropy() const { return mEntropy; }
-    double GiniIndex() const { return mGiniIndex; }
+    double Diversity() const { return mDiversity; }
 protected:
     const BasicPredict *mPredict = nullptr;
     const RatingList *mTestData = nullptr;
     const EvaluateOption *mOption = nullptr;
-    double mCoverage = 0.0;
-    double mEntropy = 0.0;
-    double mGiniIndex = 0.0;
+    double mDiversity = 0.0;
 };
 
-class EvaluateCoverageDelegateST : public EvaluateCoverageDelegate {
+class EvaluateDiversityDelegateST : public EvaluateDiversityDelegate {
 public:
     virtual void Evaluate(const BasicPredict *predict, const RatingList *testData,
             const EvaluateOption *option) override;
 };
 
-class EvaluateCoverageDelegateMT : public EvaluateCoverageDelegate, public PipelinedSchedulerClient {
+class EvaluateDiversityDelegateMT : public EvaluateDiversityDelegate, public PipelinedSchedulerClient {
 public:
     virtual void Evaluate(const BasicPredict *predict, const RatingList *testData,
             const EvaluateOption *option) override;
+private:
     virtual std::thread* CreateProducerThread() {
-        return new std::thread(&EvaluateCoverageDelegateMT::ProducerRun, this);
+        return new std::thread(&EvaluateDiversityDelegateMT::ProducerRun, this);
     }
     virtual std::thread* CreateWorkerThread() {
-        return new std::thread(&EvaluateCoverageDelegateMT::WorkerRun, this);
+        return new std::thread(&EvaluateDiversityDelegateMT::WorkerRun, this);
     }
     virtual std::thread* CreateConsumerThread() {
-        return new std::thread(&EvaluateCoverageDelegateMT::ConsumerRun, this);
+        return new std::thread(&EvaluateDiversityDelegateMT::ConsumerRun, this);
     }
     virtual std::thread* CreateMonitorThread() {
         return mOption->MonitorProgress() ?
-               new std::thread(&EvaluateCoverageDelegateMT::MonitorRun, this) :
+               new std::thread(&EvaluateDiversityDelegateMT::MonitorRun, this) :
                nullptr;
     }
 private:
@@ -62,17 +59,18 @@ private:
     void ConsumerRun();
     void MonitorRun();
 private:
-    static const int NUM_USER_PER_TASK = 1024;
     struct Task {
-        int userIdBegin;
-        int userIdEnd;
-        std::vector<int> itemFreqs;
+        int userId;
+        float userDiversity;
+        Task(int uid) : userId(uid), userDiversity(0.0f) { }
     };
-    PipelinedScheduler<Task> *mScheduler = nullptr;
+    static const int TASK_BUNDLE_SIZE = 1024;
+    typedef std::vector<Task> TaskBundle;
+    PipelinedScheduler<TaskBundle> *mScheduler = nullptr;
     int mTotoalTask = 0;
     int mProcessedTask = 0;
 };
 
 } //~ namespace longan
 
-#endif /* RECSYS_EVALUATE_EVALUATE_COVERAGE_DELEGATE_H */
+#endif /* RECSYS_EVALUATE_EVALUATE_DIVERSITY_DELEGATE_H */

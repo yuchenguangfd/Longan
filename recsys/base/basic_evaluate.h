@@ -31,6 +31,7 @@ protected:
     virtual void EvaluateRating();
     virtual void EvaluateRanking();
     virtual void EvaluateCoverage();
+    virtual void EvaluateDiversity();
     virtual void WriteResult();
     virtual void Cleanup();
 protected:
@@ -42,7 +43,7 @@ protected:
     Json::Value mConfig;
     RatingList *mTestRatingList = nullptr;
     BasicPredict *mPredict = nullptr;
-    EvaluateOption *mEvaluateOption = nullptr;
+    EvaluateOption *mOption = nullptr;
     Json::Value mResult;
     DISALLOW_COPY_AND_ASSIGN(BasicEvaluate);
 };
