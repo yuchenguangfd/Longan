@@ -7,7 +7,6 @@
 #include "evaluate_coverage_delegate.h"
 #include "recsys/base/basic_predict.h"
 #include "recsys/util/recsys_test_helper.h"
-#include <algorithm>
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -23,7 +22,6 @@ public:
         for (int i = 0; i < listSize; ++i) {
             list[i] = i;
         }
-        std::random_shuffle(list.begin(), list.end());
         return list;
     }
 };

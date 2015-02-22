@@ -9,6 +9,7 @@
 
 #include "evaluate_util.h"
 #include "common/threading/pipelined_scheduler.h"
+#include "common/util/running_statistic.h"
 
 namespace longan {
 
@@ -38,7 +39,6 @@ class EvaluateDiversityDelegateMT : public EvaluateDiversityDelegate, public Pip
 public:
     virtual void Evaluate(const BasicPredict *predict, const RatingList *testData,
             const EvaluateOption *option) override;
-private:
     virtual std::thread* CreateProducerThread() {
         return new std::thread(&EvaluateDiversityDelegateMT::ProducerRun, this);
     }
@@ -64,11 +64,12 @@ private:
         float userDiversity;
         Task(int uid) : userId(uid), userDiversity(0.0f) { }
     };
-    static const int TASK_BUNDLE_SIZE = 1024;
+    static const int TASK_BUNDLE_SIZE = 128;
     typedef std::vector<Task> TaskBundle;
     PipelinedScheduler<TaskBundle> *mScheduler = nullptr;
     int mTotoalTask = 0;
     int mProcessedTask = 0;
+    RunningAverage<double> mRunningDiversity;
 };
 
 } //~ namespace longan

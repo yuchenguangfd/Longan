@@ -33,9 +33,12 @@ void EvaluateRatingDelegateST::Evaluate(const BasicPredict *predict, const Ratin
 
 void EvaluateRatingDelegateMT::Evaluate(const BasicPredict *predict, const RatingList *testData,
         const EvaluateOption *option) {
+    assert(testData->NumRating() > 0);
     mPredict = predict;
     mTestData = testData;
     mOption = option;
+    mTotoalTask = mTestData->NumRating();
+    mProcessedTask = 0;
     mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, mOption->NumThread(), 1);
     mScheduler->Start();
     mScheduler->WaitFinish();
@@ -72,22 +75,20 @@ void EvaluateRatingDelegateMT::WorkerRun() {
 }
 
 void EvaluateRatingDelegateMT::ConsumerRun() {
-    mTotoalTask = mTestData->NumRating();
-    mProcessedTask = 0;
     while (true) {
         TaskBundle *currentBundle = mScheduler->ConsumerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
             double error = task.predRating - task.trueRating;
-            mMAERunningAvg.Add(Math::Abs(error));
-            mMSERunningAvg.Add(Math::Sqr(error));
+            mRunningMAE.Add(Math::Abs(error));
+            mRunningMSE.Add(Math::Sqr(error));
         }
         mProcessedTask += currentBundle->size();
         delete currentBundle;
     }
-    mMAE = mMAERunningAvg.CurrentAverage();
-    mRMSE = Math::Sqrt(mMSERunningAvg.CurrentAverage());
+    mMAE = mRunningMAE.CurrentAverage();
+    mRMSE = Math::Sqrt(mRunningMSE.CurrentAverage());
     mScheduler->ConsumerDone();
 }
 
@@ -97,7 +98,7 @@ void EvaluateRatingDelegateMT::MonitorRun() {
         int progress = static_cast<int>(100.0 * mProcessedTask / mTotoalTask);
         Log::Console("recsys", "Evaluate Rating...%d%%(%d/%d) done. current MAE=%lf, RMSE=%lf, total time=%.2lfs",
                 progress, mProcessedTask, mTotoalTask,
-                mMAERunningAvg.CurrentAverage(), Math::Sqrt(mMSERunningAvg.CurrentAverage()),
+                mRunningMAE.CurrentAverage(), Math::Sqrt(mRunningMSE.CurrentAverage()),
                 stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));

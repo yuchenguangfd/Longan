@@ -16,7 +16,7 @@ public:
     using BasicEvaluate::BasicEvaluate;
 protected:
     virtual void CreatePredict() override;
-    virtual void LoadTestRatings() override;
+    virtual void LoadTestData() override;
 };
 
 } //~ namespace longan

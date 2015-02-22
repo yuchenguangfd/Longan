@@ -5,6 +5,8 @@ env_recsys.lib_objects.append(env_recsys.Object("evaluate_rating_delegate.cpp"))
 env_recsys.lib_objects.append(env_recsys.Object("evaluate_ranking_delegate.cpp"))
 env_recsys.lib_objects.append(env_recsys.Object("evaluate_coverage_delegate.cpp"))
 env_recsys.lib_objects.append(env_recsys.Object("evaluate_diversity_delegate.cpp"))
+env_recsys.lib_objects.append(env_recsys.Object("evaluate_novelty_delegate.cpp"))
+
 build_env = env_recsys.Clone()
 # add gtest support
 build_env.Prepend(CPPPATH = "#/external/gtest/include",
@@ -20,3 +22,5 @@ build_env.Program("evaluate_coverage_delegate_unittest",
                  ["evaluate_coverage_delegate_unittest.cpp"])
 build_env.Program("evaluate_diversity_delegate_unittest",
                  ["evaluate_diversity_delegate_unittest.cpp"])
+build_env.Program("evaluate_novelty_delegate_unittest",
+                 ["evaluate_novelty_delegate_unittest.cpp"])

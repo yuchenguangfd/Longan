@@ -9,6 +9,7 @@
 #include "recsys/evaluate/evaluate_ranking_delegate.h"
 #include "recsys/evaluate/evaluate_coverage_delegate.h"
 #include "recsys/evaluate/evaluate_diversity_delegate.h"
+#include "recsys/evaluate/evaluate_novelty_delegate.h"
 #include "common/config/json_config_helper.h"
 #include "common/logging/logging.h"
 #include "common/error.h"
@@ -33,14 +34,16 @@ BasicEvaluate::~BasicEvaluate() { }
 void BasicEvaluate::Evaluate() {
     Log::I("recsys", "BasicEvaluate::Evaluate()");
     LoadConfig();
-    LoadTestRatings();
     CreatePredict();
     CreateEvaluateOption();
+    LoadTrainData();
+    LoadTestData();
     mResult.clear();
-    EvaluateRating();
-    EvaluateRanking();
-    EvaluateCoverage();
-    EvaluateDiversity();
+    if (mOption->EvaluateRating()) EvaluateRating();
+    if (mOption->EvaluateRanking()) EvaluateRanking();
+    if (mOption->EvaluateCoverage()) EvaluateCoverage();
+    if (mOption->EvaluateDiversity()) EvaluateDiversity();
+    if (mOption->EvaluateNovelty()) EvaluateNovelty();
     WriteResult();
     Cleanup();
 }
@@ -51,19 +54,29 @@ void BasicEvaluate::LoadConfig() {
     JsonConfigHelper::LoadFromFile(mConfigFilepath, mConfig);
 }
 
-void BasicEvaluate::LoadTestRatings() {
-    Log::I("recsys", "BasicEvaluate::LoadTestRatings()");
-    Log::I("recsys", "test rating file = " + mRatingTestFilepath);
-    mTestRatingList = new RatingList(RatingList::LoadFromBinaryFile(mRatingTestFilepath));
-}
-
 void BasicEvaluate::CreateEvaluateOption() {
     Log::I("recsys", "BasicEvaluate::CreateEvaluateOption()");
     mOption = new EvaluateOption(mConfig["evaluateOption"]);
 }
 
+void BasicEvaluate::LoadTrainData() {
+    if (mOption->EvaluateNovelty()) {
+        Log::I("recsys", "BasicEvaluate::LoadTrainData()");
+        Log::I("recsys", "train rating file = " + mRatingTrainFilepath);
+        mTrainData = new RatingList(RatingList::LoadFromBinaryFile(mRatingTrainFilepath));
+    }
+}
+
+void BasicEvaluate::LoadTestData() {
+    if (mOption->EvaluateRating() || mOption->EvaluateRanking()
+     || mOption->EvaluateCoverage() || mOption->EvaluateDiversity()) {
+        Log::I("recsys", "BasicEvaluate::LoadTestData()");
+        Log::I("recsys", "test rating file = " + mRatingTestFilepath);
+        mTestData = new RatingList(RatingList::LoadFromBinaryFile(mRatingTestFilepath));
+    }
+}
+
 void BasicEvaluate::EvaluateRating() {
-    if (!mOption->EvaluateRating()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateRating()");
     EvaluateRatingDelegate *evaluate = nullptr;
     if (mOption->Accelerate()) {
@@ -71,7 +84,7 @@ void BasicEvaluate::EvaluateRating() {
     } else {
         evaluate = new EvaluateRatingDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestRatingList, mOption);
+    evaluate->Evaluate(mPredict, mTestData, mOption);
     mResult["ratingResult"]["MAE"] = evaluate->MAE();
     mResult["ratingResult"]["RMSE"] = evaluate->RMSE();
     Log::I("recsys", "evaluate rating result = \n" + mResult["ratingResult"].toStyledString());
@@ -79,27 +92,22 @@ void BasicEvaluate::EvaluateRating() {
 }
 
 void BasicEvaluate::EvaluateRanking() {
-    if (!mOption->EvaluateRanking()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateRanking()");
     EvaluateRankingDelegate *evaluate = nullptr;
-    RatingMatUsers *rmat = new RatingMatUsers();
-    rmat->Init(*mTestRatingList);
     if (mOption->Accelerate()) {
         evaluate = new EvaluateRankingDelegateMT();
     } else {
         evaluate = new EvaluateRankingDelegateST();
     }
-    evaluate->Evaluate(mPredict, rmat, mOption);
+    evaluate->Evaluate(mPredict, mTestData, mOption);
     mResult["rankingResult"]["Precision"] = evaluate->Precision();
     mResult["rankingResult"]["Recall"] = evaluate->Recall();
     mResult["rankingResult"]["F1Score"] = evaluate->F1Score();
     Log::I("recsys", "evaluate ranking result = \n" + mResult["rankingResult"].toStyledString());
-    delete rmat;
     delete evaluate;
 }
 
 void BasicEvaluate::EvaluateCoverage() {
-    if (!mOption->EvaluateCoverage()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateCoverage()");
     EvaluateCoverageDelegate *evaluate = nullptr;
     if (mOption->Accelerate()) {
@@ -107,7 +115,7 @@ void BasicEvaluate::EvaluateCoverage() {
     } else {
         evaluate = new EvaluateCoverageDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestRatingList, mOption);
+    evaluate->Evaluate(mPredict, mTestData, mOption);
     mResult["coverageResult"]["Coverage"] = evaluate->Coverage();
     mResult["coverageResult"]["Entropy"] = evaluate->Entropy();
     mResult["coverageResult"]["GiniIndex"] = evaluate->GiniIndex();
@@ -116,7 +124,6 @@ void BasicEvaluate::EvaluateCoverage() {
 }
 
 void BasicEvaluate::EvaluateDiversity() {
-    if (!mOption->EvaluateDiversity()) return;
     Log::I("recsys", "BasicEvaluate::EvaluateDiversity()");
     EvaluateDiversityDelegate *evaluate = nullptr;
     if (mOption->Accelerate()) {
@@ -124,8 +131,23 @@ void BasicEvaluate::EvaluateDiversity() {
     } else {
         evaluate = new EvaluateDiversityDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestRatingList, mOption);
+    evaluate->Evaluate(mPredict, mTestData, mOption);
     mResult["diversityResult"]["diversity"] = evaluate->Diversity();
+    Log::I("recsys", "evaluate diversity result = \n" + mResult["diversityResult"].toStyledString());
+    delete evaluate;
+}
+
+void BasicEvaluate::EvaluateNovelty() {
+    Log::I("recsys", "BasicEvaluate::EvaluateNovelty()");
+    EvaluateNoveltyDelegate *evaluate = nullptr;
+    if (mOption->Accelerate()) {
+        evaluate = new EvaluateNoveltyDelegateMT();
+    } else {
+        evaluate = new EvaluateNoveltyDelegateST();
+    }
+    evaluate->Evaluate(mPredict, mTrainData, mOption);
+    mResult["noveltyResult"]["novelty"] = evaluate->Novelty();
+    Log::I("recsys", "evaluate novelty result = \n" + mResult["noveltyResult"].toStyledString());
     delete evaluate;
 }
 
@@ -140,7 +162,8 @@ void BasicEvaluate::Cleanup() {
     mPredict->Cleanup();
     delete mPredict;
     delete mOption;
-    delete mTestRatingList;
+    delete mTrainData;
+    delete mTestData;
 }
 
 } //~ namespace longan

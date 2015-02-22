@@ -1,54 +1,59 @@
 /*
- * evaluate_diversity_delegate.cpp
- * Created on: Feb 18, 2015
+ * evaluate_novelty_delegate.cpp
+ * Created on: Feb 19, 2015
  * Author: chenguangyu
  */
 
-#include "evaluate_diversity_delegate.h"
+#include "evaluate_novelty_delegate.h"
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_list.h"
+#include "recsys/base/rating_trait.h"
 #include "common/logging/logging.h"
 #include "common/time/stopwatch.h"
 
 namespace longan {
 
-void EvaluateDiversityDelegateST::Evaluate(const BasicPredict *predict, const RatingList *testData,
+void EvaluateNoveltyDelegateST::Evaluate(const BasicPredict *predict, const RatingList *trainData,
         const EvaluateOption *option) {
     mPredict = predict;
-    mTestData = testData;
+    mTrainData = trainData;
     mOption = option;
-    RunningAverage<double> runningDiversity;
-    for (int uid = 0; uid < mTestData->NumUser(); ++uid) {
-        ItemIdList itemList = predict->PredictTopNItem(uid, mOption->RankingListSize());
-        double sum = 0.0;
-        for (int i = 0; i < itemList.size(); ++i) {
-            for (int j = i + 1; j < itemList.size(); ++j) {
-                sum += mPredict->ComputeItemSimilarity(itemList[i], itemList[j]);
-            }
+    mRatingTrait = new RatingTrait();
+    mRatingTrait->Init(*trainData);
+    RunningAverage<double> runningNovelty;
+    for (int uid = 0; uid < mTrainData->NumUser(); ++uid) {
+        ItemIdList itemList = mPredict->PredictTopNItem(uid, mOption->RankingListSize());
+        double sum = 0;
+        for (int iid : itemList) {
+            sum += Math::Log(1.0 + mRatingTrait->ItemPopularity(iid));
         }
-        double userDiversity = 1.0 - sum / (itemList.size()*(itemList.size()-1)/2);
-        runningDiversity.Add(userDiversity);
+        sum /= itemList.size();
+        runningNovelty.Add(sum);
     }
-    mDiversity = runningDiversity.CurrentAverage();
+    mNovelty = runningNovelty.CurrentAverage();
+    delete mRatingTrait;
 }
 
-void EvaluateDiversityDelegateMT::Evaluate(const BasicPredict *predict, const RatingList *testData,
+void EvaluateNoveltyDelegateMT::Evaluate(const BasicPredict *predict, const RatingList *trainData,
         const EvaluateOption *option) {
     mPredict = predict;
-    mTestData = testData;
+    mTrainData = trainData;
     mOption = option;
-    mTotoalTask = mTestData->NumUser();
+    mRatingTrait = new RatingTrait();
+    mRatingTrait->Init(*trainData);
+    mTotoalTask = mTrainData->NumUser();
     mProcessedTask = 0;
     mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, mOption->NumThread(), 1);
     mScheduler->Start();
     mScheduler->WaitFinish();
     delete mScheduler;
+    delete mRatingTrait;
 }
 
-void EvaluateDiversityDelegateMT::ProducerRun() {
+void EvaluateNoveltyDelegateMT::ProducerRun() {
     TaskBundle *currentBundle = new TaskBundle();
     currentBundle->reserve(TASK_BUNDLE_SIZE);
-    for (int uid = 0; uid < mTestData->NumUser(); ++uid) {
+    for (int uid = 0; uid < mTrainData->NumUser(); ++uid) {
         if (currentBundle->size() == TASK_BUNDLE_SIZE) {
             mScheduler->ProducerPutTask(currentBundle);
             currentBundle = new TaskBundle();
@@ -60,52 +65,50 @@ void EvaluateDiversityDelegateMT::ProducerRun() {
     mScheduler->ProducerDone();
 }
 
-void EvaluateDiversityDelegateMT::WorkerRun() {
+void EvaluateNoveltyDelegateMT::WorkerRun() {
     while (true) {
         TaskBundle *currentBundle = mScheduler->WorkerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
             ItemIdList itemList = mPredict->PredictTopNItem(task.userId, mOption->RankingListSize());
-            double sum = 0.0;
-            for (int j = 0; j < itemList.size(); ++j) {
-                for (int k = j + 1; k < itemList.size(); ++k) {
-                    sum += mPredict->ComputeItemSimilarity(itemList[j], itemList[k]);
-                }
+            double sum = 0;
+            for (int iid : itemList) {
+                sum += Math::Log(1.0 + mRatingTrait->ItemPopularity(iid));
             }
-            task.userDiversity = 1.0 - sum / (itemList.size()*(itemList.size()-1)/2);
+            task.userNovelty = sum / itemList.size();
         }
         mScheduler->WorkerPutTask(currentBundle);
     }
     mScheduler->WorkerDone();
 }
 
-void EvaluateDiversityDelegateMT::ConsumerRun() {
+void EvaluateNoveltyDelegateMT::ConsumerRun() {
     while (true) {
         TaskBundle *currentBundle = mScheduler->ConsumerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            mRunningDiversity.Add(task.userDiversity);
+            mRunningNovelty.Add(task.userNovelty);
             ++mProcessedTask;
         }
         delete currentBundle;
     }
-    mDiversity = mRunningDiversity.CurrentAverage();
+    mNovelty = mRunningNovelty.CurrentAverage();
     mScheduler->ConsumerDone();
 }
 
-void EvaluateDiversityDelegateMT::MonitorRun() {
+void EvaluateNoveltyDelegateMT::MonitorRun() {
     Stopwatch stopwatch;
     while (true) {
         int progress = static_cast<int>(100.0 * mProcessedTask / mTotoalTask);
-        Log::Console("recsys", "Evaluate Diversity...%d%%(%d/%d)done. current diversity=%lf, total time=%.2lf",
+        Log::Console("recsys", "Evaluate Novelty...%d%%(%d/%d) done. current novelty=%lf, total time=%.2lfs",
                 progress, mProcessedTask, mTotoalTask,
-                mRunningDiversity.CurrentAverage(),
+                mRunningNovelty.CurrentAverage(),
                 stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
-    }
+   }
 }
 
 } //~ namespace longan

@@ -126,12 +126,12 @@ public:
         ++mCount;
         mSum += val;
     }
+    T CurrentSum() const { return mSum; }
+    int CurrentCount() const { return mCount; }
     T CurrentAverage() const {
         return (mCount == 0)? 0.0 : mSum / mCount;
     }
-    T CurrentMean() const {
-        return CurrentAverage();
-    }
+    T CurrentMean() const { return CurrentAverage(); }
 private:
     int mCount;
     T mSum;
@@ -150,12 +150,13 @@ public:
         mSum += val;
         mSqrSum += val * val;
     }
+    T CurrentSum() const { return mSum; }
+    T CurrentSqrSum() const { return mSqrSum; }
+    int CurrentCount() const { return mCount; }
     T CurrentMean() const {
         return (mCount == 0) ? 0.0 : mSum / mCount;
     }
-    T CurrentAverage() const {
-        return CurrentMean();
-    }
+    T CurrentAverage() const { return CurrentMean(); }
     T CurrentVar() const {
         if (mCount == 0) {
             return 0.0;
@@ -165,9 +166,7 @@ public:
             return m1 - m2 * m2;
         }
     }
-    T CurrentStd() const {
-        return Math::Sqrt(CurrentVar());
-    }
+    T CurrentStd() const { return Math::Sqrt(CurrentVar()); }
 private:
     int mCount;
     T mSum;

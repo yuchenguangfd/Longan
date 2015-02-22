@@ -20,12 +20,11 @@ void EvaluateCoverageDelegateST::Evaluate(const BasicPredict *predict, const Rat
     mPredict = predict;
     mTestData = testData;
     mOption = option;
-
     int N = mTestData->NumItem();
     std::vector<int> itemFreqs(N);
     int sumFreq = 0;
     for (int uid = 0; uid < mTestData->NumUser(); ++uid) {
-        ItemIdList itemList = predict->PredictTopNItem(uid, option->RankingListSize());
+        ItemIdList itemList = mPredict->PredictTopNItem(uid, mOption->RankingListSize());
         for (int iid : itemList) {
             ++itemFreqs[iid];
             ++sumFreq;
@@ -39,19 +38,19 @@ void EvaluateCoverageDelegateST::Evaluate(const BasicPredict *predict, const Rat
     mCoverage = static_cast<double>(count) / N;
 
     double sum = 0.0;
-    std::vector<double> pItems(N);
     for (int i = 0; i < N; ++i) {
-        pItems[i] = static_cast<double>(itemFreqs[i]) / sumFreq;;
-        if (pItems[i] > 0.0) {
-            sum += pItems[i] * Math::Log(pItems[i]);
+        if (itemFreqs[i] > 0) {
+            double p = static_cast<double>(itemFreqs[i]) / sumFreq;
+            sum += p * Math::Log(p);
         }
     }
     mEntropy = -sum;
 
-    std::sort(pItems.begin(), pItems.end());
+    std::sort(itemFreqs.begin(), itemFreqs.end());
     sum = 0.0;
     for (int i = 0; i < N; ++i) {
-        sum += (2*i+1-N) * pItems[i];
+        double p = static_cast<double>(itemFreqs[i]) / sumFreq;
+        sum += (2*i+1-N) * p;
     }
     mGiniIndex = sum / (N-1);
 }
@@ -61,6 +60,8 @@ void EvaluateCoverageDelegateMT::Evaluate(const BasicPredict *predict, const Rat
     mPredict = predict;
     mTestData = testData;
     mOption = option;
+    mTotoalTask = mTestData->NumUser();
+    mProcessedTask = 0;
     mScheduler = new PipelinedScheduler<Task>(this, 1, mOption->NumThread(), 1);
     mScheduler->Start();
     mScheduler->WaitFinish();
@@ -96,8 +97,6 @@ void EvaluateCoverageDelegateMT::WorkerRun() {
 }
 
 void EvaluateCoverageDelegateMT::ConsumerRun() {
-    mTotoalTask = mTestData->NumUser();
-    mProcessedTask = 0;
     std::vector<int> itemFreqs(mTestData->NumItem());
     int sumFreq = 0;
     while (true) {
@@ -119,19 +118,19 @@ void EvaluateCoverageDelegateMT::ConsumerRun() {
     mCoverage = static_cast<double>(count) / N;
 
     double sum = 0.0;
-    std::vector<double> pItems(N);
     for (int i = 0; i < N; ++i) {
-        pItems[i] = static_cast<double>(itemFreqs[i]) / sumFreq;
-        if (pItems[i] > 0.0) {
-            sum += pItems[i] * Math::Log(pItems[i]);
+        if (itemFreqs[i] > 0) {
+            double p = static_cast<double>(itemFreqs[i]) / sumFreq;
+            sum += p * Math::Log(p);
         }
     }
     mEntropy = -sum;
 
-    std::sort(pItems.begin(), pItems.end());
+    std::sort(itemFreqs.begin(), itemFreqs.end());
     sum = 0.0;
     for (int i = 0; i < N; ++i) {
-        sum += (2*i+1-N) * pItems[i];
+        double p = static_cast<double>(itemFreqs[i]) / sumFreq;
+        sum += (2*i+1-N) * p;
     }
     mGiniIndex = sum / (N-1);
 

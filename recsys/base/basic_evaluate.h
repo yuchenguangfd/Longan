@@ -25,13 +25,15 @@ public:
     virtual void Evaluate();
 protected:
     virtual void LoadConfig() final;
-    virtual void LoadTestRatings();
+    virtual void LoadTrainData();
+    virtual void LoadTestData();
     virtual void CreatePredict() = 0;
     virtual void CreateEvaluateOption();
     virtual void EvaluateRating();
     virtual void EvaluateRanking();
     virtual void EvaluateCoverage();
     virtual void EvaluateDiversity();
+    virtual void EvaluateNovelty();
     virtual void WriteResult();
     virtual void Cleanup();
 protected:
@@ -41,7 +43,8 @@ protected:
     const std::string mRatingTestFilepath;
     const std::string mResultFilepath;
     Json::Value mConfig;
-    RatingList *mTestRatingList = nullptr;
+    RatingList *mTrainData = nullptr;
+    RatingList *mTestData = nullptr;
     BasicPredict *mPredict = nullptr;
     EvaluateOption *mOption = nullptr;
     Json::Value mResult;

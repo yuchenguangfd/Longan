@@ -27,16 +27,14 @@ public:
 };
 
 TEST(EvaluateRankingDelegateTest, EvaluateRankingSTOK) {
-    RatingList rlist(2, 40);
+    RatingList testData(2, 40);
     for (int i = 0; i < 30; i += 2) {
-        rlist.Add(RatingRecord(0, i, 1.0f));
+        testData.Add(RatingRecord(0, i, 1.0f));
     }
     for (int i = 0; i < 40; i += 3) {
-        rlist.Add(RatingRecord(1, i, 1.0f));
+        testData.Add(RatingRecord(1, i, 1.0f));
     }
     BasicPredictStub predict;
-    RatingMatUsers testData;
-    testData.Init(rlist);
     EvaluateRankingDelegateST evaluate;
     Json::Value config;
     config["evaluateRanking"] = true;
@@ -49,13 +47,13 @@ TEST(EvaluateRankingDelegateTest, EvaluateRankingSTOK) {
 }
 
 TEST(EvaluateRankingDelegateTest, EvaluateRankingSTAndMTResultSame) {
-    BasicPredictStub predict;
-    RatingMatUsers testData = RecsysTestHelper::CreateRandomRatingMatrixAsUsers(500, 600, 10000);
+    RatingList testData = RecsysTestHelper::CreateRandomRatingList(50000, 600, 1000000);
     Json::Value config;
+    config["accelerate"] = true;
     config["evaluateRanking"] = true;
     config["rankingListSize"] = 50;
-    config["numThread"] = 4;
     EvaluateOption option(config);
+    BasicPredictStub predict;
     EvaluateRankingDelegateST evaluate1;
     EvaluateRankingDelegateMT evaluate2;
     evaluate1.Evaluate(&predict, &testData, &option);

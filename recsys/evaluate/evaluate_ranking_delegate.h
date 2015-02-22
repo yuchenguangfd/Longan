@@ -14,12 +14,12 @@
 namespace longan {
 
 class BasicPredict;
+class RatingList;
 
 class EvaluateRankingDelegate {
 public:
     virtual ~EvaluateRankingDelegate() { }
-    virtual void Evaluate(const BasicPredict *predict, const RatingMatUsers *testData,
-            const EvaluateOption *option) = 0;
+    virtual void Evaluate(const BasicPredict *predict, RatingList *testData, const EvaluateOption *option) = 0;
     double Precision() const { return mPrecision; }
     double Recall() const { return mRecall; }
     double F1Score() const { return mF1Score; }
@@ -27,9 +27,8 @@ protected:
     void EvaluateOneUser(int userId, const UserVec& userVec, int *hitCount, int* nPrecision, int *nRecall);
 protected:
     const BasicPredict *mPredict = nullptr;
-    const RatingMatUsers *mTestData = nullptr;
     const EvaluateOption *mOption = nullptr;
-    int mRankingListSize = 0;
+    RatingMatUsers *mTestData = nullptr;
     double mPrecision = 0.0;
     double mRecall = 0.0;
     double mF1Score = 0.0;
@@ -37,14 +36,12 @@ protected:
 
 class EvaluateRankingDelegateST : public EvaluateRankingDelegate {
 public:
-    virtual void Evaluate(const BasicPredict *predict, const RatingMatUsers *testData,
-            const EvaluateOption *option) override;
+    virtual void Evaluate(const BasicPredict *predict, RatingList *testData, const EvaluateOption *option) override;
 };
 
 class EvaluateRankingDelegateMT : public EvaluateRankingDelegate, public PipelinedSchedulerClient {
 public:
-    virtual void Evaluate(const BasicPredict *predict, const RatingMatUsers *testData,
-            const EvaluateOption *option) override;
+    virtual void Evaluate(const BasicPredict *predict, RatingList *testData, const EvaluateOption *option) override;
     virtual std::thread* CreateProducerThread() {
         return new std::thread(&EvaluateRankingDelegateMT::ProducerRun, this);
     }
@@ -75,7 +72,6 @@ private:
     static const int TASK_BUNDLE_SIZE = 128;
     typedef std::vector<Task> TaskBundle;
     PipelinedScheduler<TaskBundle> *mScheduler = nullptr;
-
     int mTotoalTask = 0;
     int mProcessedTask = 0;
     int mRunningHitCount = 0;

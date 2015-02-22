@@ -49,21 +49,25 @@ void RatingTrait::Init(const RatingList& rlist) {
     mStd = runningAllStd.CurrentStd();
     mUserMins.resize(mNumUser);
     mUserMaxs.resize(mNumUser);
+    mUserPopularities.resize(mNumUser);
     mUserAverages.resize(mNumUser);
     mUserStds.resize(mNumUser);
     for (int uid = 0; uid < mNumUser; ++uid) {
         mUserMins[uid] = userRunningMins[uid].CurrentMin();
         mUserMaxs[uid] = userRunningMaxs[uid].CurrentMax();
+        mUserPopularities[uid] = userRunningStds[uid].CurrentSum();
         mUserAverages[uid] = userRunningStds[uid].CurrentMean();
         mUserStds[uid] = userRunningStds[uid].CurrentStd();
     }
     mItemMins.resize(mNumItem);
     mItemMaxs.resize(mNumItem);
+    mItemPopularities.resize(mNumItem);
     mItemAverages.resize(mNumItem);
     mItemStds.resize(mNumItem);
     for (int iid = 0; iid < mNumItem; ++iid) {
         mItemMins[iid] = itemRunningMins[iid].CurrentMin();
         mItemMaxs[iid] = itemRunningMaxs[iid].CurrentMax();
+        mItemPopularities[iid] = itemRunningStds[iid].CurrentSum();
         mItemAverages[iid] = itemRunningStds[iid].CurrentMean();
         mItemStds[iid] = itemRunningStds[iid].CurrentStd();
     }

@@ -17,7 +17,7 @@ void SVDEvaluate::CreatePredict() {
     mPredict->Init();
 }
 
-void SVDEvaluate::LoadTestRatings() {
+void SVDEvaluate::LoadTestData() {
     Log::I("recsys", "SVDEvaluate::LoadTestRatings()");
     BinaryInputStream bis(mRatingTestFilepath);
     int numRating, numUser, numItem;
@@ -31,7 +31,7 @@ void SVDEvaluate::LoadTestRatings() {
         bis >> uid >> iid >> rating;
         rlist.Add(RatingRecord(uid, iid, rating));
     }
-    mTestRatingList = new RatingList(std::move(rlist));
+    mTestData = new RatingList(std::move(rlist));
 }
 
 } //~ namespace longan

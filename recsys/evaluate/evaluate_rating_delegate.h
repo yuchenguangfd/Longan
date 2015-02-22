@@ -8,8 +8,8 @@
 #define RECSYS_EVALUATE_EVALUATE_RATING_DELEGATE_H
 
 #include "evaluate_util.h"
-#include "common/util/running_statistic.h"
 #include "common/threading/pipelined_scheduler.h"
+#include "common/util/running_statistic.h"
 
 namespace longan {
 
@@ -72,11 +72,10 @@ private:
     static const int TASK_BUNDLE_SIZE = 1024;
     typedef std::vector<Task> TaskBundle;
     PipelinedScheduler<TaskBundle> *mScheduler = nullptr;
-
     int mTotoalTask = 0;
     int mProcessedTask = 0;
-    RunningAverage<double> mMAERunningAvg;
-    RunningAverage<double> mMSERunningAvg;
+    RunningAverage<double> mRunningMAE;
+    RunningAverage<double> mRunningMSE;
 };
 
 } //~ namespace longan

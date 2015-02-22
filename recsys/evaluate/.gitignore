@@ -11,3 +11,6 @@
 /evaluate_diversity_delegate_unittest
 /evaluate_diversity_delegate_unittest.o
 /evaluate_diversity_delegate.o
+/evaluate_novelty_delegate_unittest
+/evaluate_novelty_delegate_unittest.o
+/evaluate_novelty_delegate.o

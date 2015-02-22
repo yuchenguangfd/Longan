@@ -19,44 +19,18 @@ public:
     void Init(const RatingList& rlist);
     float Min() const { return mMin; }
     float Max() const { return mMax; }
-    float UserMin(int userId) const {
-        assert(userId >= 0 && userId < mUserMins.size());
-        return mUserMins[userId];
-    }
-    float UserMax(int userId) const {
-        assert(userId >= 0 && userId < mUserMaxs.size());
-        return mUserMaxs[userId];
-    }
-    float ItemMin(int itemId) const {
-        assert(itemId >= 0 && itemId < mItemMins.size());
-        return mItemMins[itemId];
-    }
-    float ItemMax(int itemId) const {
-        assert(itemId >= 0 && itemId < mItemMaxs.size());
-        return mItemMaxs[itemId];
-    }
-    float Average() const {
-        return mAverage;
-    }
-    float Std() const {
-        return mStd;
-    }
-    float UserAverage(int userId) const {
-        assert(userId >= 0 && userId < mUserAverages.size());
-        return mUserAverages[userId];
-    }
-    float UserStd(int userId) const {
-        assert(userId >= 0 && userId < mUserStds.size());
-        return mUserStds[userId];
-    }
-    float ItemAverage(int itemId) const {
-        assert(itemId >= 0 && itemId < mItemAverages.size());
-        return mItemAverages[itemId];
-    }
-    float ItemStd(int itemId) const {
-        assert(itemId >= 0 && itemId < mItemStds.size());
-        return mItemStds[itemId];
-    }
+    float UserMin(int userId) const { return mUserMins[userId]; }
+    float UserMax(int userId) const { return mUserMaxs[userId]; }
+    float ItemMin(int itemId) const { return mItemMins[itemId]; }
+    float ItemMax(int itemId) const { return mItemMaxs[itemId]; }
+    float Average() const { return mAverage; }
+    float Std() const { return mStd; }
+    float UserPopularity(int userId) const { return mUserPopularities[userId]; }
+    float UserAverage(int userId) const { return mUserAverages[userId]; }
+    float UserStd(int userId) const { return mUserStds[userId]; }
+    float ItemPopularity(int itemId) const { return mItemPopularities[itemId]; }
+    float ItemAverage(int itemId) const { return mItemAverages[itemId]; }
+    float ItemStd(int itemId) const { return mItemStds[itemId]; }
 private:
     int mNumRating;
     int mNumUser;
@@ -71,9 +45,11 @@ private:
 
     float mAverage;
     float mStd;
+    std::vector<float> mUserPopularities;
     std::vector<float> mUserAverages;
-    std::vector<float> mItemAverages;
     std::vector<float> mUserStds;
+    std::vector<float> mItemPopularities;
+    std::vector<float> mItemAverages;
     std::vector<float> mItemStds;
 };
 

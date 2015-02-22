@@ -5,9 +5,9 @@
  */
 
 #include "evaluate_ranking_delegate.h"
-#include "common/base/algorithm.h"
 #include "recsys/base/rating_list.h"
 #include "recsys/base/basic_predict.h"
+#include "common/base/algorithm.h"
 #include "common/time/stopwatch.h"
 #include "common/logging/logging.h"
 #include <cassert>
@@ -16,7 +16,7 @@ namespace longan {
 
 void EvaluateRankingDelegate::EvaluateOneUser(int userId, const UserVec& userVec, int *hitCount, int* nPrecision,
         int *nRecall) {
-    ItemIdList itemList = mPredict->PredictTopNItem(userId, mRankingListSize);
+    ItemIdList itemList = mPredict->PredictTopNItem(userId, mOption->RankingListSize());
     int hit = 0;
     for (int i = 0; i < itemList.size(); ++i) {
         int pos = BSearch(itemList[i], userVec.Begin(), userVec.Size(),
@@ -32,11 +32,11 @@ void EvaluateRankingDelegate::EvaluateOneUser(int userId, const UserVec& userVec
     *nRecall += userVec.Size();
 }
 
-void EvaluateRankingDelegateST::Evaluate(const BasicPredict *predict, const RatingMatUsers *testData,
-        const EvaluateOption *option) {
+void EvaluateRankingDelegateST::Evaluate(const BasicPredict *predict, RatingList *testData, const EvaluateOption *option) {
     mPredict = predict;
-    mTestData = testData;
-    mRankingListSize = option->RankingListSize();
+    mTestData = new RatingMatUsers();
+    mTestData->Init(*testData);
+    mOption = option;
     int hitCount = 0, nPrecision = 0, nRecall = 0;
     for (int uid = 0; uid < mTestData->NumUser(); ++uid) {
         EvaluateOneUser(uid, mTestData->GetUserVector(uid), &hitCount, &nPrecision, &nRecall);
@@ -44,18 +44,21 @@ void EvaluateRankingDelegateST::Evaluate(const BasicPredict *predict, const Rati
     mPrecision = static_cast<double>(hitCount) / nPrecision;
     mRecall = static_cast<double>(hitCount) / nRecall;
     mF1Score = 2.0 * (mPrecision * mRecall) / (mPrecision + mRecall);
+    delete mTestData;
 }
 
-void EvaluateRankingDelegateMT::Evaluate(const BasicPredict *predict, const RatingMatUsers *testData,
-        const EvaluateOption *option) {
+void EvaluateRankingDelegateMT::Evaluate(const BasicPredict *predict, RatingList *testData, const EvaluateOption *option) {
     mPredict = predict;
-    mTestData = testData;
+    mTestData = new RatingMatUsers();
+    mTestData->Init(*testData);
     mOption = option;
-    mRankingListSize = option->RankingListSize();
+    mTotoalTask = mTestData->NumUser();
+    mProcessedTask = 0;
     mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, mOption->NumThread(), 1);
     mScheduler->Start();
     mScheduler->WaitFinish();
     delete mScheduler;
+    delete mTestData;
 }
 
 void EvaluateRankingDelegateMT::ProducerRun() {
@@ -88,8 +91,6 @@ void EvaluateRankingDelegateMT::WorkerRun() {
 }
 
 void EvaluateRankingDelegateMT::ConsumerRun() {
-    mTotoalTask = mTestData->NumUser();
-    mProcessedTask = 0;
     mRunningHitCount = 0;
     mRunningNPrecision = 0;
     mRunningNRecall = 0;

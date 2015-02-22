@@ -62,12 +62,12 @@ private:
     void ConsumerRun();
     void MonitorRun();
 private:
-    static const int NUM_USER_PER_TASK = 1024;
     struct Task {
         int userIdBegin;
         int userIdEnd;
         std::vector<int> itemFreqs;
     };
+    static const int NUM_USER_PER_TASK = 128;
     PipelinedScheduler<Task> *mScheduler = nullptr;
     int mTotoalTask = 0;
     int mProcessedTask = 0;

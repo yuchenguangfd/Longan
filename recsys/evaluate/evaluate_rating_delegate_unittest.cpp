@@ -39,12 +39,12 @@ TEST(EvaluateRatingDelegateTest, EvaluateRatingSTOK) {
 }
 
 TEST(EvaluateRatingDelegateTest, EvaluateRatingSTAndMTResultSame) {
-    RatingList rlist = RecsysTestHelper::CreateRandomRatingList(500, 600, 10000);
+    RatingList rlist = RecsysTestHelper::CreateRandomRatingList(50000, 600, 1000000);
     BasicPredictStub predict;
     EvaluateRatingDelegateST evaluate1;
     EvaluateRatingDelegateMT evaluate2;
     Json::Value config;
-    config["numThread"] = 4;
+    config["accelerate"] = true;
     EvaluateOption option(config);
     evaluate1.Evaluate(&predict, &rlist, &option);
     evaluate2.Evaluate(&predict, &rlist, &option);
