@@ -13,6 +13,22 @@
 
 namespace longan {
 
+class PopPredictOption {
+public:
+    PopPredictOption(const Json::Value& option);
+    bool PredictRatingByItemAverage() const { return mPredictRatingByItemAverage; }
+    bool PredictRatingByUserAverage() const { return mPredictRatingByUserAverage; }
+    bool PredictRankingByItemAverage() const { return mPredictRankingByItemAverage; }
+    bool PredictRankingByItemPopularity() const { return mPredictRankingByItemPopularity; }
+    bool RoundInt() const { return mRoundIntRating; }
+private:
+    bool mPredictRatingByItemAverage;
+    bool mPredictRatingByUserAverage;
+    bool mPredictRankingByItemAverage;
+    bool mPredictRankingByItemPopularity;
+    bool mRoundIntRating;
+};
+
 class PopPredict : public BasicPredict {
 public:
     using BasicPredict::BasicPredict;
@@ -21,13 +37,17 @@ public:
     virtual float PredictRating(int userId, int itemId) const override;
     virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
 private:
-    void LoadTrainRating();
+    void CreateOption();
+    void LoadTrainData();
     void LoadModel();
-    void SortItemsByAverage();
+    void SortItemRatings();
 private:
-    RatingMatUsers mTrainRating;
+    const PopPredictOption *mOption = nullptr;
+    RatingMatUsers *mTrainData = nullptr;
+    std::vector<float> mUserAverages;
     std::vector<float> mItemAverages;
-    std::vector<ItemRating> mSortedItemAverages;
+    std::vector<float> mItemPopularities;
+    std::vector<ItemRating> mSortedItemRatings;
 };
 
 } //~ namespace longan

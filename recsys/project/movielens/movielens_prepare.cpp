@@ -6,7 +6,7 @@
 
 #include "movielens_prepare.h"
 #include "common/logging/logging.h"
-#include "common/system/file_util.h"
+#include "common/config/json_config_helper.h"
 #include "common/util/string_helper.h"
 #include "common/util/array_helper.h"
 #include "common/lang/integer.h"
@@ -43,11 +43,7 @@ void MovielensPrepare::Prepare() {
 void MovielensPrepare::LoadConfig() {
     Log::I("recsys", "MovielensPrepare::LoadConfig()");
     Log::I("recsys", "config file = " + mConfigFilepath);
-    std::string content = FileUtil::LoadFileContent(mConfigFilepath);
-    Json::Reader reader;
-    if (!reader.parse(content, mConfig)) {
-        throw LonganFileFormatError();
-    }
+    JsonConfigHelper::LoadFromFile(mConfigFilepath, mConfig);
 }
 
 void MovielensPrepare::PrepareDataset100K() {
@@ -63,15 +59,14 @@ void MovielensPrepare::PrepareDataset100K() {
 
 void MovielensPrepare::PrepareDataset100K_ReadItemInfo() {
     Log::I("recsys", "MovielensPrepare::PrepareDataset100K_ReadItemInfo()");
-    using namespace std;
-    ifstream fin;
-    string itemInfoFile = mInputDirpath + "/ml-100k/u.item";
+    std::ifstream fin;
+    std::string itemInfoFile = mInputDirpath + "/ml-100k/u.item";
     fin.open(itemInfoFile.c_str());
     assert(!fin.fail());
     mMovies.clear();
-    string line;
-    while (getline(fin, line)) {
-        vector<string> lineFields = StringHelper::Split(line, "|", false);
+    std::string line;
+    while (std::getline(fin, line)) {
+        std::vector<std::string> lineFields = StringHelper::Split(line, "|", false);
         Movie movie;
         movie.id = Integer::ParseInt(lineFields[0]);
         movie.title = PrepareDataset100K_ExtractTitle(lineFields[1]);
@@ -79,42 +74,39 @@ void MovielensPrepare::PrepareDataset100K_ReadItemInfo() {
         mMovies.push_back(movie);
     }
     // sort by movie's distribution year
-    sort(mMovies.begin(), mMovies.end(),
+    std::sort(mMovies.begin(), mMovies.end(),
             [](const Movie& lhs, const Movie& rhs){
         return lhs.year < rhs.year;
     });
 }
 
 std::string MovielensPrepare::PrepareDataset100K_ExtractTitle(const std::string& s) {
-    using namespace std;
     if (s == "unknown") return s;
     auto begPos = 0;
     auto endPos = s.find('(');
-    assert(endPos != string::npos);
-    string title = s.substr(begPos, endPos - begPos);
+    assert(endPos != std::string::npos);
+    std::string title = s.substr(begPos, endPos - begPos);
     return title;
 }
 
 int MovielensPrepare::PrepareDataset100K_ExtractYear(const std::string& s) {
-    using namespace std;
     if (s.empty()) return 9999;
     auto begPos = s.rfind('-') + 1;
-    assert(begPos != string::npos);
+    assert(begPos != std::string::npos);
     std::string yearStr = s.substr(begPos);
     return Integer::ParseInt(yearStr);
 }
 
 void MovielensPrepare::PrepareDataset100K_ReadRatings() {
     Log::I("recsys", "MovielensPrepare::PrepareDataset100K_ReadRatings()");
-    using namespace std;
-    ifstream fin;
-    string ratingFile = mInputDirpath + "/ml-100k/u.data";
+    std::ifstream fin;
+    std::string ratingFile = mInputDirpath + "/ml-100k/u.data";
     fin.open(ratingFile.c_str());
     assert(!fin.fail());
     mRatings.clear();
-    string line;
-    while (getline(fin, line)) {
-        istringstream iss(line);
+    std::string line;
+    while (std::getline(fin, line)) {
+        std::istringstream iss(line);
         int userId, itemId, rating, timestamp;
         iss >> userId >> itemId >> rating >> timestamp;
         RatingRecordWithTime *rr = new RatingRecordWithTime(userId, itemId, rating, timestamp);
@@ -122,7 +114,7 @@ void MovielensPrepare::PrepareDataset100K_ReadRatings() {
     }
     mNumRating = mRatings.size();
     // sort by rating's timestamp
-    sort(mRatings.begin(), mRatings.end(),
+    std::sort(mRatings.begin(), mRatings.end(),
             [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs) {
         return lhs->Timestamp() < rhs->Timestamp();
     });
@@ -141,15 +133,14 @@ void MovielensPrepare::PrepareDataset1M() {
 
 void MovielensPrepare::PrepareDataset1M_ReadItemInfo() {
     Log::I("recsys", "MovielensPrepare::PrepareDataset1M_ReadItemInfo()");
-    using namespace std;
-    ifstream fin;
-    string itemInfoFile = mInputDirpath + "/ml-1m/movies.dat";
+    std::ifstream fin;
+    std::string itemInfoFile = mInputDirpath + "/ml-1m/movies.dat";
     fin.open(itemInfoFile.c_str());
     assert(!fin.fail());
     mMovies.clear();
-    string line;
-    while (getline(fin, line)) {
-        vector<string> lineFields = StringHelper::Split(line, "::", false);
+    std::string line;
+    while (std::getline(fin, line)) {
+        std::vector<std::string> lineFields = StringHelper::Split(line, "::", false);
         Movie movie;
         movie.id = Integer::ParseInt(lineFields[0]);
         movie.title = PrepareDataset1M_ExtractTitle(lineFields[1]);
@@ -157,42 +148,39 @@ void MovielensPrepare::PrepareDataset1M_ReadItemInfo() {
         mMovies.push_back(movie);
     }
     // sort by movie's distribution year
-    sort(mMovies.begin(), mMovies.end(),
+    std::sort(mMovies.begin(), mMovies.end(),
             [](const Movie& lhs, const Movie& rhs){
         return lhs.year < rhs.year;
     });
 }
 
 std::string MovielensPrepare::PrepareDataset1M_ExtractTitle(const std::string& s) {
-    using namespace std;
     auto begPos = 0;
     auto endPos = s.rfind('(');
-    assert(endPos != string::npos);
-    string title = s.substr(begPos, endPos - begPos);
+    assert(endPos != std::string::npos);
+    std::string title = s.substr(begPos, endPos - begPos);
     return title;
 }
 
 int MovielensPrepare::PrepareDataset1M_ExtractYear(const std::string& s) {
-    using namespace std;
     auto begPos = s.rfind('(');
     auto endPos = s.rfind(')');
-    assert(begPos != string::npos && endPos != string::npos);
+    assert(begPos != std::string::npos && endPos != std::string::npos);
     ++begPos;
-    string yearStr = s.substr(begPos, endPos - begPos);
+    std::string yearStr = s.substr(begPos, endPos - begPos);
     return Integer::ParseInt(yearStr);
 }
 
 void MovielensPrepare::PrepareDataset1M_ReadRatings(){
     Log::I("recsys", "MovielensPrepare::PrepareDataset1M_ReadRatings()");;
-    using namespace std;
-    ifstream fin;
-    string ratingFile = mInputDirpath + "/ml-1m/ratings.dat";
+    std::ifstream fin;
+    std::string ratingFile = mInputDirpath + "/ml-1m/ratings.dat";
     fin.open(ratingFile.c_str());
     assert(!fin.fail());
     mRatings.clear();
-    string line;
-    while (getline(fin, line)) {
-        vector<string> lineFields = StringHelper::Split(line, "::", false);
+    std::string line;
+    while (std::getline(fin, line)) {
+        std::vector<std::string> lineFields = StringHelper::Split(line, "::", false);
         assert(lineFields.size() == 4);
         int userId = Integer::ParseInt(lineFields[0]);
         int itemId = Integer::ParseInt(lineFields[1]);
@@ -203,7 +191,7 @@ void MovielensPrepare::PrepareDataset1M_ReadRatings(){
     }
     mNumRating = mRatings.size();
     // sort by rating's timestamp
-    sort(mRatings.begin(), mRatings.end(),
+    std::sort(mRatings.begin(), mRatings.end(),
             [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs) {
         return lhs->Timestamp() < rhs->Timestamp();
     });
@@ -222,15 +210,14 @@ void MovielensPrepare::PrepareDataset10M() {
 
 void MovielensPrepare::PrepareDataset10M_ReadItemInfo() {
     Log::I("recsys", "MovielensPrepare::PrepareDataset10M_ReadItemInfo()");
-    using namespace std;
-    ifstream fin;
-    string itemInfoFile = mInputDirpath + "/ml-10M100K/movies.dat";
+    std::ifstream fin;
+    std::string itemInfoFile = mInputDirpath + "/ml-10M100K/movies.dat";
     fin.open(itemInfoFile.c_str());
     assert(!fin.fail());
     mMovies.clear();
-    string line;
-    while (getline(fin, line)) {
-        vector<string> lineFields = StringHelper::Split(line, "::", false);
+    std::string line;
+    while (std::getline(fin, line)) {
+        std::vector<std::string> lineFields = StringHelper::Split(line, "::", false);
         Movie movie;
         movie.id = Integer::ParseInt(lineFields[0]);
         movie.title = PrepareDataset10M_ExtractTitle(lineFields[1]);
@@ -238,7 +225,7 @@ void MovielensPrepare::PrepareDataset10M_ReadItemInfo() {
         mMovies.push_back(movie);
     }
     // sort by movie's distribution year
-    sort(mMovies.begin(), mMovies.end(),
+    std::sort(mMovies.begin(), mMovies.end(),
             [](const Movie& lhs, const Movie& rhs){
         return lhs.year < rhs.year;
     });
@@ -255,15 +242,14 @@ int MovielensPrepare::PrepareDataset10M_ExtractYear(const std::string& s) {
 
 void MovielensPrepare::PrepareDataset10M_ReadRatings() {
     Log::I("recsys", "MovielensPrepare::PrepareDataset10M_ReadRatings()");
-    using namespace std;
-    ifstream fin;
-    string ratingFile = mInputDirpath + "/ml-10M100K/ratings.dat";
+    std::ifstream fin;
+    std::string ratingFile = mInputDirpath + "/ml-10M100K/ratings.dat";
     fin.open(ratingFile.c_str());
     assert(!fin.fail());
     mRatings.clear();
-    string line;
-    while (getline(fin, line)) {
-        vector<string> lineFields = StringHelper::Split(line, "::", false);
+    std::string line;
+    while (std::getline(fin, line)) {
+        std::vector<std::string> lineFields = StringHelper::Split(line, "::", false);
         assert(lineFields.size() == 4);
         int userId = Integer::ParseInt(lineFields[0]);
         int itemId = Integer::ParseInt(lineFields[1]);
@@ -274,7 +260,7 @@ void MovielensPrepare::PrepareDataset10M_ReadRatings() {
     }
     mNumRating = mRatings.size();
     // sort by rating's timestamp
-    sort(mRatings.begin(), mRatings.end(),
+    std::sort(mRatings.begin(), mRatings.end(),
             [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs) {
         return lhs->Timestamp() < rhs->Timestamp();
     });
@@ -282,7 +268,6 @@ void MovielensPrepare::PrepareDataset10M_ReadRatings() {
 
 void MovielensPrepare::GenerateUserIdMapping() {
     Log::I("recsys", "MovielensPrepare::GenerateUserIdMapping()");
-    using namespace std;
     mUserIdMap.clear();
     int userCount = 0;
     for (int i = 0; i < mRatings.size(); ++i) {
@@ -294,18 +279,17 @@ void MovielensPrepare::GenerateUserIdMapping() {
     }
     mNumUser = userCount;
 
-    string filename = mOutputDirpath + "/user_id_mapping.txt";
-    ofstream fout(filename.c_str());
+    std::string filename = mOutputDirpath + "/user_id_mapping.txt";
+    std::ofstream fout(filename.c_str());
     assert(!fout.fail());
-    fout << mNumUser << endl;
+    fout << mNumUser << std::endl;
     for (auto it = mUserIdMap.begin(); it != mUserIdMap.end(); ++it) {
-        fout << it->first << ',' << it->second << endl;
+        fout << it->first << ',' << it->second << std::endl;
     }
 }
 
 void MovielensPrepare::GenerateItemIdMapping() {
     Log::I("recsys", "MovielensPrepare::GenerateItemIdMapping()");
-    using namespace std;
     mItemIdMap.clear();
     int itemCount = 0;
     for (int i = 0; i < mRatings.size(); ++i) {
@@ -317,20 +301,19 @@ void MovielensPrepare::GenerateItemIdMapping() {
     }
     mNumItem = itemCount;
 
-    string filename = mOutputDirpath + "/item_id_mapping.txt";
-    ofstream fout(filename.c_str());
+    std::string filename = mOutputDirpath + "/item_id_mapping.txt";
+    std::ofstream fout(filename.c_str());
     assert(!fout.fail());
-    fout << mNumItem << endl;
+    fout << mNumItem << std::endl;
     for (auto it = mItemIdMap.begin(); it != mItemIdMap.end(); ++it) {
-       fout << it->first << "," << it->second << endl;
+       fout << it->first << "," << it->second << std::endl;
     }
 }
 
 void MovielensPrepare::GenerateMovieData() {
     Log::I("recsys", "MovielensPrepare::GenerateMovieData()");
-    using namespace std;
-    string filename = mOutputDirpath + "/movie.txt";
-    ofstream fout(filename.c_str());
+    std::string filename = mOutputDirpath + "/movie.txt";
+    std::ofstream fout(filename.c_str());
     assert(!fout.fail());
 
     int countValidMovie = 0;
@@ -340,61 +323,60 @@ void MovielensPrepare::GenerateMovieData() {
         }    
     }
 
-    fout << countValidMovie << endl;
+    fout << countValidMovie << std::endl;
     for (auto& movie : mMovies) {
         if (mItemIdMap.find(movie.id) != mItemIdMap.end()) {
             fout << mItemIdMap[movie.id] << "," 
                  << movie.year << ","
-                 << movie.title << endl;
+                 << movie.title << std::endl;
         }
     }
 }
 
 void MovielensPrepare::GenerateRatingData() {
     Log::I("recsys", "MovielensPrepare::GenerateRatingData()");
-    using namespace std;
     ArrayHelper::RandomShuffle(&mRatings[0], mRatings.size());
     double trainRatio = mConfig["trainRatio"].asDouble();
     int splitPos = static_cast<int>(mNumRating * trainRatio);
     
-    string filenameTrain = mOutputDirpath + "/rating_train.txt";
+    std::string filenameTrain = mOutputDirpath + "/rating_train.txt";
     Log::I("recsys", "writing train ratings to file = " + filenameTrain);
-    ofstream fout1(filenameTrain.c_str());
+    std::ofstream fout1(filenameTrain.c_str());
     assert(!fout1.fail());
-    sort(&mRatings[0], &mRatings[splitPos],
+    std::sort(&mRatings[0], &mRatings[splitPos],
         [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs) {
             return lhs->Timestamp() < rhs->Timestamp();
         });
     int numTrainRatings = splitPos;
     fout1 << numTrainRatings << ","
           << mNumUser << ","
-          << mNumItem << endl;
+          << mNumItem << std::endl;
     for (int i = 0; i < splitPos; ++i) {
         RatingRecordWithTime& rating = *mRatings[i];
         fout1 << mUserIdMap[rating.UserId()] << "," 
               << mItemIdMap[rating.ItemId()] << ","
               << rating.Rating() << "," 
-              << rating.Timestamp() << endl;
+              << rating.Timestamp() << std::endl;
     }
 
-    string filenameTest = mOutputDirpath + "/rating_test.txt";
+    std::string filenameTest = mOutputDirpath + "/rating_test.txt";
     Log::I("recsys", "writing test ratings to file: " + filenameTest);
-    ofstream fout2(filenameTest.c_str());
+    std::ofstream fout2(filenameTest.c_str());
     assert(!fout2.fail());
-    sort(&mRatings[splitPos], &mRatings[0] + mRatings.size(),
+    std::sort(&mRatings[splitPos], &mRatings[0] + mRatings.size(),
         [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs) {
             return lhs->Timestamp() < rhs->Timestamp();
         });
     int numTestRatings = mRatings.size() - numTrainRatings;
     fout2 << numTestRatings << ","
           << mNumUser << ","
-          << mNumItem << endl;
+          << mNumItem << std::endl;
     for (int i = splitPos; i < mRatings.size(); ++i) {
         RatingRecordWithTime& rating = *mRatings[i];
         fout2 << mUserIdMap[rating.UserId()] << "," 
               << mItemIdMap[rating.ItemId()] << ","
               << rating.Rating() << "," 
-              << rating.Timestamp() << endl;
+              << rating.Timestamp() << std::endl;
     }
 }
 

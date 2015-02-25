@@ -1,10 +1,15 @@
 {
+	"predictOption": {
+		"predictRatingBy": "itemAverage",
+		"predictRankingBy": "itemPopularity",
+		"roundIntRating": false
+	},
 	"evaluateOption": {
-		"accelerate": true, 
+		"accelerate": false, 
 		"evaluateRating": true,
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
-		"evaluateDiversity": true,
+		"evaluateNovelty": true,
 		"rankingListSize": 100,
 		"monitorProgress": false
 	}
