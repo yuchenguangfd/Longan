@@ -37,9 +37,8 @@ TEST(EvaluateRankingDelegateTest, EvaluateRankingSTOK) {
     BasicPredictStub predict;
     EvaluateRankingDelegateST evaluate;
     Json::Value config;
-    config["evaluateRanking"] = true;
-    config["rankingListSize"] = 10;
     EvaluateOption option(config);
+    option.SetCurrentRankingListSize(10);
     evaluate.Evaluate(&predict, &testData, &option);
     ASSERT_DOUBLE_EQ(0.45, evaluate.Precision());
     ASSERT_DOUBLE_EQ(0.31034482758620691, evaluate.Recall());
@@ -50,17 +49,18 @@ TEST(EvaluateRankingDelegateTest, EvaluateRankingSTAndMTResultSame) {
     RatingList testData = RecsysTestHelper::CreateRandomRatingList(50000, 600, 1000000);
     Json::Value config;
     config["accelerate"] = true;
-    config["evaluateRanking"] = true;
-    config["rankingListSize"] = 50;
     EvaluateOption option(config);
     BasicPredictStub predict;
     EvaluateRankingDelegateST evaluate1;
     EvaluateRankingDelegateMT evaluate2;
-    evaluate1.Evaluate(&predict, &testData, &option);
-    evaluate2.Evaluate(&predict, &testData, &option);
-    ASSERT_DOUBLE_EQ(evaluate1.Precision(), evaluate2.Precision());
-    ASSERT_DOUBLE_EQ(evaluate1.Recall(), evaluate2.Recall());
-    ASSERT_DOUBLE_EQ(evaluate1.F1Score(), evaluate2.F1Score());
+    for (int size = 10; size <= 50; size += 10) {
+        option.SetCurrentRankingListSize(size);
+        evaluate1.Evaluate(&predict, &testData, &option);
+        evaluate2.Evaluate(&predict, &testData, &option);
+        ASSERT_DOUBLE_EQ(evaluate1.Precision(), evaluate2.Precision());
+        ASSERT_DOUBLE_EQ(evaluate1.Recall(), evaluate2.Recall());
+        ASSERT_DOUBLE_EQ(evaluate1.F1Score(), evaluate2.F1Score());
+    }
 }
 
 int main(int argc, char **argv) {

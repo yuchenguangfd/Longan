@@ -81,6 +81,7 @@ void EvaluateDiversityDelegateMT::WorkerRun() {
 }
 
 void EvaluateDiversityDelegateMT::ConsumerRun() {
+    mRunningDiversity.Reset();
     while (true) {
         TaskBundle *currentBundle = mScheduler->ConsumerGetTask();
         if (currentBundle == nullptr) break;

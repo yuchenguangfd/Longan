@@ -36,9 +36,8 @@ TEST(EvaluateNoveltyDelegateTest, EvaluateNoveltySTOK) {
     BasicPredictStub predict;
     EvaluateNoveltyDelegateST evaluate;
     Json::Value config;
-    config["evaluateNovelty"] = true;
-    config["rankingListSize"] = 5;
     EvaluateOption option(config);
+    option.SetCurrentRankingListSize(5);
     evaluate.Evaluate(&predict, &trainData, &option);
     ASSERT_DOUBLE_EQ(0.9574983485564091, evaluate.Novelty());
 }
@@ -50,12 +49,13 @@ TEST(EvaluateNoveltyDelegateTest, EvaluateNoveltySTAndMTResultSame) {
     EvaluateNoveltyDelegateMT evaluate2;
     Json::Value config;
     config["accelerate"] = true;
-    config["evaluateNovelty"] = true;
-    config["rankingListSize"] = 50;
     EvaluateOption option(config);
-    evaluate1.Evaluate(&predict, &trainData, &option);
-    evaluate2.Evaluate(&predict, &trainData, &option);
-    ASSERT_FLOAT_EQ(evaluate1.Novelty(), evaluate2.Novelty());
+    for (int size = 10; size <= 50; size += 10) {
+        option.SetCurrentRankingListSize(size);
+        evaluate1.Evaluate(&predict, &trainData, &option);
+        evaluate2.Evaluate(&predict, &trainData, &option);
+        ASSERT_FLOAT_EQ(evaluate1.Novelty(), evaluate2.Novelty());
+    }
 }
 
 int main(int argc, char **argv) {

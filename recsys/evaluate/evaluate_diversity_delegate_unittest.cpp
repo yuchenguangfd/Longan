@@ -34,9 +34,8 @@ TEST(EvaluateDiversityDelegateTest, EvaluateDiversitySTOK) {
     BasicPredictStub predict;
     EvaluateDiversityDelegateST evaluate;
     Json::Value config;
-    config["evaluateDiversity"] = true;
-    config["rankingListSize"] = 10;
     EvaluateOption option(config);
+    option.SetCurrentRankingListSize(10);
     evaluate.Evaluate(&predict, &testData, &option);
     ASSERT_DOUBLE_EQ(0.25, evaluate.Diversity());
 }
@@ -48,12 +47,13 @@ TEST(EvaluateDiversityDelegateTest, EvaluateDiversitySTAndMTResultSame) {
     EvaluateDiversityDelegateMT evaluate2;
     Json::Value config;
     config["accelerate"] = true;
-    config["evaluateCoverage"] = true;
-    config["rankingListSize"] = 50;
     EvaluateOption option(config);
-    evaluate1.Evaluate(&predict, &testData, &option);
-    evaluate2.Evaluate(&predict, &testData, &option);
-    ASSERT_DOUBLE_EQ(evaluate1.Diversity(), evaluate2.Diversity());
+    for (int size = 10; size <= 50; size += 10) {
+        option.SetCurrentRankingListSize(size);
+        evaluate1.Evaluate(&predict, &testData, &option);
+        evaluate2.Evaluate(&predict, &testData, &option);
+        ASSERT_DOUBLE_EQ(evaluate1.Diversity(), evaluate2.Diversity());
+    }
 }
 
 int main(int argc, char **argv) {

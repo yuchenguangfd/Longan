@@ -105,8 +105,8 @@ float PopPredict::PredictRating(int userId, int itemId) const {
 ItemIdList PopPredict::PredictTopNItem(int userId, int listSize) const {
     assert(userId >= 0 && userId < mTrainData->NumUser());
     assert(listSize > 0);
-    ItemIdList topItems;
-    topItems.reserve(listSize);
+    ItemIdList topItems(listSize);
+    int count = 0;
     const UserVec& uv = mTrainData->GetUserVector(userId);
     for (int i = 0; i < mSortedItemRatings.size(); ++i) {
         int iid = mSortedItemRatings[i].ItemId();
@@ -115,13 +115,10 @@ ItemIdList PopPredict::PredictTopNItem(int userId, int listSize) const {
                 return lhs - rhs.ItemId();
             });
         if (pos == -1) {
-            topItems.push_back(iid);
-            if (topItems.size() == listSize) break;
-        }
-    }
-    if (topItems.size() < listSize) {
-        for (int i = topItems.size(); i < listSize; ++i) {
-            topItems.push_back(-1);
+            topItems[count++] = iid;
+            if (count == listSize) {
+                break;
+            }
         }
     }
     return std::move(topItems);

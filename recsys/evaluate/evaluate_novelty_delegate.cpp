@@ -84,6 +84,7 @@ void EvaluateNoveltyDelegateMT::WorkerRun() {
 }
 
 void EvaluateNoveltyDelegateMT::ConsumerRun() {
+    mRunningNovelty.Reset();
     while (true) {
         TaskBundle *currentBundle = mScheduler->ConsumerGetTask();
         if (currentBundle == nullptr) break;

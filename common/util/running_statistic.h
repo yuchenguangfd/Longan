@@ -122,6 +122,10 @@ public:
         mCount = 0;
         mSum = initSum;
     }
+    void Reset(T initSum = T()) {
+        mCount = 0;
+        mSum = initSum;
+    }
     void Add(const T& val) {
         ++mCount;
         mSum += val;
