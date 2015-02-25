@@ -10,7 +10,7 @@
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
 		"evaluateNovelty": true,
-		"rankingListSize": 100,
+		"rankingListSizes": [20, 40, 60, 80, 100, 200, 300, 400, 500],
 		"monitorProgress": false
 	}
 }

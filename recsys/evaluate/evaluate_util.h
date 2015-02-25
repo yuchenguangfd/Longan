@@ -8,6 +8,7 @@
 #define RECSYS_EVALUATE_EVALUATE_UTIL_H
 
 #include <json/json.h>
+#include <vector>
 
 namespace longan {
 
@@ -21,8 +22,10 @@ public:
     bool EvaluateCoverage() const { return mEvaluateCoverage; }
     bool EvaluateDiversity() const { return mEvaluateDiversity; }
     bool EvaluateNovelty() const { return mEvaluateNovelty; }
-    int RankingListSize() const { return mRankingListSize; }
+    const std::vector<int>& RankingListSizes() const { return mRankingListSizes; }
     bool MonitorProgress() const { return mMonitorProgress; }
+    int CurrentRankingListSize() const { return mCurrentRankingListSize; }
+    void SetCurrentRankingListSize(int size) { mCurrentRankingListSize = size; }
 private:
     bool mAccelerate;
     int mNumThread;
@@ -31,8 +34,10 @@ private:
     bool mEvaluateCoverage;
     bool mEvaluateDiversity;
     bool mEvaluateNovelty;
-    int  mRankingListSize;
+    std::vector<int> mRankingListSizes;
     bool mMonitorProgress;
+
+    int mCurrentRankingListSize;
 };
 
 } //~ namespace longan

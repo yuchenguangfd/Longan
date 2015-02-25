@@ -26,10 +26,13 @@ EvaluateOption::EvaluateOption(const Json::Value& option) {
     mEvaluateDiversity = option["evaluateDiversity"].asBool();
     mEvaluateNovelty = option["evaluateNovelty"].asBool();
     if (mEvaluateRanking || mEvaluateCoverage || mEvaluateDiversity || mEvaluateNovelty) {
-        mRankingListSize = option["rankingListSize"].asInt();
-        assert(mRankingListSize > 0);
-    } else {
-        mRankingListSize = 0;
+        int n = option["rankingListSizes"].size();
+        assert(n > 0);
+        mRankingListSizes.resize(n);
+        for (int i = 0; i < n; ++i) {
+            mRankingListSizes[i] = option["rankingListSizes"][i].asInt();
+            assert(mRankingListSizes[i] > 0);
+        }
     }
     mMonitorProgress = option["monitorProgress"].asBool();
 }

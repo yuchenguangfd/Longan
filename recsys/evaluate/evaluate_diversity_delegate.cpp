@@ -19,7 +19,7 @@ void EvaluateDiversityDelegateST::Evaluate(const BasicPredict *predict, const Ra
     mOption = option;
     RunningAverage<double> runningDiversity;
     for (int uid = 0; uid < mTestData->NumUser(); ++uid) {
-        ItemIdList itemList = predict->PredictTopNItem(uid, mOption->RankingListSize());
+        ItemIdList itemList = predict->PredictTopNItem(uid, mOption->CurrentRankingListSize());
         double sum = 0.0;
         for (int i = 0; i < itemList.size(); ++i) {
             for (int j = i + 1; j < itemList.size(); ++j) {
@@ -66,7 +66,7 @@ void EvaluateDiversityDelegateMT::WorkerRun() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            ItemIdList itemList = mPredict->PredictTopNItem(task.userId, mOption->RankingListSize());
+            ItemIdList itemList = mPredict->PredictTopNItem(task.userId, mOption->CurrentRankingListSize());
             double sum = 0.0;
             for (int j = 0; j < itemList.size(); ++j) {
                 for (int k = j + 1; k < itemList.size(); ++k) {

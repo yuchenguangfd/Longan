@@ -99,10 +99,14 @@ void BasicEvaluate::EvaluateRanking() {
     } else {
         evaluate = new EvaluateRankingDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestData, mOption);
-    mResult["rankingResult"]["Precision"] = evaluate->Precision();
-    mResult["rankingResult"]["Recall"] = evaluate->Recall();
-    mResult["rankingResult"]["F1Score"] = evaluate->F1Score();
+    for (int size : mOption->RankingListSizes()) {
+        Log::I("recsys", "evaluating ranking list size = %d", size);
+        mOption->SetCurrentRankingListSize(size);
+        evaluate->Evaluate(mPredict, mTestData, mOption);
+        mResult["rankingResult"]["Precision"].append(evaluate->Precision());
+        mResult["rankingResult"]["Recall"].append(evaluate->Recall());
+        mResult["rankingResult"]["F1Score"].append(evaluate->F1Score());
+    }
     Log::I("recsys", "evaluate ranking result = \n" + mResult["rankingResult"].toStyledString());
     delete evaluate;
 }
@@ -115,10 +119,14 @@ void BasicEvaluate::EvaluateCoverage() {
     } else {
         evaluate = new EvaluateCoverageDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestData, mOption);
-    mResult["coverageResult"]["Coverage"] = evaluate->Coverage();
-    mResult["coverageResult"]["Entropy"] = evaluate->Entropy();
-    mResult["coverageResult"]["GiniIndex"] = evaluate->GiniIndex();
+    for (int size : mOption->RankingListSizes()) {
+        Log::I("recsys", "evaluating ranking list size = %d", size);
+        mOption->SetCurrentRankingListSize(size);
+        evaluate->Evaluate(mPredict, mTestData, mOption);
+        mResult["coverageResult"]["Coverage"].append(evaluate->Coverage());
+        mResult["coverageResult"]["Entropy"].append(evaluate->Entropy());
+        mResult["coverageResult"]["GiniIndex"].append(evaluate->GiniIndex());
+    }
     Log::I("recsys", "evaluate coverage result = \n" + mResult["coverageResult"].toStyledString());
     delete evaluate;
 }
@@ -131,8 +139,12 @@ void BasicEvaluate::EvaluateDiversity() {
     } else {
         evaluate = new EvaluateDiversityDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTestData, mOption);
-    mResult["diversityResult"]["diversity"] = evaluate->Diversity();
+    for (int size : mOption->RankingListSizes()) {
+        Log::I("recsys", "evaluating ranking list size = %d", size);
+        mOption->SetCurrentRankingListSize(size);
+        evaluate->Evaluate(mPredict, mTestData, mOption);
+        mResult["diversityResult"]["diversity"].append(evaluate->Diversity());
+    }
     Log::I("recsys", "evaluate diversity result = \n" + mResult["diversityResult"].toStyledString());
     delete evaluate;
 }
@@ -145,8 +157,12 @@ void BasicEvaluate::EvaluateNovelty() {
     } else {
         evaluate = new EvaluateNoveltyDelegateST();
     }
-    evaluate->Evaluate(mPredict, mTrainData, mOption);
-    mResult["noveltyResult"]["novelty"] = evaluate->Novelty();
+    for (int size : mOption->RankingListSizes()) {
+        Log::I("recsys", "evaluating ranking list size = %d", size);
+        mOption->SetCurrentRankingListSize(size);
+        evaluate->Evaluate(mPredict, mTrainData, mOption);
+        mResult["noveltyResult"]["novelty"].append(evaluate->Novelty());
+    }
     Log::I("recsys", "evaluate novelty result = \n" + mResult["noveltyResult"].toStyledString());
     delete evaluate;
 }

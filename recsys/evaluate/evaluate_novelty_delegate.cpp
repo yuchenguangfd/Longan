@@ -22,7 +22,7 @@ void EvaluateNoveltyDelegateST::Evaluate(const BasicPredict *predict, const Rati
     mRatingTrait->Init(*trainData);
     RunningAverage<double> runningNovelty;
     for (int uid = 0; uid < mTrainData->NumUser(); ++uid) {
-        ItemIdList itemList = mPredict->PredictTopNItem(uid, mOption->RankingListSize());
+        ItemIdList itemList = mPredict->PredictTopNItem(uid, mOption->CurrentRankingListSize());
         double sum = 0;
         for (int iid : itemList) {
             sum += Math::Log(1.0 + mRatingTrait->ItemPopularity(iid));
@@ -71,7 +71,7 @@ void EvaluateNoveltyDelegateMT::WorkerRun() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            ItemIdList itemList = mPredict->PredictTopNItem(task.userId, mOption->RankingListSize());
+            ItemIdList itemList = mPredict->PredictTopNItem(task.userId, mOption->CurrentRankingListSize());
             double sum = 0;
             for (int iid : itemList) {
                 sum += Math::Log(1.0 + mRatingTrait->ItemPopularity(iid));

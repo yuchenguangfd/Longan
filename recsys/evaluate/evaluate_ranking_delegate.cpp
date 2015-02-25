@@ -16,7 +16,7 @@ namespace longan {
 
 void EvaluateRankingDelegate::EvaluateOneUser(int userId, const UserVec& userVec, int *hitCount, int* nPrecision,
         int *nRecall) {
-    ItemIdList itemList = mPredict->PredictTopNItem(userId, mOption->RankingListSize());
+    ItemIdList itemList = mPredict->PredictTopNItem(userId, mOption->CurrentRankingListSize());
     int hit = 0;
     for (int i = 0; i < itemList.size(); ++i) {
         int pos = BSearch(itemList[i], userVec.Begin(), userVec.Size(),

@@ -24,7 +24,7 @@ void EvaluateCoverageDelegateST::Evaluate(const BasicPredict *predict, const Rat
     std::vector<int> itemFreqs(N);
     int sumFreq = 0;
     for (int uid = 0; uid < mTestData->NumUser(); ++uid) {
-        ItemIdList itemList = mPredict->PredictTopNItem(uid, mOption->RankingListSize());
+        ItemIdList itemList = mPredict->PredictTopNItem(uid, mOption->CurrentRankingListSize());
         for (int iid : itemList) {
             ++itemFreqs[iid];
             ++sumFreq;
@@ -86,7 +86,7 @@ void EvaluateCoverageDelegateMT::WorkerRun() {
         Task *task = mScheduler->WorkerGetTask();
         if (task == nullptr) break;
         for (int uid = task->userIdBegin; uid < task->userIdEnd; ++uid) {
-            ItemIdList itemList = mPredict->PredictTopNItem(uid, mOption->RankingListSize());
+            ItemIdList itemList = mPredict->PredictTopNItem(uid, mOption->CurrentRankingListSize());
             for (int iid : itemList) {
                 ++task->itemFreqs[iid];
             }
