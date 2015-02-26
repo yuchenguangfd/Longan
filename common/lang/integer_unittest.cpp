@@ -18,6 +18,8 @@ TEST(IntegerTest, ParseIntOK) {
     EXPECT_EQ(-12034, Integer::ParseInt(s1));
     EXPECT_EQ(1234, Integer::ParseInt(s2));
     EXPECT_EQ(12, Integer::ParseInt(s3));
+    string s4 = "12345678910111213";
+    EXPECT_EQ(12345678910111213LL, Integer::ParseInt64(s4));
 }
 
 TEST(IntegerTest, ToStringOK) {

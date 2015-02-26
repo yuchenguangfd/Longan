@@ -9,8 +9,21 @@
 
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_matrix_as_users.h"
+#include <mutex>
 
 namespace longan {
+
+class RandomPredictOption {
+public:
+    RandomPredictOption(const Json::Value& option);
+    double RatingRangeLow() const { return mRatingRangeLow; }
+    double RatingRangeHigh() const { return mRatingRangeHigh; }
+    bool RoundInt() const { return mRoundIntRating; }
+private:
+    double mRatingRangeLow;
+    double mRatingRangeHigh;
+    bool mRoundIntRating;
+};
 
 class RandomPredict : public BasicPredict {
 public:
@@ -20,10 +33,12 @@ public:
     virtual float PredictRating(int userId, int itemId) const override;
     virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
 private:
-    RatingMatrixAsUsers<> mRatingMatrix;
-    std::vector<float> mUserMinRatings;
-    std::vector<float> mUserMaxRatings;
-    mutable std::vector<int> mRandomItemIds;
+    void CreateOption();
+    void LoadTrainData();
+private:
+    const RandomPredictOption *mOption = nullptr;
+    RatingMatUsers *mTrainData = nullptr;
+    mutable std::mutex mMutex;
 };
 
 } //~ namespace longan

@@ -10,9 +10,15 @@
 
 namespace longan {
 
-int Integer::ParseInt(const std::string &s) {
+int Integer::ParseInt(const std::string& s) {
     int i;
     sscanf(s.c_str(), "%d", &i);
+    return i;
+}
+
+int64 Integer::ParseInt64(const std::string& s) {
+    int64 i;
+    sscanf(s.c_str(), "%lld", &i);
     return i;
 }
 

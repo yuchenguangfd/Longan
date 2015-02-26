@@ -6,70 +6,73 @@
 
 #include "random_predict.h"
 #include "common/base/algorithm.h"
-#include "common/util/running_statistic.h"
-#include "common/util/random.h"
+#include "common/math/math.h"
 #include "common/util/array_helper.h"
 #include "common/logging/logging.h"
 
 namespace longan {
 
-void RandomPredict::Init() {
-    Log::I("recsys", "RandomPredict::Init()");
-    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    std::vector<RunningMax<float>> runUserMaxRatings(rlist.NumUser());
-    std::vector<RunningMin<float>> runUserMinRatings(rlist.NumUser());
-    for (int i = 0; i < rlist.NumRating(); ++i) {
-        const RatingRecord& rr = rlist[i];
-        runUserMaxRatings[rr.UserId()].Add(rr.Rating());
-        runUserMinRatings[rr.UserId()].Add(rr.Rating());
-    }
-    mUserMaxRatings.resize(rlist.NumUser());
-    mUserMinRatings.resize(rlist.NumUser());
-    for (int i = 0; i < rlist.NumUser(); ++i) {
-        mUserMaxRatings[i] = runUserMaxRatings[i].CurrentMax();
-        mUserMinRatings[i] = runUserMinRatings[i].CurrentMin();
-    }
-
-    mRatingMatrix.Init(rlist);
-
-    mRandomItemIds.resize(rlist.NumItem());
-    ArrayHelper::FillRange(&mRandomItemIds[0], mRandomItemIds.size());
+RandomPredictOption::RandomPredictOption(const Json::Value& option) {
+    mRatingRangeLow = option["ratingRangeLow"].asDouble();
+    mRatingRangeHigh = option["ratingRangeHigh"].asDouble();
+    mRoundIntRating = option["roundIntRating"].asBool();
 }
 
-void RandomPredict::Cleanup() { }
+void RandomPredict::Init() {
+    Log::I("recsys", "RandomPredict::Init()");
+    LoadConfig();
+    CreateOption();
+    LoadTrainData();
+}
+
+void RandomPredict::CreateOption() {
+    Log::I("recsys", "RandomPredict::CreateOption()");
+    mOption = new RandomPredictOption(mConfig["predictOption"]);
+}
+
+void RandomPredict::LoadTrainData() {
+    Log::I("recsys", "RandomPredict::LoadTrainRating()");
+    Log::I("recsys", "rating train file = " + mRatingTrainFilepath);
+    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
+    mTrainData = new RatingMatUsers();
+    mTrainData->Init(rlist);
+}
 
 float RandomPredict::PredictRating(int userId, int itemId) const {
-    assert(userId >= 0 && userId < mRatingMatrix.NumUser());
-    double lower = mUserMinRatings[userId];
-    double upper = mUserMaxRatings[userId];
-    double predictedRating = Random::Instance().Uniform(lower, upper);
-    return (float)predictedRating;
+    std::unique_lock<std::mutex> lock(mMutex);
+    double predRating = Random::Instance().Uniform(mOption->RatingRangeLow(), mOption->RatingRangeHigh());
+    return mOption->RoundInt() ? Math::Round(predRating) : predRating;
 }
 
 ItemIdList RandomPredict::PredictTopNItem(int userId, int listSize) const {
-    assert(userId >= 0 && userId < mRatingMatrix.NumUser());
-    assert(listSize > 0 && listSize < mRatingMatrix.NumItem());
-    ArrayHelper::RandomShuffle(&mRandomItemIds[0], mRandomItemIds.size());
-    ItemIdList topNItem;
-    topNItem.reserve(listSize);
-    for (int i = 0; i < mRandomItemIds.size(); ++i) {
-        int iid = mRandomItemIds[i];
-        const auto& uv = mRatingMatrix.GetUserVector(userId);
+    assert(userId >= 0 && userId < mTrainData->NumUser());
+    assert(listSize > 0);
+    std::vector<int> randItems(mTrainData->NumItem());
+    ArrayHelper::FillRange(randItems.data(), randItems.size());
+    {
+        std::unique_lock<std::mutex> lock(mMutex);
+        ArrayHelper::RandomShuffle(randItems.data(), randItems.size());
+    }
+    ItemIdList topNItem(listSize);
+    int count = 0;
+    for (int i = 0; i < randItems.size(); ++i) {
+        int iid = randItems[i];
+        const UserVec& uv = mTrainData->GetUserVector(userId);
         int pos = BSearch(iid, uv.Data(), uv.Size(),
             [](int lhs, const ItemRating& rhs)->int{
                 return lhs - rhs.ItemId();
         });
         if (pos == -1) {
-            topNItem.push_back(iid);
-            if (topNItem.size() == listSize) break;
-        }
-    }
-    if (topNItem.size() < listSize) {
-        for (int i = topNItem.size(); i < listSize; ++i) {
-            topNItem.push_back(-1);
+            topNItem[count++] = iid;
+            if (count == listSize) break;
         }
     }
     return std::move(topNItem);
+}
+
+void RandomPredict::Cleanup() {
+    delete mOption;
+    delete mTrainData;
 }
 
 } //~ namespace longan

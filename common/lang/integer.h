@@ -7,6 +7,7 @@
 #ifndef COMMON_LANG_INTEGER_H
 #define COMMON_LANG_INTEGER_H
 
+#include "types.h"
 #include <string>
 #include <limits>
 
@@ -18,6 +19,7 @@ public:
     static std::string ToString(int num);
     static std::string ToString(int num, int fieldWidth);
     static int ParseInt(const std::string& s);
+    static int64 ParseInt64(const std::string& s);
     static int ReverseByteOrder(int x);
 public:
     Integer() : mValue(0) { }

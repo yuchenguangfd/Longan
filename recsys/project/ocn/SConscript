@@ -1,3 +1,15 @@
 Import("env_recsys")
 
 build_env = env_recsys.Clone()
+# add gflags support
+build_env.Prepend(CPPPATH = "#/external/gflags/include",
+                  LIBPATH = "#/external/gflags",
+                  LIBS = "gflags")
+# add boost library
+build_env.Append(CPPPATH = "#/external/boost/include",
+                 LIBPATH = "#/external/boost/lib",
+                 LIBS = ["boost_system", "boost_filesystem"])
+
+build_env.Program("ocn_prepare_longan", 
+                 ["ocn_prepare_longan.cpp", 
+                  "ocn_prepare.cpp"])

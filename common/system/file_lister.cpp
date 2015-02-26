@@ -6,6 +6,7 @@
 
 #include "file_lister.h"
 #include <boost/filesystem.hpp>
+#include <algorithm>
 
 namespace longan {
 
@@ -15,12 +16,12 @@ FileLister::FileLister(const std::string& dir):
 
 std::vector<std::string> FileLister::ListFilename() {
     using namespace boost::filesystem;
-    using namespace std;
-    vector<string> filenames;
+    std::vector<std::string> filenames;
     for (directory_iterator iter(mDir), end; iter != end; ++iter) {
         path p = (*iter);
         filenames.push_back(p.filename().generic_string());
     }
+    std::sort(filenames.begin(), filenames.end());
     return filenames;
 }
 

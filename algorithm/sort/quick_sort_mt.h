@@ -14,7 +14,7 @@ namespace longan {
 
 class QuickSortMT : public QuickSort {
 public:
-    QuickSortMT() : QuickSort() {
+    QuickSortMT() : QuickSort(), mMTThreshold(0) {
         mThreadNum = std::thread::hardware_concurrency();
         if (mThreadNum == 0) mThreadNum = 2;
     }

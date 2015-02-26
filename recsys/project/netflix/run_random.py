@@ -12,12 +12,12 @@ def run_command(cmd):
         sys.exit(-1)
         
 def run_pop():
-#     run_command("../../pop/random_convert_longan "
-#               + "-ratingTextFilepath=./Netflix/rating_train.txt "
-#               + "-ratingBinaryFilepath=./Netflix/rating_train.bin")
-#     run_command("../../pop/random_convert_longan "
-#               + "-ratingTextFilepath=./Netflix/rating_test.txt "
-#               + "-ratingBinaryFilepath=./Netflix/rating_test.bin")
+    run_command("../../pop/random_convert_longan "
+              + "-ratingTextFilepath=./Netflix/rating_train.txt "
+              + "-ratingBinaryFilepath=./Netflix/rating_train.bin")
+    run_command("../../pop/random_convert_longan "
+              + "-ratingTextFilepath=./Netflix/rating_test.txt "
+              + "-ratingBinaryFilepath=./Netflix/rating_test.bin")
     
     run_command("../../pop/random_train_longan "
               + "-ratingTrainFilepath=./Netflix/rating_train.bin "
