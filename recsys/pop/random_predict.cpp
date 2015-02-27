@@ -5,9 +5,8 @@
  */
 
 #include "random_predict.h"
-#include "common/base/algorithm.h"
 #include "common/math/math.h"
-#include "common/util/array_helper.h"
+#include "common/util/random.h"
 #include "common/logging/logging.h"
 
 namespace longan {
@@ -47,25 +46,29 @@ float RandomPredict::PredictRating(int userId, int itemId) const {
 ItemIdList RandomPredict::PredictTopNItem(int userId, int listSize) const {
     assert(userId >= 0 && userId < mTrainData->NumUser());
     assert(listSize > 0);
-    std::vector<int> randItems(mTrainData->NumItem());
-    ArrayHelper::FillRange(randItems.data(), randItems.size());
-    {
-        std::unique_lock<std::mutex> lock(mMutex);
-        ArrayHelper::RandomShuffle(randItems.data(), randItems.size());
+    int numItem = mTrainData->NumItem();
+    std::vector<bool> itemsAvailable(numItem, true);
+    const UserVec& uv = mTrainData->GetUserVector(userId);
+    const ItemRating* data = uv.Data();
+    int size = uv.Size();
+    for (int i = 0; i < size; ++i) {
+        itemsAvailable[data[i].ItemId()] = false;
     }
     ItemIdList topNItem(listSize);
     int count = 0;
-    for (int i = 0; i < randItems.size(); ++i) {
-        int iid = randItems[i];
-        const UserVec& uv = mTrainData->GetUserVector(userId);
-        int pos = BSearch(iid, uv.Data(), uv.Size(),
-            [](int lhs, const ItemRating& rhs)->int{
-                return lhs - rhs.ItemId();
-        });
-        if (pos == -1) {
-            topNItem[count++] = iid;
+    int limit = 0, maxLimit = 5000000;
+    while ((++limit) < maxLimit) {
+        int randItemid = -1;
+        {
+            std::unique_lock<std::mutex> lock(mMutex);
+            randItemid = Random::Instance().Uniform(0, numItem);
+        }
+        if (itemsAvailable[randItemid]) {
+            itemsAvailable[randItemid] = false;
+            topNItem[count++] = randItemid;
             if (count == listSize) break;
         }
+        if (count + size >= numItem) break;
     }
     return std::move(topNItem);
 }
