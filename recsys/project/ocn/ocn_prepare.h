@@ -17,24 +17,11 @@
 
 namespace longan {
 
-struct Video {
-    std::string assetName;
-    std::string title;
-    int duration;
-};
-
 struct Session {
     std::string userMac;
     std::string assetName;
     int length;
     int64 timestamp;
-};
-
-class SessionLengthToRatingFunc {
-public:
-    float operator() (int length, int duration) {
-        return Math::Max(0.0, Math::Min(1.0, static_cast<double>(length) / duration));
-    }
 };
 
 class OcnPrepare {
@@ -43,12 +30,13 @@ public:
     void Prepare();
 private:
     void LoadConfig();
-    void ReadVideoInfo();
-    void GenerateUserAndItemIdMapping();
+    void GenerateRatingData();
     void ReadSessionFile(const std::string& filename);
     int64 GetTimestamp(const std::string& time);
-    void GenerateMovieData();
-    void GenerateRatingData();
+    void WriteUserIdMapping();
+    void WriteItemIdMapping();
+    void WriteTrainRatings(int splitPos);
+    void WriteTestRatings(int splitPos);
     void Cleanup();
 private:
     const std::string mInputDirpath;
@@ -58,13 +46,10 @@ private:
     int mNumUser;
     int mNumItem;
     int mNumRating;
-    std::vector<Video> mVideos;
     std::vector<Session> mSessions;
     std::map<std::string, int> mUserIdMapping;
     std::map<std::string, int> mItemIdMapping;
-    std::map<std::string, int> mItemDurationMapping;
     std::vector<RatingRecordWithTime*> mRatings;
-    SessionLengthToRatingFunc mSessionLengthToRatingFunc;
     QuickSortMT mSort;
 };
 

@@ -24,9 +24,6 @@ OcnPrepare::OcnPrepare(const std::string& inputDirpath, const std::string& confi
 void OcnPrepare::Prepare() {
     Log::I("recsys", "OcnPrepare::Prepare()");
     LoadConfig();
-    ReadVideoInfo();
-    GenerateUserAndItemIdMapping();
-    GenerateMovieData();
     GenerateRatingData();
     Cleanup();
 }
@@ -37,35 +34,15 @@ void OcnPrepare::LoadConfig() {
     JsonConfigHelper::LoadFromFile(mConfigFilepath, mConfig);
 }
 
-void OcnPrepare::ReadVideoInfo() {
-    Log::I("recsys", "OcnPrepare::ReadVideoInfo()");
-    std::ifstream fin;
-    std::string itemInfoFile = mInputDirpath + "/video/video.txt";
-    fin.open(itemInfoFile.c_str());
-    assert(!fin.fail());
-    mVideos.clear();
-    std::string line;
-    while (std::getline(fin, line)) {
-        std::vector<std::string> lineFields = StringHelper::Split(line, "|", false);
-        Video video;
-        video.assetName = lineFields[0];
-        video.duration = Integer::ParseInt(lineFields[1]);
-        video.title = lineFields[2];
-        mVideos.push_back(video);
-    }
-    mItemDurationMapping.clear();
-    for (const Video& video : mVideos) {
-        mItemDurationMapping[video.assetName] = video.duration;
-    }
-}
-
-void OcnPrepare::GenerateUserAndItemIdMapping() {
-    Log::I("recsys", "OcnPrepare::GenerateUserAndItemIdMapping()");
+void OcnPrepare::GenerateRatingData() {
+    Log::I("recsys", "OcnPrepare::GenerateRatingData()");
     std::string sessionDir = mInputDirpath + "/session";
     FileLister lister(sessionDir);
     std::vector<std::string> sessionFiles = lister.ListFilename();
     const std::string sessionFileFrom = mConfig["dateFrom"].asString() + ".txt";
     const std::string sessionFileTo = mConfig["dateTo"].asString() + ".txt";
+    int watchTimeThreshold = mConfig["watchTimeThreshold"].asInt();
+    mRatings.clear();
     mUserIdMapping.clear();
     mItemIdMapping.clear();
     int userCount = 0;
@@ -77,36 +54,41 @@ void OcnPrepare::GenerateUserAndItemIdMapping() {
             mSessions.shrink_to_fit();
             ReadSessionFile(filename);
             for (const Session session : mSessions) {
+                if (session.length < watchTimeThreshold) continue;
+                int userId, itemId;
                 if (mUserIdMapping.find(session.userMac) == mUserIdMapping.end()) {
                     mUserIdMapping[session.userMac] = userCount;
+                    userId = userCount;
                     ++userCount;
+                } else {
+                    userId = mUserIdMapping[session.userMac];
                 }
-                if (mItemDurationMapping.find(session.assetName) != mItemDurationMapping.end()
-                        && mItemIdMapping.find(session.assetName) == mItemIdMapping.end()) {
+                if (mItemIdMapping.find(session.assetName) == mItemIdMapping.end()) {
                     mItemIdMapping[session.assetName] = itemCount;
+                    itemId = itemCount;
                     ++itemCount;
+                } else {
+                    itemId = mItemIdMapping[session.assetName];
                 }
+                float rating = 1.0f;
+                int64 timestamp = session.timestamp;
+                mRatings.push_back(new RatingRecordWithTime(userId, itemId, rating, timestamp));
             }
+            Log::I("recsys", "current numUser=%d, numItem=%d, numRating=%d", userCount, itemCount, mRatings.size());
         }
     }
-
+    mNumRating = mRatings.size();
     mNumUser = userCount;
-    std::string filename1 = mOutputDirpath + "/user_id_mapping.txt";
-    std::ofstream fout1(filename1.c_str());
-    assert(!fout1.fail());
-    fout1 << mNumUser << std::endl;
-    for (auto it = mUserIdMapping.begin(); it != mUserIdMapping.end(); ++it) {
-        fout1 << it->first << "," << it->second << std::endl;
-    }
-
+    WriteUserIdMapping();
     mNumItem = itemCount;
-    std::string filename2 = mOutputDirpath + "/item_id_mapping.txt";
-    std::ofstream fout2(filename2.c_str());
-    assert(!fout2.fail());
-    fout2 << mNumItem << std::endl;
-    for (auto it = mItemIdMapping.begin(); it != mItemIdMapping.end(); ++it) {
-       fout2 << it->first << "," << it->second << std::endl;
-    }
+    WriteItemIdMapping();
+
+    ArrayHelper::RandomShuffle(&mRatings[0], mRatings.size());
+    double trainRatio = mConfig["trainRatio"].asDouble();
+    int splitPos = static_cast<int>(mNumRating * trainRatio);
+
+    WriteTrainRatings(splitPos);
+    WriteTestRatings(splitPos);
 }
 
 void OcnPrepare::ReadSessionFile(const std::string& filename) {
@@ -132,97 +114,63 @@ int64 OcnPrepare::GetTimestamp(const std::string& time) {
                 + time.substr(11, 2) + time.substr(14, 2) + time.substr(17, 2));
 }
 
-void OcnPrepare::GenerateMovieData() {
-    Log::I("recsys", "OcnPrepare::GenerateMovieData()");
-    std::string filename = mOutputDirpath + "/movie.txt";
+void OcnPrepare::WriteUserIdMapping() {
+    std::string filename = mOutputDirpath + "/user_id_mapping.txt";
     std::ofstream fout(filename.c_str());
     assert(!fout.fail());
-    int countValidMovie = 0;
-    for (const Video& video: mVideos) {
-        if (mItemIdMapping.find(video.assetName) != mItemIdMapping.end()) {
-            ++countValidMovie;
-        }
-    }
-    fout << countValidMovie << std::endl;
-    for (const Video& video: mVideos) {
-        if (mItemIdMapping.find(video.assetName) != mItemIdMapping.end()) {
-            fout << mItemIdMapping[video.assetName] << ","
-                 << video.duration << ","
-                 << video.title << std::endl;
-        }
+    fout << mNumUser << std::endl;
+    for (auto it = mUserIdMapping.begin(); it != mUserIdMapping.end(); ++it) {
+        fout << it->first << "," << it->second << std::endl;
     }
 }
 
-void OcnPrepare::GenerateRatingData() {
-    Log::I("recsys", "OcnPrepare::GenerateRatingData()");
-    std::string sessionDir = mInputDirpath + "/session";
-    FileLister lister(sessionDir);
-    std::vector<std::string> sessionFiles = lister.ListFilename();
-    const std::string sessionFileFrom = mConfig["dateFrom"].asString() + ".txt";
-    const std::string sessionFileTo = mConfig["dateTo"].asString() + ".txt";
-    mRatings.clear();
-    for (int i = 0; i < sessionFiles.size(); ++i) {
-        const std::string& filename = sessionFiles[i];
-        if (sessionFileFrom <= filename && filename <= sessionFileTo) {
-            mSessions.clear();
-            mSessions.shrink_to_fit();
-            ReadSessionFile(filename);
-            for (const Session session : mSessions) {
-                if (mItemIdMapping.find(session.assetName) == mItemIdMapping.end()) continue;
-                int userId = mUserIdMapping[session.userMac];
-                int itemId = mItemIdMapping[session.assetName];
-                float rating = mSessionLengthToRatingFunc(session.length,
-                        mItemDurationMapping[session.assetName]);
-                int64 timestamp = session.timestamp;
-                mRatings.push_back(new RatingRecordWithTime(userId, itemId, rating, timestamp));
-            }
-        }
+void OcnPrepare::WriteItemIdMapping() {
+    std::string filename = mOutputDirpath + "/item_id_mapping.txt";
+    std::ofstream fout(filename.c_str());
+    assert(!fout.fail());
+    fout << mNumItem << std::endl;
+    for (auto it = mItemIdMapping.begin(); it != mItemIdMapping.end(); ++it) {
+        fout << it->first << "," << it->second << std::endl;
     }
-    mNumRating = mRatings.size();
+}
 
-    ArrayHelper::RandomShuffle(&mRatings[0], mRatings.size());
-    double trainRatio = mConfig["trainRatio"].asDouble();
-    int splitPos = static_cast<int>(mNumRating * trainRatio);
-
+void OcnPrepare::WriteTrainRatings(int splitPos) {
     std::string filenameTrain = mOutputDirpath + "/rating_train.txt";
     Log::I("recsys", "writing train ratings to file = " + filenameTrain);
-    std::ofstream fout1(filenameTrain.c_str());
-    assert(!fout1.fail());
+    std::ofstream fout(filenameTrain.c_str());
+    assert(!fout.fail());
     mSort(mRatings.data(), splitPos,
-        [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs)->int {
-            return lhs->Timestamp() < rhs->Timestamp() ? -1 : 1;
+            [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs)->int {
+                return lhs->Timestamp() < rhs->Timestamp() ? -1 : 1;
     });
     int numTrainRatings = splitPos;
-    fout1 << numTrainRatings << ","
-          << mNumUser << ","
-          << mNumItem << std::endl;
+    fout << numTrainRatings << ","
+         << mNumUser << ","
+         << mNumItem << std::endl;
     for (int i = 0; i < splitPos; ++i) {
         const RatingRecordWithTime& rating = *mRatings[i];
-        fout1 << rating.UserId() << ","
-              << rating.ItemId() << ","
-              << rating.Rating() << ","
-              << rating.Timestamp() << std::endl;
+        fout << rating.UserId() << "," << rating.ItemId() << ","
+             << rating.Rating() << "," << rating.Timestamp() << std::endl;
         if (i % 500000 == 0) Log::Console("recsys", "%d/%d done.", i, numTrainRatings);
     }
+}
 
+void OcnPrepare::WriteTestRatings(int splitPos) {
     std::string filenameTest = mOutputDirpath + "/rating_test.txt";
     Log::I("recsys", "writing test ratings to file: " + filenameTest);
-    std::ofstream fout2(filenameTest.c_str());
-    assert(!fout2.fail());
+    std::ofstream fout(filenameTest.c_str());
+    assert(!fout.fail());
     mSort(mRatings.data() + splitPos, mRatings.size() - splitPos,
         [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs)->int {
             return lhs->Timestamp() < rhs->Timestamp() ? -1 : 1;
     });
-    int numTestRatings = mRatings.size() - numTrainRatings;
-    fout2 << numTestRatings << ","
-          << mNumUser << ","
-          << mNumItem << std::endl;
-    for (int i = splitPos; i < mRatings.size(); ++i) {
+    int numTestRatings = mRatings.size() - splitPos;
+    fout << numTestRatings << "," << mNumUser << "," << mNumItem << std::endl;
+    for (int i = splitPos, j = 0; i < mRatings.size(); ++i, ++j) {
         const RatingRecordWithTime& rating = *mRatings[i];
-        fout2 << rating.UserId() << ","
-              << rating.ItemId() << ","
-              << rating.Rating() << ","
-              << rating.Timestamp() << std::endl;
+        fout << rating.UserId() << "," << rating.ItemId() << ","
+             << rating.Rating() << "," << rating.Timestamp() << std::endl;
+        if (j % 500000 == 0) Log::Console("recsys", "%d/%d done.", j, numTestRatings);
     }
 }
 
