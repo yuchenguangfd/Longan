@@ -16,18 +16,20 @@ namespace longan {
 class SVDPredict : public BasicPredict {
 public:
     using BasicPredict::BasicPredict;
-    virtual void Init() override final;
-    virtual void Cleanup() override final;
-    virtual float PredictRating(int userId, int itemId) const override final;
-    virtual ItemIdList PredictTopNItem(int userId, int listSize) const override final;
+    virtual void Init() override;
+    virtual void Cleanup() override;
+    virtual float PredictRating(int userId, int itemId) const override;
+    virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
 private:
-    void LoadRatings();
+    void CreateTrainOption();
+    void CreateParameter();
+    void LoadTrainData();
     void LoadModel();
 protected:
-    RatingMatrixAsUsers<> *mRatingMatrix = nullptr;
+    RatingMatUsers *mTrainData = nullptr;
+    SVD::TrainOption *mTrainOption = nullptr;
     SVD::Parameter *mParameter = nullptr;
     SVD::ModelPredict *mModel = nullptr;
-    float mRatingAverage;
 };
 
 } //~ namespace longan

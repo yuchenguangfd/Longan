@@ -33,6 +33,7 @@ EvaluateOption::EvaluateOption(const Json::Value& option) {
             mRankingListSizes[i] = option["rankingListSizes"][i].asInt();
             assert(mRankingListSizes[i] > 0);
         }
+        mCurrentRankingListSize = mRankingListSizes[0];
     }
     mMonitorProgress = option["monitorProgress"].asBool();
 }

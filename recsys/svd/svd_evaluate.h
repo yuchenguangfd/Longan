@@ -16,7 +16,10 @@ public:
     using BasicEvaluate::BasicEvaluate;
 protected:
     virtual void CreatePredict() override;
+    virtual void LoadTrainData() override;
     virtual void LoadTestData() override;
+private:
+    RatingList* LoadRatingData(const std::string& filename);
 };
 
 } //~ namespace longan

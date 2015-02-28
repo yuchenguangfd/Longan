@@ -14,8 +14,7 @@ namespace longan {
 
 namespace SVD {
 
-Parameter::Parameter(const Json::Value& config) {
-    const Json::Value& parameter = config["parameter"];
+Parameter::Parameter(const Json::Value& parameter) {
     mDim = parameter["dim"].asInt();
     assert(mDim > 0);
     mLambdaUserFeature = static_cast<float>(parameter["lambdaUserFeature"].asDouble());
@@ -24,29 +23,35 @@ Parameter::Parameter(const Json::Value& config) {
     mLambdaItemBias = static_cast<float>(parameter["lambdaItemBias"].asDouble());
 }
 
-TrainOption::TrainOption(const Json::Value& config) {
-    const Json::Value& trainOption = config["trainOption"];
-    mIterations = trainOption["iterations"].asInt();
+TrainOption::TrainOption(const Json::Value& option) {
+    mIterations = option["iterations"].asInt();
     assert(mIterations > 0);
-    mLearningRate = static_cast<float>(trainOption["learningRate"].asDouble());
+    mLearningRate = static_cast<float>(option["learningRate"].asDouble());
     assert(mLearningRate > 0.0f);
-    mNumThread = trainOption["numThread"].asInt();
-    if (mNumThread == 0) {
-        mNumThread = SystemInfo::GetNumCPUCore();
+    mUseRandomShuffle = option["useRandomShuffle"].asBool();
+    mUseRatingAverage = option["useRatingAverage"].asBool();
+    mNumUserBlock = option["numUserBlock"].asInt();
+    assert(mNumUserBlock > 0);
+    mNumItemBlock = option["numItemBlock"].asInt();
+    assert(mNumItemBlock > 0);
+    mAccelerate = option["accelerate"].asBool();
+    if (mAccelerate) {
+        mNumThread = option["numThread"].asInt();
+        if (mNumThread == 0) {
+            mNumThread = SystemInfo::GetNumCPUCore();
+        }
+        assert(mNumUserBlock > mNumThread);
+        assert(mNumItemBlock > mNumThread);
+    } else {
+        mNumThread = 1;
     }
-    mNumUserBlock = trainOption["numUserBlock"].asInt();
-    if (mNumUserBlock == 0) {
-        mNumUserBlock = mNumThread * 2;
+    mMonitorIteration = option["monitorIteration"].asBool();
+    if (mMonitorIteration) {
+        mMonitorIterationStep = option["monitorIterationStep"].asInt();
+        if (mMonitorIterationStep <= 0) mMonitorIterationStep = 1;
+    } else {
+        mMonitorIterationStep = 0;
     }
-    assert(mNumUserBlock > mNumThread);
-    mNumItemBlock = trainOption["numItemBlock"].asInt();
-    if (mNumItemBlock == 0) {
-        mNumItemBlock = mNumThread * 2;
-    }
-    assert(mNumItemBlock > mNumThread);
-    mUseRandomShuffle = trainOption["useRandomShuffle"].asBool();
-    mUseRatingAverage = trainOption["useRatingAverage"].asBool();
-    mAccelerate = trainOption["accelerate"].asBool();
 }
 
 Matrix::Matrix() :
@@ -72,27 +77,22 @@ Matrix& Matrix::operator= (Matrix&& rhs) noexcept {
     return *this;
 }
 
-Matrix Matrix::LoadMetaOnlyFromBinaryFile(const std::string& ratingBinaryFilepath) {
-    Matrix matrix;
+Matrix Matrix::LoadFromBinaryFile(const std::string& ratingBinaryFilepath, bool isMetaOnly) {
+    Matrix mat;
     BinaryInputStream bis(ratingBinaryFilepath);
-    bis >> matrix.mNumRating >> matrix.mNumUser >> matrix.mNumItem
-        >> matrix.mRatingAverage;
-    return std::move(matrix);
-}
-
-Matrix Matrix::LoadFromBinaryFile(const std::string& ratingBinaryFilepath) {
-    Matrix matrix;
-    BinaryInputStream bis(ratingBinaryFilepath);
-    bis >> matrix.mNumRating >> matrix.mNumUser >> matrix.mNumItem
-        >> matrix.mRatingAverage;
-    matrix.mRatings.reserve(matrix.mNumRating);
-    for (int i = 0; i < matrix.mNumRating; ++i) {
+    bis >> mat.mNumRating >> mat.mNumUser >> mat.mNumItem
+        >> mat.mRatingAverage;
+    if (isMetaOnly) {
+        return std::move(mat);
+    }
+    mat.mRatings.reserve(mat.mNumRating);
+    for (int i = 0; i < mat.mNumRating; ++i) {
         int uid, iid;
         float rating;
         bis >> uid >> iid >> rating;
-        matrix.mRatings.push_back(Node(uid, iid, rating));
+        mat.mRatings.push_back(Node(uid, iid, rating));
     }
-    return std::move(matrix);
+    return std::move(mat);
 }
 
 GriddedMatrix::GriddedMatrix() :
@@ -108,8 +108,8 @@ GriddedMatrix::GriddedMatrix(GriddedMatrix&& orig) noexcept :
     mNumItem(orig.mNumItem),
     mNumRating(orig.mNumRating),
     mRatingAverage(orig.mRatingAverage),
-    mNumUserBlock(0),
-    mNumItemBlock(0),
+    mNumUserBlock(orig.mNumUserBlock),
+    mNumItemBlock(orig.mNumItemBlock),
     mGrids(std::move(orig.mGrids)) {
 }
 
@@ -128,16 +128,18 @@ GriddedMatrix& GriddedMatrix::operator= (GriddedMatrix&& rhs) noexcept {
 GriddedMatrix GriddedMatrix::LoadFromBinaryFile(const std::string& ratingBinaryFilepath,
     int numUserBlock, int numItemBlock,
     const std::vector<int>& userIdMapping, const std::vector<int>& itemIdMapping) {
-    GriddedMatrix matrix;
+    GriddedMatrix gmat;
     BinaryInputStream bis(ratingBinaryFilepath);
-    bis >> matrix.mNumRating >> matrix.mNumUser >> matrix.mNumItem
-        >> matrix.mRatingAverage;
-    matrix.mNumUserBlock = numUserBlock;
-    matrix.mNumItemBlock = numItemBlock;
-    matrix.mGrids.resize(numUserBlock * numItemBlock);
-    int rowBlockSize = Math::Ceil(static_cast<double>(matrix.mNumUser) / numUserBlock);
-    int colBlockSize = Math::Ceil(static_cast<double>(matrix.mNumItem) / numItemBlock);
-    for (int i = 0; i < matrix.mNumRating; ++i) {
+    bis >> gmat.mNumRating >> gmat.mNumUser >> gmat.mNumItem
+        >> gmat.mRatingAverage;
+    assert(gmat.mNumUser == userIdMapping.size());
+    assert(gmat.mNumItem == itemIdMapping.size());
+    gmat.mNumUserBlock = numUserBlock;
+    gmat.mNumItemBlock = numItemBlock;
+    gmat.mGrids.resize(numUserBlock * numItemBlock);
+    int rowBlockSize = Math::Ceil(static_cast<double>(gmat.mNumUser) / numUserBlock);
+    int colBlockSize = Math::Ceil(static_cast<double>(gmat.mNumItem) / numItemBlock);
+    for (int i = 0; i < gmat.mNumRating; ++i) {
         int uid, iid;
         float rating;
         bis >> uid >> iid >> rating;
@@ -146,12 +148,12 @@ GriddedMatrix GriddedMatrix::LoadFromBinaryFile(const std::string& ratingBinaryF
         int gridRow = uid / rowBlockSize;
         int gridCol = iid / colBlockSize;
         int gridId = gridRow * numItemBlock + gridCol;
-        matrix.mGrids[gridId].Add(Node(uid, iid, rating));
+        gmat.mGrids[gridId].Add(Node(uid, iid, rating));
     }
-    for(Matrix& grid : matrix.mGrids) {
+    for(Matrix& grid : gmat.mGrids) {
         grid.Freeze();
     }
-    return std::move(matrix);
+    return std::move(gmat);
 }
 
 }  // namespace SVD

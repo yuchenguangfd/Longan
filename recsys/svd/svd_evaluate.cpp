@@ -17,9 +17,8 @@ void SVDEvaluate::CreatePredict() {
     mPredict->Init();
 }
 
-void SVDEvaluate::LoadTestData() {
-    Log::I("recsys", "SVDEvaluate::LoadTestRatings()");
-    BinaryInputStream bis(mRatingTestFilepath);
+RatingList* SVDEvaluate::LoadRatingData(const std::string& filename) {
+    BinaryInputStream bis(filename);
     int numRating, numUser, numItem;
     float avgRating;
     bis >> numRating >> numUser >> numItem
@@ -31,7 +30,24 @@ void SVDEvaluate::LoadTestData() {
         bis >> uid >> iid >> rating;
         rlist.Add(RatingRecord(uid, iid, rating));
     }
-    mTestData = new RatingList(std::move(rlist));
+    return new RatingList(std::move(rlist));
+}
+
+void SVDEvaluate::LoadTrainData() {
+    if (mOption->EvaluateNovelty()) {
+        Log::I("recsys", "SVDEvaluate::LoadTrainData()");
+        Log::I("recsys", "train rating file = " + mRatingTrainFilepath);
+        mTrainData = LoadRatingData(mRatingTrainFilepath);
+    }
+}
+
+void SVDEvaluate::LoadTestData() {
+    if (mOption->EvaluateRating() || mOption->EvaluateRanking()
+        || mOption->EvaluateCoverage() || mOption->EvaluateDiversity()) {
+        Log::I("recsys", "SVDEvaluate::LoadTestData()");
+        Log::I("recsys", "test rating file = " + mRatingTestFilepath);
+        mTestData = LoadRatingData(mRatingTestFilepath);
+    }
 }
 
 } //~ namespace longan

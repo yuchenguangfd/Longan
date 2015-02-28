@@ -18,7 +18,7 @@ namespace SVD {
 
 class Parameter {
 public:
-    Parameter(const Json::Value& config);
+    Parameter(const Json::Value& parameter);
     int Dim() const { return mDim; }
     float LambdaUserFeature() const { return mLambdaUserFeature; }
     float LambdaItemFeature() const { return mLambdaItemFeature; }
@@ -34,7 +34,7 @@ private:
 
 class TrainOption {
 public:
-    TrainOption(const Json::Value& config);
+    TrainOption(const Json::Value& option);
     int Iterations() const { return mIterations; }
     float LearningRate() const { return mLearningRate; }
     int NumThread() const { return mNumThread; }
@@ -43,6 +43,8 @@ public:
     bool UseRandomShuffle() const { return mUseRandomShuffle; }
     bool UseRatingAverage() const { return mUseRatingAverage; }
     bool Accelerate() const { return mAccelerate; }
+    bool MonitorIteration() const { return mMonitorIteration; }
+    int MonitorIterationStep() const { return mMonitorIterationStep; }
 private:
     int mIterations;
     float mLearningRate;
@@ -52,6 +54,8 @@ private:
     bool mUseRandomShuffle;
     bool mUseRatingAverage;
     bool mAccelerate;
+    bool mMonitorIteration;
+    int mMonitorIterationStep;
 };
 
 class Node {
@@ -82,12 +86,10 @@ public:
         mRatings.push_back(node);
     }
     void Freeze() {
-        mNumRating = mRatings.size();
         mRatings.shrink_to_fit();
     }
 public:
-    static Matrix LoadMetaOnlyFromBinaryFile(const std::string& ratingBinaryFilepath);
-    static Matrix LoadFromBinaryFile(const std::string& ratingBinaryFilepath);
+    static Matrix LoadFromBinaryFile(const std::string& ratingBinaryFilepath, bool isMetaOnly = false);
 private:
     int mNumUser;
     int mNumItem;
@@ -102,9 +104,12 @@ public:
     GriddedMatrix();
     GriddedMatrix(GriddedMatrix&& orig) noexcept;
     GriddedMatrix& operator= (GriddedMatrix&& rhs) noexcept;
-    const Matrix& Grid(int gridId) const {
-        return mGrids[gridId];
-    }
+    const Matrix& Get(int gridId) const { return mGrids[gridId]; }
+    int NumUser() const { return mNumUser; }
+    int NumItem() const { return mNumItem; }
+    int NumUserBlock() const { return mNumUserBlock; }
+    int NumItemBlock() const { return mNumItemBlock; }
+    int NumBlock() const { return mNumUserBlock * mNumItemBlock; }
 public:
     static GriddedMatrix LoadFromBinaryFile(const std::string& ratingBinaryFilepath,
         int numUserBlock, int numItemBlock,

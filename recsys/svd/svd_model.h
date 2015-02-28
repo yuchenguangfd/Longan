@@ -20,39 +20,39 @@ class SVDTrain;
 namespace SVD {
 
 class ModelComputation;
-class SimpleModelComputation;
-class FPSGDModelComputation;
+class ModelComputationST;
+class ModelComputationMT;
 
 class Model {
 public:
-    Model(const Parameter& param);
+    Model(const Parameter *param);
     ~Model();
     int NumUser() const { return mNumUser; }
     int NumItem() const { return mNumItem; }
     float RatingAverage() const { return mRatingAverage; }
-    const Vector<float>& UserFeature(int userId) const { return mUserFeatures[userId]; }
-    const Vector<float>& ItemFeature(int itemId) const { return mItemFeatures[itemId]; }
+    const Vector32F& UserFeature(int userId) const { return mUserFeatures[userId]; }
+    const Vector32F& ItemFeature(int itemId) const { return mItemFeatures[itemId]; }
     float UserBias(int userId) const { return mUserBiases[userId]; }
     float ItemBias(int itemId) const { return mItemBiases[itemId]; }
 protected:
-    const Parameter& mParameter;
+    const Parameter *mParameter;
     int mNumUser;
     int mNumItem;
     float mRatingAverage;
-    std::vector<Vector<float>> mUserFeatures;
-    std::vector<Vector<float>> mItemFeatures;
+    std::vector<Vector32F> mUserFeatures;
+    std::vector<Vector32F> mItemFeatures;
     std::vector<float> mUserBiases;
     std::vector<float> mItemBiases;
 };
 
 class ModelTrain : public Model {
 public:
-    ModelTrain(const Parameter& param, int numUser, int numItem, float ratingAvg);
+    ModelTrain(const Parameter *param, int numUser, int numItem, float ratingAverage);
     void RandomInit();
     void Save(const std::string& filename);
     friend ModelComputation;
-    friend SimpleModelComputation;
-    friend FPSGDModelComputation;
+    friend ModelComputationST;
+    friend ModelComputationMT;
     friend SVDTrain;
 };
 

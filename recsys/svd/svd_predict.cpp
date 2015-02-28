@@ -16,12 +16,24 @@ namespace longan {
 void SVDPredict::Init() {
     Log::I("recsys", "SVDPredict::Init()");
     LoadConfig();
-    LoadRatings();
+    CreateTrainOption();
+    CreateParameter();
+    LoadTrainData();
     LoadModel();
 }
 
-void SVDPredict::LoadRatings() {
-    Log::I("recsys", "SVDPredict::LoadRatings()");
+void SVDPredict::CreateTrainOption() {
+    Log::I("recsys", "SVDPredict::CreateTrainOption()");
+    mTrainOption = new SVD::TrainOption(mConfig["trainOption"]);
+}
+
+void SVDPredict::CreateParameter() {
+    Log::I("recsys", "SVDPredict::CreateParameter()");
+    mParameter = new SVD::Parameter(mConfig["parameter"]);
+}
+
+void SVDPredict::LoadTrainData() {
+    Log::I("recsys", "SVDPredict::LoadTrainData()");
     Log::I("recsys", "rating file = " + mRatingTrainFilepath);
     BinaryInputStream bis(mRatingTrainFilepath);
     int numRating, numUser, numItem;
@@ -35,52 +47,55 @@ void SVDPredict::LoadRatings() {
         bis >> uid >> iid >> rating;
         rlist.Add(RatingRecord(uid, iid, rating));
     }
-    Log::I("recsys", "create rating matrix");
-    mRatingMatrix = new RatingMatrixAsUsers<>();
-    mRatingMatrix->Init(rlist);
-    mRatingAverage = (SVD::TrainOption(mConfig).UseRatingAverage())? avgRating : 0.0f;
+    mTrainData = new RatingMatUsers();
+    mTrainData->Init(rlist);
 }
 
 void SVDPredict::LoadModel() {
-    mParameter = new SVD::Parameter(mConfig);
-    mModel = new SVD::ModelPredict(*mParameter);
+    Log::I("recsys", "SVDPredict::LoadModel()");
+    Log::I("recsys", "model file = " + mModelFilepath);
+    mModel = new SVD::ModelPredict(mParameter);
     mModel->Load(mModelFilepath);
 }
 
 void SVDPredict::Cleanup() {
+    delete mTrainOption;
     delete mParameter;
+    delete mTrainData;
     delete mModel;
 }
 
 float SVDPredict::PredictRating(int userId, int itemId) const {
     assert(userId >= 0 && userId < mModel->NumUser());
     assert(itemId >= 0 && itemId < mModel->NumItem());
-    const auto& uvec = mModel->UserFeature(userId);
-    const auto& ivec = mModel->ItemFeature(itemId);
-    float predRating = InnerProd(uvec, ivec);
+    const Vector32F& userFeature = mModel->UserFeature(userId);
+    const Vector32F& itemFeature = mModel->ItemFeature(itemId);
+    float predRating = InnerProd(userFeature, itemFeature);
     if (mParameter->LambdaUserBias() >= 0.0f) {
         predRating += mModel->UserBias(userId);
     }
     if (mParameter->LambdaItemBias() >= 0.0f) {
         predRating += mModel->ItemBias(itemId);
     }
-    predRating += mRatingAverage;
+    if (mTrainOption->UseRatingAverage()) {
+        predRating += mModel->RatingAverage() ;
+    }
     return predRating;
 }
 
 ItemIdList SVDPredict::PredictTopNItem(int userId, int listSize) const {
-    assert(userId >= 0 && userId < mRatingMatrix->NumUser());
+    assert(userId >= 0 && userId < mModel->NumUser());
     assert(listSize > 0);
-    int numItem = mRatingMatrix->NumItem();
-    const auto& uv = mRatingMatrix->GetUserVector(userId);
-    const ItemRating *data1 = uv.Data();
-    int size1 = uv.Size();
+    int numItem = mTrainData->NumItem();
+    const UserVec& uv = mTrainData->GetUserVector(userId);
+    const ItemRating *data = uv.Data();
+    int size = uv.Size();
     std::vector<ItemRating> ratings;
     ratings.reserve(numItem);
     int begin = -1, end = -1;
-    for (int i = 0; i < size1; ++i) {
+    for (int i = 0; i < size; ++i) {
         begin = end + 1;
-        end = data1[i].ItemId();
+        end = data[i].ItemId();
         for (int iid = begin; iid < end; ++iid) {
             float predRating = PredictRating(userId, iid);
             ratings.push_back(ItemRating(iid, predRating));
@@ -96,20 +111,17 @@ ItemIdList SVDPredict::PredictTopNItem(int userId, int listSize) const {
         [](const ItemRating& lhs, const ItemRating& rhs)->bool {
             return lhs.Rating() > rhs.Rating();
     });
-    ItemIdList resultList(listSize);
+    ItemIdList topNItem(listSize);
     if (listSize <= ratings.size()) {
         for (int i = 0; i < listSize; ++i) {
-            resultList[i] = ratings[i].ItemId();
+            topNItem[i] = ratings[i].ItemId();
         }
     } else {
         for (int i = 0; i < ratings.size(); ++i) {
-           resultList[i] = ratings[i].ItemId();
-        }
-        for (int i = ratings.size(); i < listSize; ++i) {
-           resultList[i] = -1;
+           topNItem[i] = ratings[i].ItemId();
         }
     }
-    return std::move(resultList);
+    return std::move(topNItem);
 }
 
 } //~ namespace longan

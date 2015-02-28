@@ -38,12 +38,12 @@ TEST(SVDPredictTest, PredictRatingOK) {
     };
     class SVDPredictMock : public SVDPredict {
     public:
-        SVDPredictMock(const std::string& modelFilename, SVD::Parameter& parameter) :
+        SVDPredictMock(const std::string& modelFilename, SVD::Parameter *parameter, SVD::TrainOption *option) :
             SVDPredict("", "", modelFilename) {
-            mParameter = &parameter;
-            mModel = new SVD::ModelPredict(*mParameter);
+            mParameter = parameter;
+            mTrainOption = option;
+            mModel = new SVD::ModelPredict(mParameter);
             mModel->Load(mModelFilepath);
-            mRatingAverage = 1000;
         }
     };
     Json::Value config;
@@ -52,12 +52,15 @@ TEST(SVDPredictTest, PredictRatingOK) {
     config["parameter"]["lambdaItemFeature"] = 0.02;
     config["parameter"]["lambdaUserBias"] = 0.001;
     config["parameter"]["lambdaItemBias"] = 0.002;
-    SVD::Parameter parameter(config);
-    ModelTrainMock modelTrain(parameter, 2, 2, 0.0);
-
+    config["trainOption"]["iterations"] = 1;
+    config["trainOption"]["learningRate"] = 0.1;
+    config["trainOption"]["useRatingAverage"] = true;
+    SVD::Parameter parameter(config["parameter"]);
+    ModelTrainMock modelTrain(&parameter, 2, 2, 0.0);
     modelTrain.InitMockData();
     modelTrain.Save("tmp.dat");
-    SVDPredictMock predict("tmp.dat", parameter);
+    SVD::TrainOption option(config["trainOption"]);
+    SVDPredictMock predict("tmp.dat", &parameter, &option);
     EXPECT_FLOAT_EQ(1450, predict.PredictRating(0, 0));
     EXPECT_FLOAT_EQ(1568, predict.PredictRating(0, 1));
     EXPECT_FLOAT_EQ(1622, predict.PredictRating(1, 0));
