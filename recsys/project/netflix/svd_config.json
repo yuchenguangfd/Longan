@@ -1,14 +1,14 @@
 {
 	"parameter": {
 		"dim": 32,
-	    "lambdaUserFeature": 0.01,
-   		"lambdaItemFeature": 0.01,
-		"lambdaUserBias": 0.00001,
-		"lambdaItemBias": 0.00001
+	    "lambdaUserFeature": 0.02,
+   		"lambdaItemFeature": 0.02,
+		"lambdaUserBias": 0.0000001,
+		"lambdaItemBias": 0.0000001
 	},
 	"trainOption": {
-	    "iterations": 400,
-	    "learningRate": 0.003,
+	    "iterations": 200,
+	    "learningRate": 0.001,
 	    "useRandomShuffle": true,
 	    "useRatingAverage": true,
 	    "numUserBlock": 12,
@@ -16,7 +16,7 @@
 		"accelerate": true, 
 	    "numThread": 4,
 	    "monitorIteration": true,
-	    "monitorIterationStep": 20
+	    "monitorIterationStep": 5
 	},
 	"evaluateOption": {
 		"accelerate": true, 

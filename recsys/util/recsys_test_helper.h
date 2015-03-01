@@ -16,7 +16,7 @@ namespace longan {
 class RecsysTestHelper {
 public:
     static RatingList CreateRandomRatingList(int numUser, int numItem, int numRating);
-    static RatingMatrixAsItems<> CreateRandomRatingMatrixAsItems(int numUser, int numItem, int numRating);
+    static RatingMatrixAsItems<> CreateRandomRatingMatItems(int numUser, int numItem, int numRating);
     static RatingMatrixAsUsers<> CreateRandomRatingMatrixAsUsers(int numUser, int numItem, int numRating);
 };
 

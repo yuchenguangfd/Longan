@@ -5,83 +5,70 @@
  */
 
 #include "item_based_train.h"
-#include "recsys/base/rating_adjust.h"
+#include "item_based_model_computation.h"
 #include "common/logging/logging.h"
-#include "common/system/system_info.h"
-#include "common/error.h"
 
 namespace longan {
 
 void ItemBasedTrain::Train() {
+    Log::I("recsys", "ItemBasedTrain::Train()");
     LoadConfig();
-    LoadRatings();
-    AdjustRating();
+    CreateTrainOption();
+    CreateParameter();
+    LoadTrainData();
     InitModel();
     ComputeModel();
     SaveModel();
     Cleanup();
 }
 
-void ItemBasedTrain::LoadRatings() {
-    Log::I("recsys", "ItemBasedTrain::LoadRatings()");
-    Log::I("recsys", "rating file = " + mRatingTrainFilepath);
-    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    Log::I("recsys", "create rating matrix");
-    mRatingMatrix = new RatingMatrixAsItems<>();
-    mRatingMatrix->Init(rlist);
-    Log::I("recsys", "create rating trait");
-    mRatingTrait = new RatingTrait();
-    mRatingTrait->Init(rlist);
+void ItemBasedTrain::CreateTrainOption() {
+    Log::I("recsys", "ItemBasedTrain::CreateTrainOption()");
+    mTrainOption = new ItemBased::TrainOption(mConfig["trainOption"]);
 }
 
-void ItemBasedTrain::AdjustRating() {
-    Log::I("recsys", "ItemBasedTrain::AdjustRating()");
-    if (mConfig["parameter"]["similarityType"].asString() == "adjustedCosine") {
-        AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrix);
-    } else if (mConfig["parameter"]["similarityType"].asString() == "correlation") {
-        AdjustRatingByMinusItemAverage(*mRatingTrait, mRatingMatrix);
-    } else { // if (mConfig["parameter"]["similarityType"].asString() == "cosine")
-    }
+void ItemBasedTrain::CreateParameter() {
+    Log::I("recsys", "ItemBasedTrain::CreateParameter()");
+    mParameter = new ItemBased::Parameter(mConfig["parameter"]);
+}
+
+void ItemBasedTrain::LoadTrainData() {
+    Log::I("recsys", "ItemBasedTrain::LoadTrainData()");
+    Log::I("recsys", "train rating file = " + mRatingTrainFilepath);
+    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
+    mTrainData = new RatingMatItems();
+    mTrainData->Init(rlist);
 }
 
 void ItemBasedTrain::InitModel() {
     Log::I("recsys", "ItemBasedTrain::InitModel()");
-    if (mConfig["parameter"]["modelType"].asString() == "fixedNeighborSize") {
-        int neighborSize = mConfig["parameter"]["neighborSize"].asInt();
-        mModel = new ItemBased::FixedNeighborSizeModel(mRatingMatrix->NumItem(), neighborSize);
-    } else if (mConfig["parameter"]["modelType"].asString() == "fixedSimilarityThreshold") {
-        float threshold = static_cast<float>(mConfig["parameter"]["similarityThreshold"].asDouble());
-        mModel = new ItemBased::FixedSimilarityThresholdModel(mRatingMatrix->NumItem(), threshold);
-    } else {
-        throw LonganConfigError("No Such modelType");
-    }
+    mModel = new ItemBased::ModelTrain(mParameter, mTrainData->NumItem());
 }
 
 void ItemBasedTrain::ComputeModel() {
     Log::I("recsys", "ItemBasedTrain::ComputeModel()");
-    if (mConfig["trainOption"]["accelerate"].asBool()) {
-        int numThread = mConfig["trainOption"]["numThread"].asInt();
-        if (numThread == 0) {
-            numThread = SystemInfo::GetNumCPUCore();
-        }
-        mModelComputationDelegate = new ItemBased::DynamicScheduledModelComputation(numThread);
+    ItemBased::ModelComputation *computationDelegate = nullptr;
+    if (mTrainOption->Accelerate()) {
+        computationDelegate = new ItemBased::ModelComputationMT();
     } else {
-        mModelComputationDelegate = new ItemBased::SimpleModelComputation();
+        computationDelegate = new ItemBased::ModelComputationST();
     }
-    mModelComputationDelegate->ComputeModel(mRatingMatrix, mModel);
+    computationDelegate->ComputeModel(mTrainOption, mTrainData, mModel);
+    delete computationDelegate;
 }
 
 void ItemBasedTrain::SaveModel() {
     Log::I("recsys", "ItemBasedTrain::SaveModel()");
+    Log::I("recsys", "write model file = " + mModelFilepath);
     mModel->Save(mModelFilepath);
 }
 
 void ItemBasedTrain::Cleanup() {
     Log::I("recsys", "ItemBasedTrain::Clueanup()");
-    delete mModelComputationDelegate;
+    delete mTrainOption;
+    delete mParameter;
+    delete mTrainData;
     delete mModel;
-    delete mRatingTrait;
-    delete mRatingMatrix;
 }
 
 } //~ namespace longan

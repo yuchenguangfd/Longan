@@ -7,14 +7,10 @@
 #ifndef RECSYS_NEIGHBOR_ITEM_BASED_TRAIN_H
 #define RECSYS_NEIGHBOR_ITEM_BASED_TRAIN_H
 
+#include "item_based_util.h"
 #include "item_based_model.h"
-#include "item_based_model_computation.h"
 #include "recsys/base/basic_train.h"
 #include "recsys/base/rating_matrix_as_items.h"
-#include "recsys/base/rating_trait.h"
-#include "common/lang/defines.h"
-#include <json/json.h>
-#include <string>
 
 namespace longan {
 
@@ -23,17 +19,18 @@ public:
     using BasicTrain::BasicTrain;
     virtual void Train() override;
 protected:
-    void LoadRatings();
-    void AdjustRating();
+    void CreateTrainOption();
+    void CreateParameter();
+    void LoadTrainData();
     void InitModel();
     void ComputeModel();
     void SaveModel();
     void Cleanup();
 protected:
-    RatingMatrixAsItems<> *mRatingMatrix = nullptr;
-    RatingTrait *mRatingTrait = nullptr;
+    const ItemBased::TrainOption *mTrainOption = nullptr;
+    const ItemBased::Parameter *mParameter = nullptr;
+    RatingMatItems *mTrainData = nullptr;
     ItemBased::ModelTrain *mModel = nullptr;
-    ItemBased::ModelComputation *mModelComputationDelegate = nullptr;
 };
 
 } //~ namespace longan

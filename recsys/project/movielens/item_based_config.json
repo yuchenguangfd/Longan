@@ -1,6 +1,6 @@
 {
 	"parameter": {
-		"simType": "adjustedCosine",
+		"simType": "adjustedCosine"
 	},
 	"trainOption": {
 		"accelerate": true,

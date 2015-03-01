@@ -8,10 +8,10 @@
 
 namespace longan {
 
-void AdjustRatingByMinusUserAverage(const RatingTrait& rtrait, RatingMatUsers *rmat) {
-    for (int uid = 0; uid < rmat->NumUser(); ++uid) {
-         UserVec& uvec = rmat->GetUserVector(uid);
-         float uavg = rtrait.UserAverage(uid);
+void AdjustRatingByMinusUserAverage(const RatingTrait& trait, RatingMatUsers *mat) {
+    for (int uid = 0; uid < mat->NumUser(); ++uid) {
+         UserVec& uvec = mat->GetUserVector(uid);
+         float uavg = trait.UserAverage(uid);
          ItemRating *data = uvec.Data();
          int size = uvec.Size();
          for (int i = 0; i < size; ++i) {
@@ -34,6 +34,35 @@ void AdjustRatingByMinusUserAverage(const RatingTrait& rtrait, RatingMatItems *r
     }
 }
 
+void AdjustRatingByMinusUserAverage(RatingMatItems* mat) {
+    std::vector<float> userRatingAvg(mat->NumUser());
+    std::vector<int> userRatingCount(mat->NumUser());
+    for (int iid = 0; iid < mat->NumItem(); ++iid) {
+        const ItemVec& ivec = mat->GetItemVector(iid);
+        const UserRating *data = ivec.Data();
+        int size = ivec.Size();
+        for (int i = 0; i < size; ++i) {
+            const UserRating& ur = data[i];
+            userRatingAvg[ur.UserId()] += ur.Rating();
+            ++userRatingCount[ur.UserId()];
+        }
+    }
+    for (int uid = 0; uid < mat->NumUser(); ++uid) {
+        if (userRatingCount[uid] > 0) {
+            userRatingAvg[uid] /= userRatingCount[uid];
+        }
+    }
+    for (int iid = 0; iid < mat->NumItem(); ++iid) {
+        ItemVec& ivec = mat->GetItemVector(iid);
+        UserRating *data = ivec.Data();
+        int size = ivec.Size();
+        for (int i = 0; i < size; ++i) {
+            UserRating& ur = data[i];
+            ur.SetRating(ur.Rating() - userRatingAvg[ur.UserId()]);
+        }
+    }
+}
+
 void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatUsers *rmat) {
     for (int uid = 0; uid < rmat->NumUser(); ++uid) {
         UserVec& uvec = rmat->GetUserVector(uid);
@@ -49,7 +78,7 @@ void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatUsers *r
 
 void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatItems *rmat) {
     for (int iid = 0; iid < rmat->NumItem(); ++iid) {
-        auto& ivec = rmat->GetItemVector(iid);
+        ItemVec& ivec = rmat->GetItemVector(iid);
         UserRating *data = ivec.Data();
         int size = ivec.Size();
         float iavg = rtrait.ItemAverage(iid);
@@ -60,5 +89,22 @@ void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatItems *r
     }
 }
 
-} //~ namespace longan
+void AdjustRatingByMinusItemAverage(RatingMatItems* mat) {
+    for (int iid = 0; iid < mat->NumItem(); ++iid) {
+        ItemVec& ivec = mat->GetItemVector(iid);
+        UserRating *data = ivec.Data();
+        int size = ivec.Size();
+        if (size == 0) continue;
+        float iavg = 0.0;
+        for (int i = 0; i < size; ++i) {
+            iavg += data[i].Rating();
+        }
+        iavg /= size;
+        for (int i = 0; i < size; ++i) {
+            UserRating &ur = data[i];
+            ur.SetRating(ur.Rating() - iavg);
+        }
+    }
+}
 
+} //~ namespace longan

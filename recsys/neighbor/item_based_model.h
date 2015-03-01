@@ -7,6 +7,7 @@
 #ifndef RECSYS_NEIGHBOR_ITEM_BASED_MODEL_H
 #define RECSYS_NEIGHBOR_ITEM_BASED_MODEL_H
 
+#include "item_based_util.h"
 #include "common/util/running_statistic.h"
 #include <vector>
 #include <string>
@@ -17,73 +18,62 @@ namespace ItemBased {
 
 class NeighborItem {
 public:
-    NeighborItem(int itemId, float similarity): mItemId(itemId), mSimilarity(similarity) { }
-    int ItemId() const {
-        return mItemId;
-    }
-    float Similarity() const {
-        return mSimilarity;
-    }
+    NeighborItem(int iid, float sim, float rating) : mItemId(iid), mSimilarity(sim),
+        mRating(rating) { }
+    int ItemId() const { return mItemId; }
+    float Similarity() const { return mSimilarity; }
+    float Rating() const { return mRating; }
 private:
     int mItemId;
     float mSimilarity;
+    float mRating;
 };
 
-inline bool operator < (const NeighborItem& lhs, const NeighborItem& rhs) {
+inline bool operator< (const NeighborItem& lhs, const NeighborItem& rhs) {
     return lhs.Similarity() < rhs.Similarity();
 }
 
+class ModelComputation;
+class ModelComputationST;
+class ModelComputationMT;
+class ModelComputationMTStaticSchedule;
+
 class ModelTrain {
 public:
-    ModelTrain(int numItem);
-    virtual ~ModelTrain();
-    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity) = 0;
-    virtual const NeighborItem* NeighborBegin(int itemId) const = 0;
-    virtual const NeighborItem* NeighborEnd(int itemId) const = 0;
-    virtual int NeighborSize(int itemId) const = 0;
+    ModelTrain(const Parameter *param, int numItem);
+    int NumItem() const { return mNumItem; }
     void Save(const std::string& filename);
-protected:
+    void PutSimilarity(int iid1, int iid2, float sim) {
+        if (iid1 < iid2) {
+            mSimMat[iid2][iid1] = sim;
+        } else {
+            mSimMat[iid1][iid2] = sim;
+        }
+    }
+    float GetSimilarity(int iid1, int iid2) const {
+        return (iid1 < iid2) ? mSimMat[iid2][iid1] : mSimMat[iid1][iid2];
+    }
+    friend ModelComputation;
+    friend ModelComputationST;
+    friend ModelComputationMT;
+    friend ModelComputationMTStaticSchedule;
+private:
+    const Parameter *mParameter;
     int mNumItem;
-};
-
-class FixedNeighborSizeModel : public ModelTrain {
-public:
-    FixedNeighborSizeModel(int numItem, int neighborSize);
-    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity) override;
-    virtual const NeighborItem* NeighborBegin(int itemId) const override;
-    virtual const NeighborItem* NeighborEnd(int itemId) const override;
-    virtual int NeighborSize(int itemId) const override;
-private:
-    std::vector<RunningMaxK<NeighborItem>> mNeighborItemTable;
-};
-
-class FixedSimilarityThresholdModel : public ModelTrain {
-public:
-    FixedSimilarityThresholdModel(int numItem, float threshold);
-    virtual void AddPairSimilarity(int firstItemId, int secondItemId, float similarity) override;
-    virtual const NeighborItem* NeighborBegin(int itemId) const override;
-    virtual const NeighborItem* NeighborEnd(int itemId) const override;
-    virtual int NeighborSize(int itemId) const override;
-private:
-    float mThreshold;
-    std::vector<std::vector<NeighborItem>> mNeighborItemTable;
+    std::vector<std::vector<float>> mSimMat; // triangle matrix
 };
 
 class ModelPredict {
 public:
     ModelPredict();
-    ~ModelPredict();
-    const NeighborItem* NeighborBegin(int itemId) const;
-    const NeighborItem* NeighborEnd(int itemId) const;
-    int NeighborSize(int itemId) const;
-    const NeighborItem* ReverseNeighborBegin(int itemId) const;
-    const NeighborItem* ReverseNeighborEnd(int itemId) const;
-    int ReverseNeighborSize(int itemId) const;
+    int NumItem() const { return mNumItem; }
     void Load(const std::string& filename);
+    float GetSimilarity(int iid1, int iid2) const {
+        return (iid1 < iid2) ? mSimMat[iid2][iid1] : mSimMat[iid1][iid2];
+    }
 private:
     int mNumItem;
-    std::vector<std::vector<NeighborItem>> mNeighborItemTable;
-    std::vector<std::vector<NeighborItem>> mReverseNeighborItemTable;
+    std::vector<std::vector<float>> mSimMat; // triangle matrix
 };
 
 } //~ namespace ItemBased

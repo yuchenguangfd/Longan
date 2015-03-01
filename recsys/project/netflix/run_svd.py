@@ -12,18 +12,18 @@ def run_command(cmd):
         sys.exit(-1)
         
 def run_svd():
-    run_command("../../svd/svd_convert_longan "
-              + "-ratingTextFilepath=./Netflix/rating_train.txt "
-              + "-ratingBinaryFilepath=./Netflix/rating_train.bin")
-    run_command("../../svd/svd_convert_longan "
-              + "-ratingTextFilepath=./Netflix/rating_test.txt "
-              + "-ratingBinaryFilepath=./Netflix/rating_test.bin")
+#     run_command("../../svd/svd_convert_longan "
+#               + "-ratingTextFilepath=./Netflix/rating_train.txt "
+#               + "-ratingBinaryFilepath=./Netflix/rating_train.bin")
+#     run_command("../../svd/svd_convert_longan "
+#               + "-ratingTextFilepath=./Netflix/rating_test.txt "
+#               + "-ratingBinaryFilepath=./Netflix/rating_test.bin")
     
-    run_command("../../svd/svd_train_longan "
-              + "-ratingTrainFilepath=./Netflix/rating_train.bin "
-              + "-ratingValidateFilepath=./Netflix/rating_test.bin "
-              + "-configFilepath=./svd_config.json "
-              + "-modelFilepath=./svd_model.dat")
+#     run_command("../../svd/svd_train_longan "
+#               + "-ratingTrainFilepath=./Netflix/rating_train.bin "
+#               + "-ratingValidateFilepath=./Netflix/rating_test.bin "
+#               + "-configFilepath=./svd_config.json "
+#               + "-modelFilepath=./svd_model.dat")
     run_command("../../svd/svd_evaluate_longan " 
               + "-ratingTrainFilepath=./Netflix/rating_train.bin "
               + "-configFilepath=./svd_config.json "

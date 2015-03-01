@@ -13,11 +13,13 @@ build_env.Prepend(CPPPATH = "#/external/gflags/include",
 
 build_env.Program("item_based_model_unittest",
                   ["item_based_model_unittest.cpp", 
-                   "item_based_model.cpp"])
+                   "item_based_model.cpp",
+                   "item_based_util.cpp"])
 build_env.Program("item_based_model_computation_unittest",
                   ["item_based_model_computation_unittest.cpp", 
                    "item_based_model.cpp",
-                   "item_based_model_computation.cpp"])
+                   "item_based_model_computation.cpp",
+                   "item_based_util.cpp"])
 
 build_env.Program("item_based_convert_longan",
                   ["item_based_convert_longan.cpp"])
@@ -25,12 +27,14 @@ build_env.Program("item_based_train_longan",
                   ["item_based_train_longan.cpp", 
                    "item_based_train.cpp", 
                    "item_based_model.cpp",
-                   "item_based_model_computation.cpp"])
+                   "item_based_model_computation.cpp",
+                   "item_based_util.cpp"])
 build_env.Program("item_based_evaluate_longan",
                   ["item_based_evaluate_longan.cpp",
                    "item_based_evaluate.cpp",
                    "item_based_predict.cpp",
-                   "item_based_model.cpp"])
+                   "item_based_model.cpp",
+                   "item_based_util.cpp"])
 
 build_env.Program("user_based_model_unittest",
                   ["user_based_model_unittest.cpp",

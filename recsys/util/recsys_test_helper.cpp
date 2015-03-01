@@ -35,9 +35,9 @@ RatingList RecsysTestHelper::CreateRandomRatingList(int numUser, int numItem, in
     return std::move(rlist);
 }
 
-RatingMatrixAsItems<> RecsysTestHelper::CreateRandomRatingMatrixAsItems(int numUser, int numItem, int numRating) {
+RatingMatItems RecsysTestHelper::CreateRandomRatingMatItems(int numUser, int numItem, int numRating) {
     RatingList rlist = CreateRandomRatingList(numUser, numItem, numRating);
-    RatingMatrixAsItems<> rmat;
+    RatingMatItems rmat;
     rmat.Init(rlist);
     return std::move(rmat);
 }
