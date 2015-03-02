@@ -68,7 +68,7 @@ TEST(ModelComputationTest, ComputeModelMTAndMTStaticScheduleResultSame) {
     comp2.ComputeModel(&option, &trainData, &model2);
     for (int iid1 = 0; iid1 < numItem; ++iid1) {
         for (int iid2 = iid1 + 1; iid2 < numItem; ++iid2) {
-//            ASSERT_FLOAT_EQ(model1.GetSimilarity(iid1, iid2), model2.GetSimilarity(iid1, iid2));
+            ASSERT_FLOAT_EQ(model1.GetSimilarity(iid1, iid2), model2.GetSimilarity(iid1, iid2));
         }
     }
 }

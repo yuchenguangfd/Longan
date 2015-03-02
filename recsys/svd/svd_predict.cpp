@@ -20,6 +20,7 @@ void SVDPredict::Init() {
     CreateParameter();
     LoadTrainData();
     LoadModel();
+    InitCachedTopNItems();
 }
 
 void SVDPredict::CreateTrainOption() {
@@ -58,6 +59,11 @@ void SVDPredict::LoadModel() {
     mModel->Load(mModelFilepath);
 }
 
+void SVDPredict::InitCachedTopNItems() {
+    Log::I("recsys", "SVDPredict::InitCachedTopNItems()");
+    mCachedTopNItems.resize(mTrainData->NumUser());
+}
+
 void SVDPredict::Cleanup() {
     delete mTrainOption;
     delete mParameter;
@@ -86,6 +92,9 @@ float SVDPredict::PredictRating(int userId, int itemId) const {
 ItemIdList SVDPredict::PredictTopNItem(int userId, int listSize) const {
     assert(userId >= 0 && userId < mModel->NumUser());
     assert(listSize > 0);
+    if (listSize <= mCachedTopNItems[userId].size()) {
+        return PredictTopNItemFromCache(userId, listSize);
+    }
     int numItem = mTrainData->NumItem();
     const UserVec& uv = mTrainData->GetUserVector(userId);
     const ItemRating *data = uv.Data();
@@ -120,6 +129,15 @@ ItemIdList SVDPredict::PredictTopNItem(int userId, int listSize) const {
         for (int i = 0; i < ratings.size(); ++i) {
            topNItem[i] = ratings[i].ItemId();
         }
+    }
+    mCachedTopNItems[userId] = topNItem;
+    return std::move(topNItem);
+}
+
+ItemIdList SVDPredict::PredictTopNItemFromCache(int userId, int listSize) const {
+    ItemIdList topNItem(listSize);
+    for (int i = 0; i < listSize; ++i) {
+        topNItem[i] = mCachedTopNItems[userId][i];
     }
     return std::move(topNItem);
 }

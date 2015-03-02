@@ -25,11 +25,14 @@ private:
     void CreateParameter();
     void LoadTrainData();
     void LoadModel();
+    void InitCachedTopNItems();
+    ItemIdList PredictTopNItemFromCache(int userId, int listSize) const;
 protected:
     RatingMatUsers *mTrainData = nullptr;
     SVD::TrainOption *mTrainOption = nullptr;
     SVD::Parameter *mParameter = nullptr;
     SVD::ModelPredict *mModel = nullptr;
+    mutable std::vector<ItemIdList> mCachedTopNItems;
 };
 
 } //~ namespace longan

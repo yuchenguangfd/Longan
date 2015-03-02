@@ -24,6 +24,7 @@ void ItemBasedPredict::Init() {
     LoadTrainData();
     AdjustRating();
     LoadModel();
+    InitCachedTopNItems();
 }
 
 void ItemBasedPredict::CreatePredictOption() {
@@ -60,6 +61,11 @@ void ItemBasedPredict::LoadModel() {
     Log::I("recsys", "mdoel file = " + mModelFilepath);
     mModel = new ItemBased::ModelPredict();
     mModel->Load(mModelFilepath);
+}
+
+void ItemBasedPredict::InitCachedTopNItems() {
+    Log::I("recsys", "ItemBasedPredict::InitCachedTopNItems()");
+    mCachedTopNItems.resize(mTrainData->NumUser());
 }
 
 float ItemBasedPredict::PredictRating(int userId, int itemId) const {
@@ -117,6 +123,9 @@ float ItemBasedPredict::PredictRatingFixedSizeNeighbor(int userId, int itemId) c
 ItemIdList ItemBasedPredict::PredictTopNItem(int userId, int listSize) const {
     assert(userId >= 0 && userId < mTrainData->NumUser());
     assert(listSize > 0);
+    if (listSize <= mCachedTopNItems[userId].size()) {
+        return PredictTopNItemFromCache(userId, listSize);
+    }
     int numItem = mTrainData->NumItem();
     const UserVec& uv = mTrainData->GetUserVector(userId);
     const ItemRating *data = uv.Data();
@@ -152,13 +161,21 @@ ItemIdList ItemBasedPredict::PredictTopNItem(int userId, int listSize) const {
             topNItem[i] = ratings[i].ItemId();
         }
     }
+    mCachedTopNItems[userId] = topNItem;
+    return std::move(topNItem);
+}
+
+ItemIdList ItemBasedPredict::PredictTopNItemFromCache(int userId, int listSize) const {
+    ItemIdList topNItem(listSize);
+    for (int i = 0; i < listSize; ++i) {
+        topNItem[i] = mCachedTopNItems[userId][i];
+    }
     return std::move(topNItem);
 }
 
 float ItemBasedPredict::ComputeItemSimilarity(int itemId1, int itemId2) const {
     return mModel->GetSimilarity(itemId1, itemId2);
 }
-
 
 void ItemBasedPredict::Cleanup() {
     Log::I("recsys", "ItemBasedPredict::Cleanup()");

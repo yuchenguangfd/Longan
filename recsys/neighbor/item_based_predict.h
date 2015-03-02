@@ -31,14 +31,17 @@ private:
     void LoadTrainData();
     void AdjustRating();
     void LoadModel();
+    void InitCachedTopNItems();
     float PredictRatingAllNeighbor(int userId, int itemId) const;
     float PredictRatingFixedSizeNeighbor(int userId, int itemId) const;
+    ItemIdList PredictTopNItemFromCache(int userId, int listSize) const;
 private:
     const ItemBased::PredictOption *mPredictOption = nullptr;
     const ItemBased::Parameter *mParameter = nullptr;
     RatingMatUsers *mTrainData = nullptr;
     RatingTrait *mTrainDataTrait = nullptr;
     ItemBased::ModelPredict *mModel = nullptr;
+    mutable std::vector<ItemIdList> mCachedTopNItems;
 };
 
 } //~ namespace longan

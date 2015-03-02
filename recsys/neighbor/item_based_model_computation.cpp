@@ -87,7 +87,7 @@ void ModelComputationMT::ComputeModel(const TrainOption *option, RatingMatItems 
     mTrainData = trainData;
     mModel = model;
     AdjustRating();
-    mTotoalTask = (int64)(mTrainData->NumItem()) * mTrainData->NumItem() / 2;
+    mTotoalTask = (int64)(mTrainData->NumItem()-1) * mTrainData->NumItem() / 2;
     mProcessedTask = 0;
     mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, mTrainOption->NumThread(), 1);
     mScheduler->Start();
