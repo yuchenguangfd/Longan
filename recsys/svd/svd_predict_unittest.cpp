@@ -55,6 +55,8 @@ TEST(SVDPredictTest, PredictRatingOK) {
     config["trainOption"]["iterations"] = 1;
     config["trainOption"]["learningRate"] = 0.1;
     config["trainOption"]["useRatingAverage"] = true;
+    config["trainOption"]["numUserBlock"] = 2;
+    config["trainOption"]["numItemBlock"] = 2;
     SVD::Parameter parameter(config["parameter"]);
     ModelTrainMock modelTrain(&parameter, 2, 2, 0.0);
     modelTrain.InitMockData();

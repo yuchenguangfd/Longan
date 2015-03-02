@@ -12,8 +12,6 @@
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_matrix_as_users.h"
 #include "recsys/base/rating_trait.h"
-#include <json/json.h>
-#include <string>
 
 namespace longan {
 

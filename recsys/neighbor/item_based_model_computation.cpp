@@ -16,9 +16,9 @@ namespace longan {
 namespace ItemBased {
 
 void ModelComputation::AdjustRating() {
-    if (mModel->mParameter->SimType() == Parameter::SimTypeAdjustedCosine) {
+    if (mModel->GetParameter()->SimType() == Parameter::SimTypeAdjustedCosine) {
         AdjustRatingByMinusUserAverage(mTrainData);
-    } else if (mModel->mParameter->SimType() == Parameter::SimTypeCorrelation) {
+    } else if (mModel->GetParameter()->SimType() == Parameter::SimTypeCorrelation) {
         AdjustRatingByMinusItemAverage(mTrainData);
     }
 }
@@ -76,7 +76,7 @@ void ModelComputationST::ComputeModel(const TrainOption *option, RatingMatItems 
         for (int iid2 = iid1 + 1; iid2 < mTrainData->NumItem(); ++iid2) {
             const ItemVec& iv2 = mTrainData->GetItemVector(iid2);
             float sim = ComputeSimilarity(iv1, iv2);
-            mModel->mSimMat[iid2][iid1] = sim;
+            mModel->PutSimilarity(iid1, iid2, sim);
         }
     }
 }
@@ -136,7 +136,7 @@ void ModelComputationMT::ConsumerRun() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            mModel->mSimMat[task.iid2][task.iid1] = task.sim;
+            mModel->PutSimilarity(task.iid1, task.iid2, task.sim);
         }
         mProcessedTask += currentBundle->size();
         delete currentBundle;
@@ -179,7 +179,7 @@ void ModelComputationMTStaticSchedule::ComputeModel(const TrainOption *option,
 void ModelComputationMTStaticSchedule::ThreadRun(int64 taskIdBegin, int64 taskIdEnd) {
     for (int64 taskId = taskIdBegin; taskId < taskIdEnd; ++taskId) {
         int iid1 = static_cast<int>((Math::Sqrt(8.0 * taskId + 1) + 1) / 2);
-        int iid2 = taskId - iid1*(iid1-1)/2;
+        int iid2 = taskId - (int64)iid1*(iid1-1)/2;
         const ItemVec& iv1 = mTrainData->GetItemVector(iid1);
         const ItemVec& iv2 = mTrainData->GetItemVector(iid2);
         float sim = ComputeSimilarity(iv1, iv2);

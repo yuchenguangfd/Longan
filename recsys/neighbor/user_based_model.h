@@ -7,6 +7,7 @@
 #ifndef RECSYS_NEIGHBOR_USER_BASED_MODEL_H
 #define RECSYS_NEIGHBOR_USER_BASED_MODEL_H
 
+#include "user_based_util.h"
 #include "common/util/running_statistic.h"
 #include <vector>
 #include <string>
@@ -17,16 +18,15 @@ namespace UserBased {
 
 class NeighborUser {
 public:
-    NeighborUser(int userId, float similarity) : mUserId(userId), mSimilarity(similarity) { }
-    int UserId() const {
-        return mUserId;
-    }
-    float Similarity() const {
-        return mSimilarity;
-    }
+    NeighborUser(int uid, float sim, float rating) : mUserId(uid), mSimilarity(sim),
+        mRating(rating) { }
+    int UserId() const { return mUserId; }
+    float Similarity() const { return mSimilarity; }
+    float Rating() const { return mRating; }
 private:
     int mUserId;
     float mSimilarity;
+    float mRating;
 };
 
 inline bool operator < (const NeighborUser& lhs, const NeighborUser& rhs) {
@@ -35,51 +35,37 @@ inline bool operator < (const NeighborUser& lhs, const NeighborUser& rhs) {
 
 class ModelTrain {
 public:
-    ModelTrain(int numUser);
-    virtual ~ModelTrain();
-    virtual void AddPairSimilarity(int firstUserId, int secondUserId, float similarity) = 0;
-    virtual const NeighborUser* NeighborBegin(int userId) const = 0;
-    virtual const NeighborUser* NeighborEnd(int userId) const = 0;
-    virtual int NeighborSize(int userId) const = 0;
+    ModelTrain(const Parameter *param, int numUser);
+    int NumUser() const { return mNumUser; }
+    const Parameter* GetParameter() const { return mParameter; }
     void Save(const std::string& filename);
-protected:
+    void PutSimilarity(int uid1, int uid2, float sim) {
+        if (uid1 < uid2) {
+            mSimMat[uid2][uid1] = sim;
+        } else {
+            mSimMat[uid1][uid2] = sim;
+        }
+    }
+    float GetSimilarity(int uid1, int uid2) const {
+        return (uid1 < uid2) ? mSimMat[uid2][uid1] : mSimMat[uid1][uid2];
+    }
+private:
+    const Parameter *mParameter;
     int mNumUser;
-};
-
-class FixedNeighborSizeModel : public ModelTrain {
-public:
-    FixedNeighborSizeModel(int numUser, int neighborSize);
-    virtual void AddPairSimilarity(int firstUserId, int secondUserId, float similarity) override;
-    virtual const NeighborUser* NeighborBegin(int userId) const override;
-    virtual const NeighborUser* NeighborEnd(int userId) const override;
-    virtual int NeighborSize(int userId) const override;
-private:
-    std::vector<RunningMaxK<NeighborUser>> mNeighborUserList;
-};
-
-class FixedSimilarityThresholdModel : public ModelTrain {
-public:
-    FixedSimilarityThresholdModel(int numUser, float threshold);
-    virtual void AddPairSimilarity(int firstUserId, int secondUserId, float similarity) override;
-    virtual const NeighborUser* NeighborBegin(int userId) const override;
-    virtual const NeighborUser* NeighborEnd(int userId) const override;
-    virtual int NeighborSize(int userId) const override;
-private:
-    float mThreshold;
-    std::vector<std::vector<NeighborUser>> mNeighborUserList;
+    std::vector<std::vector<float>> mSimMat; // triangle matrix
 };
 
 class ModelPredict {
 public:
     ModelPredict();
-    ~ModelPredict();
-    const NeighborUser* NeighborBegin(int userId) const;
-    const NeighborUser* NeighborEnd(int userId) const;
-    int NeighborSize(int userId) const;
+    int NumUser() const { return mNumUser; }
     void Load(const std::string& filename);
+    float GetSimilarity(int uid1, int uid2) const {
+        return (uid1 < uid2) ? mSimMat[uid2][uid1] : mSimMat[uid1][uid2];
+    }
 private:
     int mNumUser;
-    std::vector<std::vector<NeighborUser>> mNeighborUserList;
+    std::vector<std::vector<float>> mSimMat; // triangle matrix
 };
 
 } //~ namespace UserBased

@@ -7,9 +7,6 @@
 #include "item_based_model.h"
 #include "common/lang/binary_input_stream.h"
 #include "common/lang/binary_output_stream.h"
-#include <algorithm>
-#include <cstdio>
-#include <cassert>
 
 namespace longan {
 

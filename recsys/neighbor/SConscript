@@ -38,11 +38,13 @@ build_env.Program("item_based_evaluate_longan",
 
 build_env.Program("user_based_model_unittest",
                   ["user_based_model_unittest.cpp",
-                   "user_based_model.cpp"])
+                   "user_based_model.cpp",
+                   "user_based_util.cpp"])
 build_env.Program("user_based_model_computation_unittest",
                   ["user_based_model_computation_unittest.cpp",
                    "user_based_model.cpp",
-                   "user_based_model_computation.cpp"])
+                   "user_based_model_computation.cpp",
+                   "user_based_util.cpp"])
 
 build_env.Program("user_based_convert_longan",
                   ["user_based_convert_longan.cpp"])
@@ -50,9 +52,11 @@ build_env.Program("user_based_train_longan",
                   ["user_based_train_longan.cpp", 
                    "user_based_train.cpp",
                    "user_based_model.cpp",
-                   "user_based_model_computation.cpp"])
+                   "user_based_model_computation.cpp",
+                   "user_based_util.cpp"])
 build_env.Program("user_based_evaluate_longan",
                   ["user_based_evaluate_longan.cpp",
                    "user_based_evaluate.cpp",
                    "user_based_predict.cpp",
-                   "user_based_model.cpp"])
+                   "user_based_model.cpp",
+                   "user_based_util.cpp"])

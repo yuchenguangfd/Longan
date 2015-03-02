@@ -7,7 +7,6 @@
 #include "item_based_predict.h"
 #include "recsys/base/rating_adjust.h"
 #include "common/logging/logging.h"
-#include "common/base/algorithm.h"
 #include "common/math/math.h"
 #include "common/lang/double.h"
 #include "common/util/running_statistic.h"
@@ -185,4 +184,5 @@ void ItemBasedPredict::Cleanup() {
     delete mTrainDataTrait;
     delete mModel;
 }
+
 } //~ namespace longan

@@ -6,8 +6,6 @@
 
 #include "item_based_model_computation.h"
 #include "recsys/util/recsys_test_helper.h"
-#include "common/time/stopwatch.h"
-#include "common/system/system_info.h"
 #include <gtest/gtest.h>
 
 using namespace longan;

@@ -7,10 +7,12 @@
 #ifndef RECSYS_NEIGHBOR_USER_BASED_MODEL_COMPUTATION_H
 #define RECSYS_NEIGHBOR_USER_BASED_MODEL_COMPUTATION_H
 
+#include "user_based_util.h"
 #include "user_based_model.h"
 #include "recsys/base/rating_matrix_as_users.h"
-#include "common/threading/pipelined_scheduler.h"
+#include "recsys/base/rating_trait.h"
 #include "common/lang/types.h"
+#include "common/threading/pipelined_scheduler.h"
 
 namespace longan {
 
@@ -18,46 +20,41 @@ namespace UserBased {
 
 class ModelComputation {
 public:
-    ModelComputation();
-    virtual ~ModelComputation();
-    virtual void ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) = 0;
+    virtual ~ModelComputation() { }
+    virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
+            ModelTrain *model) = 0;
 protected:
-    float ComputeSimilarity(const UserVector<>& firstUserVector, const UserVector<>& secondUserVector);
+    void AdjustRating();
+    float ComputeSimilarity(const UserVec& uv1, const UserVec& uv2);
+protected:
+    const TrainOption *mTrainOption = nullptr;
+    RatingMatUsers *mTrainData = nullptr;
+    ModelTrain *mModel = nullptr;
 };
 
-class SimpleModelComputation : public ModelComputation {
+class ModelComputationST : public ModelComputation {
 public:
-    virtual void ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) override;
+    virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
+            ModelTrain *model) override;
 };
 
-class StaticScheduledModelComputation : public ModelComputation {
+class ModelComputationMT : public ModelComputation, public PipelinedSchedulerClient {
 public:
-    virtual void ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) override;
-protected:
-    void DoWork(int64 taskIdBegin, int64 taskIdEnd);
-protected:
-    RatingMatrixAsUsers<> *mRatingMatrix;
-    ModelTrain *mModel;
-    std::vector<std::mutex*> mUpdateModelMutexs;
-};
-
-class DynamicScheduledModelComputation : public ModelComputation, public PipelinedSchedulerClient {
-public:
-    DynamicScheduledModelComputation(int numThread) : ModelComputation(), mNumThread(numThread) {
-        assert(numThread > 0);
-    }
-    virtual void ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) override;
+    virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
+            ModelTrain *model) override;
     virtual std::thread* CreateProducerThread() {
-        return new std::thread(&DynamicScheduledModelComputation::ProducerRun, this);
+        return new std::thread(&ModelComputationMT::ProducerRun, this);
     }
     virtual std::thread* CreateWorkerThread() {
-        return new std::thread(&DynamicScheduledModelComputation::WorkerRun, this);
+        return new std::thread(&ModelComputationMT::WorkerRun, this);
     }
     virtual std::thread* CreateConsumerThread(){
-        return new std::thread(&DynamicScheduledModelComputation::ConsumerRun, this);
+        return new std::thread(&ModelComputationMT::ConsumerRun, this);
     }
     virtual std::thread* CreateMonitorThread() {
-        return new std::thread(&DynamicScheduledModelComputation::MonitorRun, this);
+        return mTrainOption->MonitorProgress() ?
+                new std::thread(&ModelComputationMT::MonitorRun, this) :
+                nullptr;
     }
 protected:
     void ProducerRun();
@@ -66,22 +63,23 @@ protected:
     void MonitorRun();
 protected:
     struct Task {
-        int firstUserId;
-        int secondUserId;
-        float similarity;
-        Task(int uid1, int uid2) :
-            firstUserId(uid1),
-            secondUserId(uid2),
-            similarity(0.0f) { }
+        int uid1;
+        int uid2;
+        float sim;
     };
     static const int TASK_BUNDLE_SIZE = 16384;
     typedef std::vector<Task> TaskBundle;
-
-    RatingMatrixAsUsers<> *mRatingMatrix = nullptr;
-    ModelTrain *mModel = nullptr;
     PipelinedScheduler<TaskBundle> *mScheduler = nullptr;
-    int mNumThread;
-    double mProgress = 0.0;
+    int64 mTotoalTask;
+    int64 mProcessedTask;
+};
+
+class ModelComputationMTStaticSchedule : public ModelComputation {
+public:
+    virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
+            ModelTrain *model) override;
+private:
+    void ThreadRun(int64 taskIdBegin, int64 taskIdEnd);
 };
 
 } //~ namespace UserBased

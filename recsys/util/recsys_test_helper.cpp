@@ -42,9 +42,9 @@ RatingMatItems RecsysTestHelper::CreateRandomRatingMatItems(int numUser, int num
     return std::move(rmat);
 }
 
-RatingMatrixAsUsers<> RecsysTestHelper::CreateRandomRatingMatrixAsUsers(int numUser, int numItem, int numRating) {
+RatingMatUsers RecsysTestHelper::CreateRandomRatingMatUsers(int numUser, int numItem, int numRating) {
     RatingList rlist = CreateRandomRatingList(numUser, numItem, numRating);
-    RatingMatrixAsUsers<> rmat;
+    RatingMatUsers rmat;
     rmat.Init(rlist);
     return std::move(rmat);
 }

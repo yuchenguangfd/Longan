@@ -5,8 +5,6 @@
  */
 
 #include "item_based_model.h"
-#include "common/util/array_helper.h"
-#include "common/lang/binary_output_stream.h"
 #include <gtest/gtest.h>
 #include <cstdio>
 

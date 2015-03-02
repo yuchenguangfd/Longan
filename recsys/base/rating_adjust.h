@@ -13,9 +13,11 @@ namespace longan {
 void AdjustRatingByMinusUserAverage(const RatingTrait& rtrait, RatingMatUsers *rmat);
 void AdjustRatingByMinusUserAverage(const RatingTrait& rtrait, RatingMatItems *rmat);
 void AdjustRatingByMinusUserAverage(RatingMatItems *mat);
+void AdjustRatingByMinusUserAverage(RatingMatUsers *mat);
 
 void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatUsers *rmat);
 void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatItems *rmat);
 void AdjustRatingByMinusItemAverage(RatingMatItems *mat);
+void AdjustRatingByMinusItemAverage(RatingMatUsers *mat);
 
 } //~ namespace longan

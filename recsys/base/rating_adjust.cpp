@@ -63,6 +63,24 @@ void AdjustRatingByMinusUserAverage(RatingMatItems* mat) {
     }
 }
 
+void AdjustRatingByMinusUserAverage(RatingMatUsers* mat) {
+    for (int uid = 0; uid < mat->NumUser(); ++uid) {
+        UserVec& uvec = mat->GetUserVector(uid);
+        ItemRating *data = uvec.Data();
+        int size = uvec.Size();
+        if (size == 0) continue;
+        float uavg = 0.0;
+        for (int i = 0; i < size; ++i) {
+            uavg += data[i].Rating();
+        }
+        uavg /= size;
+        for (int i = 0; i < size; ++i) {
+            ItemRating &ir = data[i];
+            ir.SetRating(ir.Rating() - uavg);
+        }
+    }
+}
+
 void AdjustRatingByMinusItemAverage(const RatingTrait& rtrait, RatingMatUsers *rmat) {
     for (int uid = 0; uid < rmat->NumUser(); ++uid) {
         UserVec& uvec = rmat->GetUserVector(uid);
@@ -103,6 +121,35 @@ void AdjustRatingByMinusItemAverage(RatingMatItems* mat) {
         for (int i = 0; i < size; ++i) {
             UserRating &ur = data[i];
             ur.SetRating(ur.Rating() - iavg);
+        }
+    }
+}
+
+void AdjustRatingByMinusItemAverage(RatingMatUsers* mat) {
+    std::vector<float> itemRatingAvg(mat->NumItem());
+    std::vector<int> itemRatingCount(mat->NumItem());
+    for (int uid = 0; uid < mat->NumUser(); ++uid) {
+        const UserVec& uvec = mat->GetUserVector(uid);
+        const ItemRating *data = uvec.Data();
+        int size = uvec.Size();
+        for (int i = 0; i < size; ++i) {
+            const ItemRating& ir = data[i];
+            itemRatingAvg[ir.ItemId()] += ir.Rating();
+            ++itemRatingCount[ir.ItemId()];
+        }
+    }
+    for (int iid = 0; iid < mat->NumItem(); ++iid) {
+        if (itemRatingCount[iid] > 0) {
+            itemRatingAvg[iid] /= itemRatingCount[iid];
+        }
+    }
+    for (int uid = 0; uid < mat->NumUser(); ++uid) {
+        UserVec& uvec = mat->GetUserVector(uid);
+        ItemRating *data = uvec.Data();
+        int size = uvec.Size();
+        for (int i = 0; i < size; ++i) {
+            ItemRating& ir = data[i];
+            ir.SetRating(ir.Rating() - itemRatingAvg[ir.ItemId()]);
         }
     }
 }

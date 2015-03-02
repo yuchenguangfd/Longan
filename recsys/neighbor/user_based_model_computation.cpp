@@ -5,32 +5,31 @@
  */
 
 #include "user_based_model_computation.h"
+#include "recsys/base/rating_adjust.h"
+#include "common/math/math.h"
 #include "common/lang/double.h"
-#include "common/lang/integer.h"
-#include "common/system/system_info.h"
-#include "common/util/string_helper.h"
+#include "common/time/stopwatch.h"
 #include "common/logging/logging.h"
-#include "common/error.h"
-#include <thread>
-#include <vector>
-#include <cmath>
-#include <cassert>
 
 namespace longan {
 
 namespace UserBased {
 
-ModelComputation::ModelComputation() { }
+void ModelComputation::AdjustRating() {
+    if (mModel->GetParameter()->SimType() == Parameter::SimTypeAdjustedCosine) {
+        AdjustRatingByMinusItemAverage(mTrainData);
+    } else if (mModel->GetParameter()->SimType() == Parameter::SimTypeCorrelation) {
+        AdjustRatingByMinusUserAverage(mTrainData);
+    }
+}
 
-ModelComputation::~ModelComputation() { }
-
-float ModelComputation::ComputeSimilarity(const UserVector<>& firstUserVector, const UserVector<>& secondUserVector) {
-    int size1 = firstUserVector.Size();
+float ModelComputation::ComputeSimilarity(const UserVec& uv1, const UserVec& uv2) {
+    int size1 = uv1.Size();
     if (size1 == 0) return 0.0f;
-    int size2 = secondUserVector.Size();
+    int size2 = uv2.Size();
     if (size2 == 0) return 0.0f;
-    const ItemRating* data1 = firstUserVector.Data();
-    const ItemRating* data2 = secondUserVector.Data();
+    const ItemRating* data1 = uv1.Data();
+    const ItemRating* data2 = uv2.Data();
     double sum = 0.0;
     double norm1 = 0.0;
     double norm2 = 0.0;
@@ -62,125 +61,129 @@ float ModelComputation::ComputeSimilarity(const UserVector<>& firstUserVector, c
             rating2 = data2[j].Rating();
         }
     }
-    double denominator = sqrt(norm1 * norm2);
+    double denominator = Math::Sqrt(norm1 * norm2);
     return (float)(sum / (denominator + Double::EPS));
 }
 
-void SimpleModelComputation::ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) {
-    int numUser = ratingMatrix->NumUser();
-    for (int uid1 = 0; uid1 < numUser; ++uid1) {
-        const auto& uv1 = ratingMatrix->GetUserVector(uid1);
-        for (int uid2 = uid1 + 1; uid2 < numUser; ++uid2) {
-            const auto& uv2 = ratingMatrix->GetUserVector(uid2);
-            model->AddPairSimilarity(uid1, uid2, ComputeSimilarity(uv1, uv2));
+void ModelComputationST::ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
+        ModelTrain *model) {
+    mTrainOption = option;
+    mTrainData = trainData;
+    mModel = model;
+    AdjustRating();
+    for (int uid1 = 0; uid1 < mTrainData->NumUser(); ++uid1) {
+        const UserVec& uv1 = trainData->GetUserVector(uid1);
+        for (int uid2 = uid1 + 1; uid2 < mTrainData->NumUser(); ++uid2) {
+            const UserVec& uv2 = trainData->GetUserVector(uid2);
+            float sim = ComputeSimilarity(uv1, uv2);
+            mModel->PutSimilarity(uid1, uid2, sim);
         }
     }
 }
 
-void StaticScheduledModelComputation::ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) {
-    mRatingMatrix = ratingMatrix;
+void ModelComputationMT::ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
+        ModelTrain *model) {
+    mTrainOption = option;
+    mTrainData = trainData;
     mModel = model;
-    int numUser = mRatingMatrix->NumUser();
-    mUpdateModelMutexs.clear();
-    for (int i = 0; i < numUser; ++i) {
-        mUpdateModelMutexs.push_back(new std::mutex);
-    }
-    int64 numTaskTotal = (int64)numUser * (numUser - 1) / 2;
-    int numThread = SystemInfo::GetNumCPUCore();
-    int64 numTaskPerThread = numTaskTotal / numThread;
-    std::vector<std::thread> workers;
-    for (int i = 0; i < numThread; ++i) {
-        int64 begin = i * numTaskPerThread;
-        int64 end = (i != numThread-1)? (begin + numTaskPerThread) : numTaskTotal;
-        workers.push_back(std::thread(&StaticScheduledModelComputation::DoWork, this, begin, end));
-    }
-    for (std::thread& t : workers) {
-       t.join();
-    }
-    for (int i = 0; i < numUser; ++i) {
-        delete mUpdateModelMutexs[i];
-    }
-}
-
-void StaticScheduledModelComputation::DoWork(int64 taskIdBegin, int64 taskIdEnd) {
-    for (int64 taskId = taskIdBegin; taskId < taskIdEnd; ++taskId) {
-        int uid1 = static_cast<int>((sqrt(8.0*taskId+1)+1)/2);
-        int uid2 = taskId - (int64)uid1*(uid1-1)/2;
-        const auto& iv1 = mRatingMatrix->GetUserVector(uid1);
-        const auto& iv2 = mRatingMatrix->GetUserVector(uid2);
-        float similarity = ComputeSimilarity(iv1, iv2);
-        mUpdateModelMutexs[uid1]->lock();
-        mUpdateModelMutexs[uid2]->lock();
-        mModel->AddPairSimilarity(uid1, uid2, similarity);
-        mUpdateModelMutexs[uid2]->unlock();
-        mUpdateModelMutexs[uid1]->unlock();
-    }
-}
-
-void DynamicScheduledModelComputation::ComputeModel(RatingMatrixAsUsers<> *ratingMatrix, ModelTrain *model) {
-    mRatingMatrix = ratingMatrix;
-    mModel = model;
-    mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, mNumThread, 1);
+    AdjustRating();
+    mTotoalTask = (int64)(mTrainData->NumUser()-1) * mTrainData->NumUser() / 2;
+    mProcessedTask = 0;
+    mScheduler = new PipelinedScheduler<TaskBundle>(this, 1, mTrainOption->NumThread(), 1);
     mScheduler->Start();
     mScheduler->WaitFinish();
     delete mScheduler;
 }
 
-void DynamicScheduledModelComputation::ProducerRun() {
-    int numUser = mRatingMatrix->NumUser();
+void ModelComputationMT::ProducerRun() {
     TaskBundle *currentBundle = new TaskBundle();
     currentBundle->reserve(TASK_BUNDLE_SIZE);
-    for (int firstUserId = 0; firstUserId < numUser; ++firstUserId)  {
-        for (int secondUserId = firstUserId + 1; secondUserId < numUser; ++secondUserId) {
+    for (int uid1 = 0; uid1 < mTrainData->NumUser(); ++uid1)  {
+        for (int uid2 = uid1 + 1; uid2 < mTrainData->NumUser(); ++uid2) {
             if (currentBundle->size() == TASK_BUNDLE_SIZE) {
                 mScheduler->ProducerPutTask(currentBundle);
                 currentBundle = new TaskBundle();
                 currentBundle->reserve(TASK_BUNDLE_SIZE);
             }
-            currentBundle->push_back(Task(firstUserId, secondUserId));
+            Task task;
+            task.uid1 = uid1;
+            task.uid2 = uid2;
+            currentBundle->push_back(task);
         }
     }
     mScheduler->ProducerPutTask(currentBundle);
     mScheduler->ProducerDone();
 }
 
-void DynamicScheduledModelComputation::WorkerRun() {
+void ModelComputationMT::WorkerRun() {
     while (true) {
         TaskBundle *currentBundle = mScheduler->WorkerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            auto& uv1 = mRatingMatrix->GetUserVector(task.firstUserId);
-            auto& uv2 = mRatingMatrix->GetUserVector(task.secondUserId);
-            task.similarity = ComputeSimilarity(uv1, uv2);
+            const UserVec& uv1 = mTrainData->GetUserVector(task.uid1);
+            const UserVec& uv2 = mTrainData->GetUserVector(task.uid2);
+            task.sim = ComputeSimilarity(uv1, uv2);
         }
         mScheduler->WorkerPutTask(currentBundle);
     }
     mScheduler->WorkerDone();
 }
 
-void DynamicScheduledModelComputation::ConsumerRun() {
-    int64 totoalTask = static_cast<int64>(mRatingMatrix->NumUser())*mRatingMatrix->NumUser()/2;
-    int64 processedTask = 0;
+void ModelComputationMT::ConsumerRun() {
     while (true) {
         TaskBundle *currentBundle = mScheduler->ConsumerGetTask();
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            mModel->AddPairSimilarity(task.firstUserId, task.secondUserId, task.similarity);
+            mModel->PutSimilarity(task.uid1, task.uid2, task.sim);
         }
-        processedTask += currentBundle->size();
-        mProgress = static_cast<double>(processedTask)/totoalTask;
+        mProcessedTask += currentBundle->size();
         delete currentBundle;
     }
     mScheduler->ConsumerDone();
 }
 
-void DynamicScheduledModelComputation::MonitorRun() {
+void ModelComputationMT::MonitorRun() {
+    Stopwatch stopwatch;
     while (true) {
-        Log::Console("recsys", "Computing Model...%d%% done.", (int)(mProgress*100));
-        if (mProgress > 0.99) break;
+        int progress = static_cast<int>(100.0 * mProcessedTask / mTotoalTask);
+        Log::Console("recsys", "computing user-user similarity...%d%%(%d/%d) done. total time=%.2lfs",
+                progress, mProcessedTask, mTotoalTask, stopwatch.Toc());
+        if (mProcessedTask >= mTotoalTask) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
+    }
+}
+
+void ModelComputationMTStaticSchedule::ComputeModel(const TrainOption *option,
+        RatingMatUsers *trainData, ModelTrain *model) {
+    mTrainOption = option;
+    mTrainData = trainData;
+    mModel = model;
+    AdjustRating();
+    int numUser = mTrainData->NumUser();
+    int numThread = mTrainOption->NumThread();
+    int64 totalTask = (int64)numUser * (numUser - 1) / 2;
+    int64 taskPerThread = totalTask / numThread;
+    std::vector<std::thread> workers;
+    for (int i = 0; i < numThread; ++i) {
+        int64 begin = i * taskPerThread;
+        int64 end = (i != numThread-1) ? (begin + taskPerThread) : totalTask;
+        workers.push_back(std::thread(&ModelComputationMTStaticSchedule::ThreadRun, this, begin, end));
+    }
+    for (std::thread& t : workers) {
+       t.join();
+    }
+}
+
+void ModelComputationMTStaticSchedule::ThreadRun(int64 taskIdBegin, int64 taskIdEnd) {
+    for (int64 taskId = taskIdBegin; taskId < taskIdEnd; ++taskId) {
+        int uid1 = static_cast<int>((Math::Sqrt(8.0 * taskId + 1) + 1) / 2);
+        int uid2 = taskId - (int64)uid1*(uid1-1)/2;
+        const UserVec& uv1 = mTrainData->GetUserVector(uid1);
+        const UserVec& uv2 = mTrainData->GetUserVector(uid2);
+        float sim = ComputeSimilarity(uv1, uv2);
+        mModel->PutSimilarity(uid1, uid2, sim);
     }
 }
 

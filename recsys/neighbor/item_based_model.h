@@ -33,15 +33,11 @@ inline bool operator< (const NeighborItem& lhs, const NeighborItem& rhs) {
     return lhs.Similarity() < rhs.Similarity();
 }
 
-class ModelComputation;
-class ModelComputationST;
-class ModelComputationMT;
-class ModelComputationMTStaticSchedule;
-
 class ModelTrain {
 public:
     ModelTrain(const Parameter *param, int numItem);
     int NumItem() const { return mNumItem; }
+    const Parameter* GetParameter() const { return mParameter; }
     void Save(const std::string& filename);
     void PutSimilarity(int iid1, int iid2, float sim) {
         if (iid1 < iid2) {
@@ -53,10 +49,6 @@ public:
     float GetSimilarity(int iid1, int iid2) const {
         return (iid1 < iid2) ? mSimMat[iid2][iid1] : mSimMat[iid1][iid2];
     }
-    friend ModelComputation;
-    friend ModelComputationST;
-    friend ModelComputationMT;
-    friend ModelComputationMTStaticSchedule;
 private:
     const Parameter *mParameter;
     int mNumItem;
