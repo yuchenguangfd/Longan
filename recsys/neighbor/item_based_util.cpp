@@ -6,20 +6,38 @@
 
 #include "item_based_util.h"
 #include "common/system/system_info.h"
+#include "common/error.h"
+#include <cassert>
 
 namespace longan {
 
 namespace ItemBased {
 
 Parameter::Parameter(const Json::Value& parameter) {
+    if (parameter["ratingType"].asString() == "numerical") {
+        mRatingType = RatingTypeNumerical;
+    } else if (parameter["ratingType"].asString() == "binary") {
+        mRatingType = RatingTypeBinary;
+    } else {
+        throw LonganConfigError();
+    }
     if (parameter["simType"].asString() == "cosine") {
         mSimType = SimTypeCosine;
+        assert(mRatingType == RatingTypeNumerical);
     } else if (parameter["simType"].asString() == "adjustedCosine") {
         mSimType = SimTypeAdjustedCosine;
+        assert(mRatingType == RatingTypeNumerical);
     } else if (parameter["simType"].asString() == "correlation") {
         mSimType = SimTypeCorrelation;
+        assert(mRatingType == RatingTypeNumerical);
+    } else if (parameter["simType"].asString() == "binaryCosine") {
+        mSimType = SimTypeBinaryCosine;
+        assert(mRatingType == RatingTypeBinary);
+    } else if (parameter["simType"].asString() == "binaryJaccard") {
+        mSimType = SimTypeBinaryJaccard;
+        assert(mRatingType == RatingTypeBinary);
     } else {
-        mSimType = SimTypeCosine;
+        throw LonganConfigError();
     }
 }
 

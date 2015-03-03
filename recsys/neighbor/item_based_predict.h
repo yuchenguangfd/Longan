@@ -30,9 +30,10 @@ private:
     void AdjustRating();
     void LoadModel();
     void InitCachedTopNItems();
-    float PredictRatingAllNeighbor(int userId, int itemId) const;
-    float PredictRatingFixedSizeNeighbor(int userId, int itemId) const;
+    float PredictRatingByAllNeighbor(int userId, int itemId) const;
+    float PredictRatingByFixedSizeNeighbor(int userId, int itemId) const;
     ItemIdList PredictTopNItemFromCache(int userId, int listSize) const;
+    float PremdictTopNItemComputeScore(int userId, int itemId) const;
 private:
     const ItemBased::PredictOption *mPredictOption = nullptr;
     const ItemBased::Parameter *mParameter = nullptr;

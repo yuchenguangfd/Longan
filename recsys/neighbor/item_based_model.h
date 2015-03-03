@@ -18,13 +18,10 @@ namespace ItemBased {
 
 class NeighborItem {
 public:
-    NeighborItem(int iid, float sim, float rating) : mItemId(iid), mSimilarity(sim),
-        mRating(rating) { }
-    int ItemId() const { return mItemId; }
+    NeighborItem(float sim, float rating) : mSimilarity(sim), mRating(rating) { }
     float Similarity() const { return mSimilarity; }
     float Rating() const { return mRating; }
 private:
-    int mItemId;
     float mSimilarity;
     float mRating;
 };

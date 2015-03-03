@@ -42,16 +42,20 @@ void ItemBasedPredict::LoadTrainData() {
     RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
     mTrainData = new RatingMatUsers();
     mTrainData->Init(rlist);
-    mTrainDataTrait = new RatingTrait();
-    mTrainDataTrait->Init(rlist);
+    if (mParameter->RatingType() == ItemBased::Parameter::RatingTypeNumerical) {
+        mTrainDataTrait = new RatingTrait();
+        mTrainDataTrait->Init(rlist);
+    }
 }
 
 void ItemBasedPredict::AdjustRating() {
-    Log::I("recsys", "ItemBasedPredict::AdjustRating()");
-    if (mParameter->SimType() == ItemBased::Parameter::SimTypeAdjustedCosine) {
-        AdjustRatingByMinusUserAverage(*mTrainDataTrait, mTrainData);
-    } else if (mParameter->SimType() == ItemBased::Parameter::SimTypeCorrelation) {
-        AdjustRatingByMinusItemAverage(*mTrainDataTrait, mTrainData);
+    if (mParameter->RatingType() == ItemBased::Parameter::RatingTypeNumerical) {
+        Log::I("recsys", "ItemBasedPredict::AdjustRating()");
+        if (mParameter->SimType() == ItemBased::Parameter::SimTypeAdjustedCosine) {
+            AdjustRatingByMinusUserAverage(*mTrainDataTrait, mTrainData);
+        } else if (mParameter->SimType() == ItemBased::Parameter::SimTypeCorrelation) {
+            AdjustRatingByMinusItemAverage(*mTrainDataTrait, mTrainData);
+        }
     }
 }
 
@@ -70,14 +74,20 @@ void ItemBasedPredict::InitCachedTopNItems() {
 float ItemBasedPredict::PredictRating(int userId, int itemId) const {
 	assert(userId >= 0 && userId < mTrainData->NumUser());
 	assert(itemId >= 0 && itemId < mTrainData->NumItem());
-    if (mPredictOption->NeighborSize() <= 0) {
-        return PredictRatingAllNeighbor(userId, itemId);
+    if (mParameter->RatingType() == ItemBased::Parameter::RatingTypeNumerical) {
+        if (mPredictOption->NeighborSize() <= 0) {
+            return PredictRatingByAllNeighbor(userId, itemId);
+        } else {
+            return PredictRatingByFixedSizeNeighbor(userId, itemId);
+        }
+    } else if (mParameter->RatingType() == ItemBased::Parameter::RatingTypeBinary) {
+        return 1.0f;
     } else {
-        return PredictRatingFixedSizeNeighbor(userId, itemId);
+        return 0.0f;
     }
 }
 
-float ItemBasedPredict::PredictRatingAllNeighbor(int userId, int itemId) const {
+float ItemBasedPredict::PredictRatingByAllNeighbor(int userId, int itemId) const {
     const UserVec& uv = mTrainData->GetUserVector(userId);
     double numerator = 0.0;
     double denominator = 0.0;
@@ -95,13 +105,13 @@ float ItemBasedPredict::PredictRatingAllNeighbor(int userId, int itemId) const {
     return (float)predRating;
 }
 
-float ItemBasedPredict::PredictRatingFixedSizeNeighbor(int userId, int itemId) const {
+float ItemBasedPredict::PredictRatingByFixedSizeNeighbor(int userId, int itemId) const {
     const UserVec& uv = mTrainData->GetUserVector(userId);
     int neighborSize = Math::Min(mPredictOption->NeighborSize(), uv.Size());
     RunningMaxK<ItemBased::NeighborItem> neighbors(neighborSize);
     for (const ItemRating *ir = uv.Begin(), *end = uv.End(); ir != end; ++ir) {
         float sim = mModel->GetSimilarity(ir->ItemId(), itemId);
-        neighbors.Add(ItemBased::NeighborItem(ir->ItemId(), sim, ir->Rating()));
+        neighbors.Add(ItemBased::NeighborItem(sim, ir->Rating()));
     }
     double numerator = 0.0;
     double denominator = 0.0;
@@ -129,35 +139,33 @@ ItemIdList ItemBasedPredict::PredictTopNItem(int userId, int listSize) const {
     const UserVec& uv = mTrainData->GetUserVector(userId);
     const ItemRating *data = uv.Data();
     int size = uv.Size();
-    std::vector<ItemRating> ratings;
-    ratings.reserve(numItem);
+    std::vector<ItemRating> scores;
+    scores.reserve(numItem);
     int begin = -1, end = -1;
     for (int i = 0; i < size; ++i) {
         begin = end + 1;
         end = data[i].ItemId();
         for (int iid = begin; iid < end; ++iid) {
-            float predRating = PredictRating(userId, iid);
-            ratings.push_back(ItemRating(iid, predRating));
+            scores.push_back(ItemRating(iid, PremdictTopNItemComputeScore(userId, iid)));
         }
     }
     begin = end + 1;
     end = numItem;
     for (int iid = begin; iid < end; ++iid) {
-        float predRating = PredictRating(userId, iid);
-        ratings.push_back(ItemRating(iid, predRating));
+        scores.push_back(ItemRating(iid, PremdictTopNItemComputeScore(userId, iid)));
     }
-    std::sort(ratings.begin(), ratings.end(),
+    std::sort(scores.begin(), scores.end(),
         [](const ItemRating& lhs, const ItemRating& rhs)->bool {
             return lhs.Rating() > rhs.Rating();
     });
     ItemIdList topNItem(listSize);
-    if (listSize <= ratings.size()) {
+    if (listSize <= scores.size()) {
         for (int i = 0; i < listSize; ++i) {
-            topNItem[i] = ratings[i].ItemId();
+            topNItem[i] = scores[i].ItemId();
         }
     } else {
-        for (int i = 0; i < ratings.size(); ++i) {
-            topNItem[i] = ratings[i].ItemId();
+        for (int i = 0; i < scores.size(); ++i) {
+            topNItem[i] = scores[i].ItemId();
         }
     }
     mCachedTopNItems[userId] = topNItem;
@@ -170,6 +178,35 @@ ItemIdList ItemBasedPredict::PredictTopNItemFromCache(int userId, int listSize) 
         topNItem[i] = mCachedTopNItems[userId][i];
     }
     return std::move(topNItem);
+}
+
+float ItemBasedPredict::PremdictTopNItemComputeScore(int userId, int itemId) const {
+    if (mParameter->RatingType() == ItemBased::Parameter::RatingTypeNumerical) {
+        return PredictRating(userId, itemId);
+    } else if (mParameter->RatingType() == ItemBased::Parameter::RatingTypeBinary) {
+        const UserVec& uv = mTrainData->GetUserVector(userId);
+        float score = 0.0;
+        if (mPredictOption->NeighborSize() <= 0) {
+            for (const ItemRating *ir = uv.Begin(), *end = uv.End(); ir != end; ++ir) {
+                float sim = mModel->GetSimilarity(ir->ItemId(), itemId);
+                score += sim;
+            }
+        } else {
+            int neighborSize = Math::Min(mPredictOption->NeighborSize(), uv.Size());
+            RunningMaxK<float> neighbors(neighborSize);
+            for (const ItemRating *ir = uv.Begin(), *end = uv.End(); ir != end; ++ir) {
+                float sim = mModel->GetSimilarity(ir->ItemId(), itemId);
+                neighbors.Add(sim);
+            }
+            for (const float *ni = neighbors.CurrentMaxKBegin(), *end = neighbors.CurrentMaxKEnd();
+                    ni != end; ++ni) {
+                score += *ni;
+            }
+        }
+        return score;
+    } else {
+        return 0.0f;
+    }
 }
 
 float ItemBasedPredict::ComputeItemSimilarity(int itemId1, int itemId2) const {

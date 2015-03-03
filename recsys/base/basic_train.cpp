@@ -22,6 +22,7 @@ void BasicTrain::LoadConfig() {
     Log::I("recsys", "BasicTrain::LoadConfig()");
     Log::I("recsys", "config file = " + mConfigFilepath);
     JsonConfigHelper::LoadFromFile(mConfigFilepath, mConfig);
+    Log::I("recsys", "config = \n" + mConfig.toStyledString());
 }
 
 } //~ namespace longan

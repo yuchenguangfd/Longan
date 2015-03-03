@@ -16,14 +16,30 @@ namespace longan {
 namespace ItemBased {
 
 void ModelComputation::AdjustRating() {
-    if (mModel->GetParameter()->SimType() == Parameter::SimTypeAdjustedCosine) {
-        AdjustRatingByMinusUserAverage(mTrainData);
-    } else if (mModel->GetParameter()->SimType() == Parameter::SimTypeCorrelation) {
-        AdjustRatingByMinusItemAverage(mTrainData);
+    if (mModel->GetParameter()->RatingType() == Parameter::RatingTypeNumerical) {
+        if (mModel->GetParameter()->SimType() == Parameter::SimTypeAdjustedCosine) {
+            AdjustRatingByMinusUserAverage(mTrainData);
+        } else if (mModel->GetParameter()->SimType() == Parameter::SimTypeCorrelation) {
+            AdjustRatingByMinusItemAverage(mTrainData);
+        }
     }
 }
 
-float ModelComputation::ComputeSimilarity(const ItemVec& iv1, const ItemVec& iv2) {
+float ModelComputation::ComputeSimilarity(const ItemVec& iv1, const ItemVec& iv2) const {
+    if (mModel->GetParameter()->RatingType() == Parameter::RatingTypeNumerical) {
+        return ComputeCosineSimilarity(iv1, iv2);
+    } else {
+        if (mModel->GetParameter()->SimType() == Parameter::SimTypeBinaryCosine) {
+            return ComputeBinaryCosineSimilarity(iv1, iv2);
+        } else if (mModel->GetParameter()->SimType() == Parameter::SimTypeBinaryJaccard) {
+            return ComputeBinaryJaccardSimilarity(iv1, iv2);
+        } else {
+            return 0.0f;
+        }
+    }
+}
+
+float ModelComputation::ComputeCosineSimilarity(const ItemVec& iv1, const ItemVec& iv2) const {
     int size1 = iv1.Size();
     if (size1 == 0) return 0.0f;
     int size2 = iv2.Size();
@@ -63,6 +79,68 @@ float ModelComputation::ComputeSimilarity(const ItemVec& iv1, const ItemVec& iv2
     }
     double denominator = Math::Sqrt(norm1 * norm2);
     return (float)(sum / (denominator + Double::EPS));
+}
+
+float ModelComputation::ComputeBinaryCosineSimilarity(const ItemVec& iv1, const ItemVec& iv2) const {
+    int size1 = iv1.Size();
+    if (size1 == 0) return 0.0f;
+    int size2 = iv2.Size();
+    if (size2 == 0) return 0.0f;
+    const UserRating* data1 = iv1.Data();
+    const UserRating* data2 = iv2.Data();
+    int count = 0;
+    int i = 0, j = 0;
+    int uid1 = data1[i].UserId();
+    int uid2 = data2[j].UserId();
+    while (true) {
+        if (uid1 == uid2) {
+            ++count;
+            ++i; ++j;
+            if (i == size1 || j == size2) break;
+            uid1 = data1[i].UserId();
+            uid2 = data2[j].UserId();
+        } else if (uid1 < uid2) {
+            ++i;
+            if (i == size1) break;
+            uid1 = data1[i].UserId();
+        } else if (uid1 > uid2) {
+            ++j;
+            if (j == size2) break;
+            uid2 = data2[j].UserId();
+        }
+    }
+    return (float)(count / (Math::Sqrt((double)size1 * (double)size2)));
+}
+
+float ModelComputation::ComputeBinaryJaccardSimilarity(const ItemVec& iv1, const ItemVec& iv2) const {
+    int size1 = iv1.Size();
+    if (size1 == 0) return 0.0f;
+    int size2 = iv2.Size();
+    if (size2 == 0) return 0.0f;
+    const UserRating* data1 = iv1.Data();
+    const UserRating* data2 = iv2.Data();
+    int count = 0;
+    int i = 0, j = 0;
+    int uid1 = data1[i].UserId();
+    int uid2 = data2[j].UserId();
+    while (true) {
+        if (uid1 == uid2) {
+            ++count;
+            ++i; ++j;
+            if (i == size1 || j == size2) break;
+            uid1 = data1[i].UserId();
+            uid2 = data2[j].UserId();
+        } else if (uid1 < uid2) {
+            ++i;
+            if (i == size1) break;
+            uid1 = data1[i].UserId();
+        } else if (uid1 > uid2) {
+            ++j;
+            if (j == size2) break;
+            uid2 = data2[j].UserId();
+        }
+    }
+    return (float)((double)count / (size1 + size2 - count));
 }
 
 void ModelComputationST::ComputeModel(const TrainOption *option, RatingMatItems *trainData,
@@ -148,7 +226,7 @@ void ModelComputationMT::MonitorRun() {
     Stopwatch stopwatch;
     while (true) {
         int progress = static_cast<int>(100.0 * mProcessedTask / mTotoalTask);
-        Log::Console("recsys", "computing item-item similarity...%d%%(%d/%d) done. total time=%.2lfs",
+        Log::Console("recsys", "computing item-item similarity...%d%%(%lld/%lld) done. total time=%.2lfs",
                 progress, mProcessedTask, mTotoalTask, stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));

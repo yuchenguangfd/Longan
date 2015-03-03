@@ -15,14 +15,22 @@ namespace ItemBased {
 
 class Parameter {
 public:
+    enum RatingType {
+        RatingTypeNumerical,
+        RatingTypeBinary
+    };
     enum SimType {
         SimTypeCosine,
         SimTypeAdjustedCosine,
-        SimTypeCorrelation
+        SimTypeCorrelation,
+        SimTypeBinaryCosine,
+        SimTypeBinaryJaccard
     };
     Parameter(const Json::Value& parameter);
+    int RatingType() const { return mRatingType; }
     int SimType() const { return mSimType; }
 private:
+    int mRatingType;
     int mSimType;
 };
 

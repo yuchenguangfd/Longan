@@ -12,14 +12,16 @@ using namespace longan;
 using namespace longan::ItemBased;
 
 TEST(NeighborItemTest, ObjectCompareOK) {
-    NeighborItem ni1(42, 0.42f, 0.2f);
-    NeighborItem ni2(43, 0.43f, 0.1f);
+    NeighborItem ni1(0.42f, 0.2f);
+    NeighborItem ni2(0.43f, 0.1f);
     ASSERT_TRUE(ni1 < ni2);
 }
 
 TEST(ModelTest, SaveAndLoadOK) {
     int numItem = 10;
     Json::Value config;
+    config["ratingType"] = "numerical";
+    config["simType"] = "adjustedCosine";
     Parameter param(config);
     ModelTrain modelTrain(&param, numItem);
     for (int i = 0; i < numItem; ++i) {

@@ -25,7 +25,10 @@ public:
             ModelTrain *model) = 0;
 protected:
     void AdjustRating();
-    float ComputeSimilarity(const ItemVec& iv1, const ItemVec& iv2);
+    float ComputeSimilarity(const ItemVec& iv1, const ItemVec& iv2) const;
+    float ComputeCosineSimilarity(const ItemVec& iv1, const ItemVec& iv2) const;
+    float ComputeBinaryCosineSimilarity(const ItemVec& iv1, const ItemVec& iv2) const;
+    float ComputeBinaryJaccardSimilarity(const ItemVec& iv1, const ItemVec& iv2) const;
 protected:
     const TrainOption *mTrainOption = nullptr;
     RatingMatItems *mTrainData = nullptr;

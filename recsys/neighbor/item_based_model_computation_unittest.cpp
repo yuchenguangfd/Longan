@@ -20,18 +20,28 @@ TEST(ModelComputationTest, ComputeSimilarityOK) {
     public:
         virtual void ComputeModel(const TrainOption *option, RatingMatItems *trainData,
                 ModelTrain *model) { }
-        float ComputeSimilarityMock(ItemVec& iv1, ItemVec& iv2) {
-            return ComputeSimilarity(iv1, iv2);
+        float ComputeCosineSimilarityMock(ItemVec& iv1, ItemVec& iv2) {
+            return ComputeCosineSimilarity(iv1, iv2);
+        }
+        float ComputeBinaryCosineSimilarityMock(ItemVec& iv1, ItemVec& iv2) {
+            return ComputeBinaryCosineSimilarity(iv1, iv2);
+        }
+        float ComputeBinaryJaccardSimilarityMock(ItemVec& iv1, ItemVec& iv2) {
+            return ComputeBinaryJaccardSimilarity(iv1, iv2);
         }
     };
-    ASSERT_FLOAT_EQ(0.9557790f, ModelComputationMock().ComputeSimilarityMock(iv1, iv2));
+    ASSERT_FLOAT_EQ(0.9557790f, ModelComputationMock().ComputeCosineSimilarityMock(iv1, iv2));
+    ASSERT_FLOAT_EQ(0.5773502f, ModelComputationMock().ComputeBinaryCosineSimilarityMock(iv1, iv2));
+    ASSERT_FLOAT_EQ(0.4f, ModelComputationMock().ComputeBinaryJaccardSimilarityMock(iv1, iv2));
 }
 
 TEST(ModelComputationTest, ComputeModelSTAndMTResultSame) {
     Json::Value config;
+    config["parameter"]["ratingType"] = "numerical";
+    config["parameter"]["simType"] = "cosine";
     config["trainOption"]["accelerate"] = true;
     TrainOption option(config["trainOption"]);
-    Parameter parameter(config);
+    Parameter parameter(config["parameter"]);
     int numUser = 60;
     int numItem = 5000;
     int numRating = 30000;
@@ -51,9 +61,11 @@ TEST(ModelComputationTest, ComputeModelSTAndMTResultSame) {
 
 TEST(ModelComputationTest, ComputeModelMTAndMTStaticScheduleResultSame) {
     Json::Value config;
+    config["parameter"]["ratingType"] = "numerical";
+    config["parameter"]["simType"] = "cosine";
     config["trainOption"]["accelerate"] = true;
     TrainOption option(config["trainOption"]);
-    Parameter parameter(config);
+    Parameter parameter(config["parameter"]);
     int numUser = 60;
     int numItem = 5000;
     int numRating = 30000;

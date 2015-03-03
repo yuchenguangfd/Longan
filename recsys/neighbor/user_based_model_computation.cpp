@@ -148,7 +148,7 @@ void ModelComputationMT::MonitorRun() {
     Stopwatch stopwatch;
     while (true) {
         int progress = static_cast<int>(100.0 * mProcessedTask / mTotoalTask);
-        Log::Console("recsys", "computing user-user similarity...%d%%(%d/%d) done. total time=%.2lfs",
+        Log::Console("recsys", "computing user-user similarity...%d%%(%lld/%lld) done. total time=%.2lfs",
                 progress, mProcessedTask, mTotoalTask, stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));

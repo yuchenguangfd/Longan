@@ -1,7 +1,7 @@
 {
 	"parameter": {
-		"ratingType": "numerical",
-		"simType": "adjustedCosine"
+		"ratingType": "binary",
+		"simType": "binaryCosine"
 	},
 	"trainOption": {
 		"accelerate": true,
@@ -13,7 +13,7 @@
 	},
 	"evaluateOption": {
 		"accelerate": true, 
-		"evaluateRating": true,
+		"evaluateRating": false,
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
 		"evaluateDiversity": true,

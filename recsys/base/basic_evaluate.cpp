@@ -52,6 +52,7 @@ void BasicEvaluate::LoadConfig() {
     Log::I("recsys", "BasicEvaluate::LoadConfig()");
     Log::I("recsys", "config file = " + mConfigFilepath);
     JsonConfigHelper::LoadFromFile(mConfigFilepath, mConfig);
+    Log::I("recsys", "config = \n" + mConfig.toStyledString());
 }
 
 void BasicEvaluate::CreateEvaluateOption() {
@@ -143,7 +144,7 @@ void BasicEvaluate::EvaluateDiversity() {
         Log::I("recsys", "evaluating ranking list size = %d", size);
         mOption->SetCurrentRankingListSize(size);
         evaluate->Evaluate(mPredict, mTestData, mOption);
-        mResult["diversityResult"]["diversity"].append(evaluate->Diversity());
+        mResult["diversityResult"]["Diversity"].append(evaluate->Diversity());
     }
     Log::I("recsys", "evaluate diversity result = \n" + mResult["diversityResult"].toStyledString());
     delete evaluate;
@@ -161,7 +162,7 @@ void BasicEvaluate::EvaluateNovelty() {
         Log::I("recsys", "evaluating ranking list size = %d", size);
         mOption->SetCurrentRankingListSize(size);
         evaluate->Evaluate(mPredict, mTrainData, mOption);
-        mResult["noveltyResult"]["novelty"].append(evaluate->Novelty());
+        mResult["noveltyResult"]["Novelty"].append(evaluate->Novelty());
     }
     Log::I("recsys", "evaluate novelty result = \n" + mResult["noveltyResult"].toStyledString());
     delete evaluate;

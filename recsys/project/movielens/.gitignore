@@ -16,3 +16,7 @@
 /cf_auto_encoder_result.json
 /svd_implict_model.dat
 /svd_implict_result.json
+/pop_implict_model.dat
+/pop_implict_result.json
+/item_based_implict_model.dat
+/item_based_implict_result.json
