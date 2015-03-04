@@ -13,7 +13,11 @@ namespace longan {
 
 class CFAutoEncoderConvert : public BasicConvert {
 public:
-    using BasicConvert::BasicConvert;
+    CFAutoEncoderConvert(const std::string& ratingTextFilepath, bool needNormalize,
+            const std::string& ratingBinaryFilepath);
+    virtual void Convert() override;
+private:
+    bool mNeedNormalize;
 };
 
 } //~ namespace longan

@@ -26,7 +26,7 @@ void ImplictConvert::Convert() {
     RatingList posRatings = RatingList::LoadFromTextFile(mExplictRatingTextFilepath);
     std::vector<RatingRecord*> negRatings;
     if (mNegativeToPositiveRatio > 0) {
-        Log::I("recsys", "sampling negative rating...");
+        Log::I("recsys", "sampling negative rating(ratio=%d) ...", mNegativeToPositiveRatio);
         RatingMatUsers mat;
         mat.Init(posRatings);
         std::vector<bool> itemsAvailable;

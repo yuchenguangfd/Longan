@@ -1,7 +1,7 @@
 {
 	"parameter": {
-		"ratingType": "numerical",
-		"simType": "adjustedCosine"
+		"ratingType": "binary",
+		"simType": "binaryJaccard"
 	},
 	"trainOption": {
 		"accelerate": true,
@@ -13,12 +13,12 @@
 	},
 	"evaluateOption": {
 		"accelerate": true, 
-		"evaluateRating": true,
+		"evaluateRating": false,
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
 		"evaluateDiversity": true,
 		"evaluateNovelty": true,
-		"rankingListSizes": [10, 20, 40, 80, 100, 200, 400],
+		"rankingListSizes": [20, 40, 60, 80, 100, 200, 300, 400, 500],
 		"monitorProgress": true
 	}
 }

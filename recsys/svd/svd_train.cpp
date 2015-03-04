@@ -42,7 +42,13 @@ void SVDTrain::InitModel() {
     Log::I("recsys", "SVDTrain::InitModel()");
     SVD::Matrix metaMat = SVD::Matrix::LoadFromBinaryFile(mRatingTrainFilepath, true);
     mModel = new SVD::ModelTrain(mParameter, metaMat.NumUser(), metaMat.NumItem(), metaMat.RatingAverage());
-    mModel->RandomInit();
+    if (mTrainOption->RandomInit()) {
+        Log::I("recsys", "random init model");
+        mModel->RandomInit();
+    } else {
+        Log::I("recsys", "init from existing model file = " + mModelFilepath);
+        mModel->Load(mModelFilepath);
+    }
 }
 
 void SVDTrain::LoadRatings() {

@@ -12,20 +12,20 @@ build_env.Prepend(CPPPATH = "#/external/gtest/include",
                   LINKFLAGS = "-pthread")
 
 build_env.Program("cf_auto_encoder_convert_longan", 
-                 ["cf_auto_encoder_convert_longan.cpp"])
+                 ["cf_auto_encoder_convert_longan.cpp",
+                  "cf_auto_encoder_convert.cpp"])
 
 build_env.Program("cf_auto_encoder_train_longan",
                  ["cf_auto_encoder_train_longan.cpp",
                   "cf_auto_encoder_train.cpp",
-                  "cf_auto_encoder.cpp",
-                  "cf_auto_encoder_computation.cpp",
+                  "cf_auto_encoder_model.cpp",
+                  "cf_auto_encoder_model_computation.cpp",
                   "cf_auto_encoder_util.cpp"])
-
+ 
 build_env.Program("cf_auto_encoder_evaluate_longan",
                  ["cf_auto_encoder_evaluate_longan.cpp",
                   "cf_auto_encoder_evaluate.cpp",
                   "cf_auto_encoder_predict.cpp",
-                  "cf_auto_encoder.cpp",
-                  "cf_auto_encoder_computation.cpp",
+                  "cf_auto_encoder_model.cpp",
                   "cf_auto_encoder_util.cpp"])
 

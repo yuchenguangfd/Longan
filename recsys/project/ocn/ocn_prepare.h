@@ -9,7 +9,6 @@
 
 #include "recsys/base/rating_record_with_time.h"
 #include "algorithm/sort/quick_sort_mt.h"
-#include "common/math/math.h"
 #include <json/json.h>
 #include <map>
 #include <string>
@@ -26,7 +25,8 @@ struct Session {
 
 class OcnPrepare {
 public:
-    OcnPrepare(const std::string& inputDirpath, const std::string& configFilepath, const std::string& outputDirpath);
+    OcnPrepare(const std::string& inputDirpath, const std::string& configFilepath,
+            const std::string& outputDirpath);
     void Prepare();
 private:
     void LoadConfig();

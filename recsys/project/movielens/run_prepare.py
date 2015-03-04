@@ -13,9 +13,9 @@ def run_command(cmd):
         
 def run_prepare():
     run_command("./movielens_prepare_longan " 
-              + "-inputDirpath ./MovieLens "
-              + "-configFilepath ./prepare_config.json "
-              + "-outputDirpath ./MovieLens")
+              + "-inputDirpath=./MovieLens "
+              + "-configFilepath=./prepare_config.json "
+              + "-outputDirpath=./MovieLens")
 
 if __name__=="__main__":
     run_prepare()

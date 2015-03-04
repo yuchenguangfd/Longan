@@ -55,7 +55,7 @@ void SVDPredict::LoadTrainData() {
 void SVDPredict::LoadModel() {
     Log::I("recsys", "SVDPredict::LoadModel()");
     Log::I("recsys", "model file = " + mModelFilepath);
-    mModel = new SVD::ModelPredict(mParameter);
+    mModel = new SVD::Model(mParameter);
     mModel->Load(mModelFilepath);
 }
 
@@ -99,35 +99,35 @@ ItemIdList SVDPredict::PredictTopNItem(int userId, int listSize) const {
     const UserVec& uv = mTrainData->GetUserVector(userId);
     const ItemRating *data = uv.Data();
     int size = uv.Size();
-    std::vector<ItemRating> ratings;
-    ratings.reserve(numItem);
+    std::vector<ItemRating> scores;
+    scores.reserve(numItem);
     int begin = -1, end = -1;
     for (int i = 0; i < size; ++i) {
         begin = end + 1;
         end = data[i].ItemId();
         for (int iid = begin; iid < end; ++iid) {
             float predRating = PredictRating(userId, iid);
-            ratings.push_back(ItemRating(iid, predRating));
+            scores.push_back(ItemRating(iid, predRating));
         }
     }
     begin = end + 1;
     end = numItem;
     for (int iid = begin; iid < end; ++iid) {
         float predRating = PredictRating(userId, iid);
-        ratings.push_back(ItemRating(iid, predRating));
+        scores.push_back(ItemRating(iid, predRating));
     }
-    std::sort(ratings.begin(), ratings.end(),
+    std::sort(scores.begin(), scores.end(),
         [](const ItemRating& lhs, const ItemRating& rhs)->bool {
             return lhs.Rating() > rhs.Rating();
     });
     ItemIdList topNItem(listSize);
-    if (listSize <= ratings.size()) {
+    if (listSize <= scores.size()) {
         for (int i = 0; i < listSize; ++i) {
-            topNItem[i] = ratings[i].ItemId();
+            topNItem[i] = scores[i].ItemId();
         }
     } else {
-        for (int i = 0; i < ratings.size(); ++i) {
-           topNItem[i] = ratings[i].ItemId();
+        for (int i = 0; i < scores.size(); ++i) {
+           topNItem[i] = scores[i].ItemId();
         }
     }
     mCachedTopNItems[userId] = topNItem;

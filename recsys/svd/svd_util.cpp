@@ -24,6 +24,7 @@ Parameter::Parameter(const Json::Value& parameter) {
 }
 
 TrainOption::TrainOption(const Json::Value& option) {
+    mRandomInit = option["randomInit"].asBool();
     mIterations = option["iterations"].asInt();
     assert(mIterations > 0);
     mLearningRate = static_cast<float>(option["learningRate"].asDouble());

@@ -2,7 +2,7 @@
     "predictOption": {
         "ratingRangeLow": 1.0,
         "ratingRangeHigh": 5.0,
-        "roundIntRating": true
+        "roundIntRating": false
     },
 	"evaluateOption": {
 		"accelerate": false, 
@@ -10,7 +10,7 @@
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
 		"evaluateNovelty": true,
-		"rankingListSizes": [20, 40, 60, 80, 100, 200, 300, 400, 500],
+		"rankingListSizes": [10, 20, 40, 80, 100, 200, 400],
 		"monitorProgress": false
 	}
 }

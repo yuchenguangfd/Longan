@@ -154,4 +154,19 @@ void AdjustRatingByMinusItemAverage(RatingMatUsers* mat) {
     }
 }
 
+void NormalizeRatingByDivideMax(RatingList* list) {
+    float maxRating = 0.0f;
+    for (int i = 0; i < list->NumRating(); ++i) {
+        float r = list->At(i).Rating();
+        if (maxRating < r) maxRating = r;
+    }
+    if (maxRating > 0.0f) {
+        for (int i = 0; i < list->NumRating(); ++i) {
+            RatingRecord& rr = list->At(i);
+            rr.SetRating(rr.Rating() / maxRating);
+        }
+    }
+}
+
 } //~ namespace longan
+

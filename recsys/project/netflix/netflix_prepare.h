@@ -8,6 +8,7 @@
 #define RECSYS_PROJECT_NETFLIX_NETFLIX_PREPARE_H
 
 #include "recsys/base/rating_record_with_time.h"
+#include <json/json.h>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -42,9 +43,11 @@ public:
 
 class NetflixPrepare {
 public:
-    NetflixPrepare(const std::string& inputDirpath, const std::string& outputDirpath);
+    NetflixPrepare(const std::string& inputDirpath, const std::string& configFilepath,
+            const std::string& outputDirpath);
     void Prepare();
 private:
+    void LoadConfig();
     void ReadItemInfo();
     void ReadAllRating();
     void ReadRatingFile(const std::string& filename);
@@ -58,10 +61,13 @@ private:
     void SetTrainOrTestFlag();
     void GenerateTrainRatings();
     void GenerateTestRatings();
+    void GenerateTrainAndTestRatings();
     void Cleanup();
 private:
     const std::string mInputDirpath;
+    const std::string mConfigFilepath;
     const std::string mOutputDirpath;
+    Json::Value mConfig;
     int mNumUser;
     int mNumItem;
     int mNumRating;

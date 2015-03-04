@@ -7,9 +7,8 @@
 #ifndef RECSYS_NEURAL_NETWORK_CF_AUTO_ENCODER_PREDICT_H
 #define RECSYS_NEURAL_NETWORK_CF_AUTO_ENCODER_PREDICT_H
 
-#include "cf_auto_encoder.h"
+#include "cf_auto_encoder_model.h"
 #include "recsys/base/basic_predict.h"
-#include "recsys/base/rating_trait.h"
 
 namespace longan {
 
@@ -21,13 +20,21 @@ public:
     virtual float PredictRating(int userId, int itemId) const override;
     virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
 private:
-    void LoadRatings();
+    void CreatePredictOption();
+    void CreateParameter();
+    void LoadTrainData();
     void LoadModel();
-    void AdjustRating();
+    void InitCachedTopNItems();
+    void InitBinaryCodes();
+    ItemIdList PredictTopNItemFromCache(int userId, int listSize) const;
+    float PredictTopNItemComputeScore(int userId, int itemId) const;
 private:
-    RatingMatrixAsItems<> *mRatingMatrixAsItems = nullptr;
-    RatingTrait *mRatingTrait = nullptr;
-    CFAutoEncoder *mModel = nullptr;
+    const CFAE::PredictOption *mPredictOption = nullptr;
+    const CFAE::Parameter *mParameter = nullptr;
+    RatingMatUsers *mTrainData = nullptr;
+    CFAE::Model *mModel = nullptr;
+    mutable std::vector<ItemIdList> mCachedTopNItems;
+    std::vector<CFAE::BinaryCode> mBinaryCodes;
 };
 
 } //~ namespace longan

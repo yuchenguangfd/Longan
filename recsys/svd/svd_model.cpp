@@ -19,8 +19,6 @@ Model::Model(const Parameter *param) :
     mNumItem(0),
     mRatingAverage(0.0f) { }
 
-Model::~Model() { }
-
 ModelTrain::ModelTrain(const Parameter *param, int numUser, int numItem, float ratingAverage) :
     Model(param) {
     mNumUser = numUser;
@@ -45,7 +43,7 @@ void ModelTrain::RandomInit() {
     }
 }
 
-void ModelTrain::Save(const std::string& filename) {
+void Model::Save(const std::string& filename) {
     BinaryOutputStream bos(filename);
     bos << mNumUser << mNumItem << mRatingAverage;
     assert(mUserFeatures.size() == mNumUser);
@@ -70,7 +68,7 @@ void ModelTrain::Save(const std::string& filename) {
     }
 }
 
-void ModelPredict::Load(const std::string& filename) {
+void Model::Load(const std::string& filename) {
     BinaryInputStream bis(filename);
     bis >> mNumUser >> mNumItem >> mRatingAverage;
     mUserFeatures.resize(mNumUser);

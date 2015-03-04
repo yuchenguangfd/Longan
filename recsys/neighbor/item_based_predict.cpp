@@ -146,13 +146,13 @@ ItemIdList ItemBasedPredict::PredictTopNItem(int userId, int listSize) const {
         begin = end + 1;
         end = data[i].ItemId();
         for (int iid = begin; iid < end; ++iid) {
-            scores.push_back(ItemRating(iid, PremdictTopNItemComputeScore(userId, iid)));
+            scores.push_back(ItemRating(iid, PredictTopNItemComputeScore(userId, iid)));
         }
     }
     begin = end + 1;
     end = numItem;
     for (int iid = begin; iid < end; ++iid) {
-        scores.push_back(ItemRating(iid, PremdictTopNItemComputeScore(userId, iid)));
+        scores.push_back(ItemRating(iid, PredictTopNItemComputeScore(userId, iid)));
     }
     std::sort(scores.begin(), scores.end(),
         [](const ItemRating& lhs, const ItemRating& rhs)->bool {
@@ -180,7 +180,7 @@ ItemIdList ItemBasedPredict::PredictTopNItemFromCache(int userId, int listSize) 
     return std::move(topNItem);
 }
 
-float ItemBasedPredict::PremdictTopNItemComputeScore(int userId, int itemId) const {
+float ItemBasedPredict::PredictTopNItemComputeScore(int userId, int itemId) const {
     if (mParameter->RatingType() == ItemBased::Parameter::RatingTypeNumerical) {
         return PredictRating(userId, itemId);
     } else if (mParameter->RatingType() == ItemBased::Parameter::RatingTypeBinary) {

@@ -70,7 +70,7 @@ void OcnPrepare::GenerateRatingData() {
                 } else {
                     itemId = mItemIdMapping[session.assetName];
                 }
-                float rating = 1.0f;
+                float rating = (float)session.length;
                 int64 timestamp = session.timestamp;
                 mRatings.push_back(new RatingRecordWithTime(userId, itemId, rating, timestamp));
             }

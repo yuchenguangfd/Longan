@@ -13,8 +13,9 @@ def run_command(cmd):
         
 def run_prepare():
     run_command("./netflix_prepare_longan " 
-              + "-inputDirpath ./Netflix "
-              + "-outputDirpath ./Netflix ")
+              + "-inputDirpath=./Netflix "
+              + "-configFilepath=./prepare_config.json "
+              + "-outputDirpath=./Netflix ")
 
 if __name__=="__main__":
     run_prepare()

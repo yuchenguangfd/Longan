@@ -42,7 +42,7 @@ TEST(SVDPredictTest, PredictRatingOK) {
             SVDPredict("", "", modelFilename) {
             mParameter = parameter;
             mTrainOption = option;
-            mModel = new SVD::ModelPredict(mParameter);
+            mModel = new SVD::Model(mParameter);
             mModel->Load(mModelFilepath);
         }
     };

@@ -1,7 +1,9 @@
-/Ocn/
+/Ocn
 /ocn_prepare_longan
 /ocn_prepare_longan.o
 /ocn_prepare.o
 /pop_model.dat
 /pop_result.json
 /random_result.json
+/pop_implict_model.dat
+/pop_implict_result.json

@@ -14,7 +14,7 @@ def run_command(cmd):
 def run_svd_implict():
     run_command("../../util/implict_convert_longan "
               + "-explictRatingTextFilepath=./MovieLens/rating_train.txt " 
-              + "-negativeToPositiveRatio=1 "
+              + "-negativeToPositiveRatio=3 "
               + "-implictRatingTextFilepath=./MovieLens/implict_rating_train.txt")
     run_command("../../util/implict_convert_longan "
               + "-explictRatingTextFilepath=./MovieLens/rating_test.txt "

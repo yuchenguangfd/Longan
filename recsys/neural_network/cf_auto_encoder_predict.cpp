@@ -11,6 +11,7 @@
 #include "common/math/math.h"
 #include "common/lang/double.h"
 #include "common/error.h"
+#include "common/util/running_statistic.h"
 #include <algorithm>
 #include <cassert>
 
@@ -19,93 +20,152 @@ namespace longan {
 void CFAutoEncoderPredict::Init() {
     Log::I("recsys", "CFAutoEncoderPredict::Init()");
     LoadConfig();
-    LoadRatings();
-//    AdjustRating();
+    CreatePredictOption();
+    CreateParameter();
+    LoadTrainData();
     LoadModel();
+    InitCachedTopNItems();
+    if (mParameter->RatingType() == CFAE::Parameter::RatingTypeBinary
+            && mPredictOption->CodeDistanceType() == CFAE::PredictOption::CodeDistanceTypeHamming) {
+        InitBinaryCodes();
+    }
+}
+
+void CFAutoEncoderPredict::CreatePredictOption() {
+    Log::I("recsys", "CFAutoEncoderPredict::CreatePredictOption()");
+    mPredictOption = new CFAE::PredictOption(mConfig["predictOption"]);
+}
+
+void CFAutoEncoderPredict::CreateParameter() {
+    Log::I("recsys", "CFAutoEncoderPredict::CreateParameter()");
+    mParameter = new CFAE::Parameter(mConfig["parameter"]);
+}
+
+void CFAutoEncoderPredict::LoadTrainData() {
+    Log::I("recsys", "CFAutoEncoderPredict::LoadTrainData()");
+    Log::I("recsys", "rating file = " + mRatingTrainFilepath);
+    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
+    mTrainData = new RatingMatUsers();
+    mTrainData->Init(rlist);
+}
+
+void CFAutoEncoderPredict::LoadModel() {
+    Log::I("recsys", "CFAutoEncoderPredict::LoadModel()");
+    if (mParameter->CodeType() == CFAE::Parameter::CodeTypeItem) {
+        mModel = new CFAE::Model(mParameter, mTrainData->NumUser(), mTrainData->NumItem());
+    } else if (mParameter->CodeType() == CFAE::Parameter::CodeTypeUser) {
+        mModel = new CFAE::Model(mParameter, mTrainData->NumItem(), mTrainData->NumUser());
+    }
+    Log::I("recsys", "mdoel file = " + mModelFilepath);
+    mModel->Load(mModelFilepath);
+}
+
+void CFAutoEncoderPredict::InitCachedTopNItems() {
+    Log::I("recsys", "CFAutoEncoderPredict::InitCachedTopNItems()");
+    mCachedTopNItems.resize(mTrainData->NumUser());
+}
+
+void CFAutoEncoderPredict::InitBinaryCodes() {
+    Log::I("recsys", "CFAutoEncoderPredict::InitBinaryCodes()");
+    mBinaryCodes.reserve(mModel->NumSample());
+    for (int sampleId = 0; sampleId < mModel->NumSample(); ++sampleId) {
+        mBinaryCodes.push_back(CFAE::BinaryCode(mModel->Code(sampleId)));
+    }
+}
+
+float CFAutoEncoderPredict::PredictRating(int userId, int itemId) const {
+	assert(userId >= 0 && userId < mTrainData->NumUser());
+	assert(itemId >= 0 && itemId < mTrainData->NumItem());
+	assert(mParameter->CodeType() == CFAE::Parameter::CodeTypeItem);
+	const Vector64F& itemCode = mModel->Code(itemId);
+	const UserVec& uv = mTrainData->GetUserVector(userId);
+	double numerator = 0.0;
+	double denominator = 0.0;
+	for (const ItemRating *ir = uv.Begin(), *end = uv.End(); ir != end; ++ir) {
+	    const Vector64F& item2Code = mModel->Code(ir->ItemId());
+	    float sim = 1.0 / (1.0 +NormL2(itemCode-item2Code));
+	    numerator += sim * ir->Rating();
+	    denominator += Math::Abs(sim);
+    }
+	double predRating = numerator / (denominator + Double::EPS);
+	return (float)predRating;
+}
+
+ItemIdList CFAutoEncoderPredict::PredictTopNItem(int userId, int listSize) const {
+    assert(userId >= 0 && userId < mTrainData->NumUser());
+    assert(listSize > 0);
+    if (listSize <= mCachedTopNItems[userId].size()) {
+        return PredictTopNItemFromCache(userId, listSize);
+    }
+    int numItem = mTrainData->NumItem();
+    const UserVec& uv = mTrainData->GetUserVector(userId);
+    const ItemRating *data = uv.Data();
+    int size = uv.Size();
+    std::vector<ItemRating> scores;
+    scores.reserve(numItem);
+    int begin = -1, end = -1;
+    for (int i = 0; i < size; ++i) {
+        begin = end + 1;
+        end = data[i].ItemId();
+        for (int iid = begin; iid < end; ++iid) {
+            scores.push_back(ItemRating(iid, PredictRating(userId, iid)));
+        }
+    }
+    begin = end + 1;
+    end = numItem;
+    for (int iid = begin; iid < end; ++iid) {
+        scores.push_back(ItemRating(iid, PredictRating(userId, iid)));
+    }
+    std::sort(scores.begin(), scores.end(),
+            [](const ItemRating& lhs, const ItemRating& rhs)->bool {
+        return lhs.Rating() > rhs.Rating();
+    });
+    ItemIdList topNItem(listSize);
+    if (listSize <= scores.size()) {
+        for (int i = 0; i < listSize; ++i) {
+            topNItem[i] = scores[i].ItemId();
+        }
+    } else {
+        for (int i = 0; i < scores.size(); ++i) {
+            topNItem[i] = scores[i].ItemId();
+        }
+    }
+    mCachedTopNItems[userId] = topNItem;
+    return std::move(topNItem);
+}
+
+ItemIdList CFAutoEncoderPredict::PredictTopNItemFromCache(int userId, int listSize) const {
+    ItemIdList topNItem(listSize);
+    for (int i = 0; i < listSize; ++i) {
+        topNItem[i] = mCachedTopNItems[userId][i];
+    }
+    return std::move(topNItem);
+}
+
+float CFAutoEncoderPredict::PredictTopNItemComputeScore(int userId, int itemId) const {
+    if (mParameter->RatingType() == CFAE::Parameter::RatingTypeNumerical) {
+        return PredictRating(userId, itemId);
+    } else if (mParameter->RatingType() == CFAE::Parameter::RatingTypeBinary) {
+        if (mPredictOption->CodeDistanceType() == CFAE::PredictOption::CodeDistanceTypeHamming) {
+            const UserVec& uv = mTrainData->GetUserVector(userId);
+            int minDist = 0x7fffffff;
+            for (const ItemRating *ir = uv.Begin(), *end = uv.End(); ir != end; ++ir) {
+                int dist = CFAE::HammingDistance(mBinaryCodes[itemId], mBinaryCodes[ir->ItemId()]);
+                minDist = Math::Min(minDist, dist);
+            }
+            float score = (float)(-minDist);
+            return score;
+        }
+        return 0.0f;
+    } else {
+        return 0.0f;
+    }
 }
 
 void CFAutoEncoderPredict::Cleanup() {
     Log::I("recsys", "CFAutoEncoderPredict::Cleanup()");
     delete mModel;
-    delete mRatingMatrixAsItems;
-//    delete mRatingTrait;
-}
-
-void CFAutoEncoderPredict::LoadRatings() {
-    Log::I("recsys", "CFAutoEncoderPredict::LoadRatings()");
-    Log::I("recsys", "rating file = " + mRatingTrainFilepath);
-    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    Log::I("recsys", "create rating matrix");
-    mRatingMatrixAsItems = new RatingMatrixAsItems<>();
-    mRatingMatrixAsItems->Init(rlist);
-//    Log::I("recsys", "create rating trait");
-//    mRatingTrait = new RatingTrait();
-//    mRatingTrait->Init(rlist);
-}
-
-void CFAutoEncoderPredict::AdjustRating() {
-//    Log::I("recsys", "CFAutoEncoderPredict::AdjustRating()");
-//    AdjustRatingByMinusUserAverage(*mRatingTrait, mRatingMatrix);
-}
-
-void CFAutoEncoderPredict::LoadModel() {
-    Log::I("recsys", "CFAutoEncoderPredict::LoadModel()");
-    Log::I("recsys", "mdoel file = " + mModelFilepath);
-    mModel = new CFAutoEncoder();
-    mModel->Load(mModelFilepath);
-}
-
-float CFAutoEncoderPredict::PredictRating(int userId, int itemId) const {
-	assert(userId >= 0 && userId < mRatingMatrixAsItems->NumUser());
-	assert(itemId >= 0 && itemId < mRatingMatrixAsItems->NumItem());
-	auto& iv = mRatingMatrixAsItems->GetItemVector(itemId);
-	const UserRating *data = iv.Data();
-	int size = iv.Size();
-	const Vector64F& userCode = mModel->GetCode(userId);
-	double norm1 = NormL2(userCode);
-	double sum = 0.0, sumWeight = 0.0;
-	for (int i = 0; i < size; ++i) {
-	    int uid = data[i].UserId();
-	    float rating = data[i].Rating();
-	    const Vector64F& code = mModel->GetCode(uid);
-	    double sim = InnerProd(userCode, code)/(norm1*NormL2(code));
-	    if (sim > 0.0) {
-	        sum += rating*sim;
-	        sumWeight += Math::Abs(sim);
-	    }
-	}
-    int predRating = sum / sumWeight;
-    return (float)predRating;
-}
-
-ItemIdList CFAutoEncoderPredict::PredictTopNItem(int userId, int listSize) const {
-    assert(userId >= 0 && userId < mRatingMatrixAsItems->NumUser());
-    assert(listSize > 0);
-    Vector64F output = mModel->Reconstruct(userId);
-    std::vector<ItemRating> ratings;
-    ratings.reserve(mRatingMatrixAsItems->NumItem());
-    for (int iid = 0; iid < mRatingMatrixAsItems->NumItem(); ++iid) {
-        int predictedRating = Math::MaxIndex(output.Data() + iid*5, 5);
-        ratings.push_back(ItemRating(iid, predictedRating));
-    }
-    std::sort(ratings.begin(), ratings.end(),
-        [](const ItemRating& lhs, const ItemRating& rhs)->bool {
-            return lhs.Rating() > rhs.Rating();
-    });
-    ItemIdList resultList(listSize);
-    if (listSize <= ratings.size()) {
-        for (int i = 0; i < listSize; ++i) {
-            resultList[i] = ratings[i].ItemId();
-        }
-    } else {
-        for (int i = 0; i < ratings.size(); ++i) {
-           resultList[i] = ratings[i].ItemId();
-        }
-        for (int i = ratings.size(); i < listSize; ++i) {
-           resultList[i] = -1;
-        }
-    }
-    return std::move(resultList);
+    delete mTrainData;
 }
 
 } //~ namespace longan

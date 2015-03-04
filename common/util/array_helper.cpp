@@ -29,6 +29,14 @@ void FillRandom(double *array, int size) {
     }
 }
 
+void FillRandom(double *array, int size, double rangeLow, double rangeHigh) {
+    assert(array != nullptr && size >= 0);
+    Random& rnd = Random::Instance();
+    for (int i = 0; i < size; ++i) {
+        array[i] = rnd.Uniform(rangeLow, rangeHigh);
+    }
+}
+
 } //~ namespace ArrayHelper
 
 }  //~ namespace longan

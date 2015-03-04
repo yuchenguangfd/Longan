@@ -35,6 +35,7 @@ private:
 class TrainOption {
 public:
     TrainOption(const Json::Value& option);
+    int RandomInit() const { return mRandomInit; }
     int Iterations() const { return mIterations; }
     float LearningRate() const { return mLearningRate; }
     int NumThread() const { return mNumThread; }
@@ -46,6 +47,7 @@ public:
     bool MonitorIteration() const { return mMonitorIteration; }
     int MonitorIterationStep() const { return mMonitorIterationStep; }
 private:
+    bool mRandomInit;
     int mIterations;
     float mLearningRate;
     int mNumThread;

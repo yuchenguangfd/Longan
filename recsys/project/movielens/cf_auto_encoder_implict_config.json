@@ -1,25 +1,26 @@
 {
 	"parameter": {
+		"ratingType": "binary",
         "codeType": "item",
 		"architecture": [64]
 	},
     "trainOption": {
-    	"randomInit": false,
-        "iterations" : 100,
+    	"randomInit": true,
+        "iterations" : 50,
         "lambda" : 0.001,
         "learningRate" : 0.01,
         "accelerate": true,
         "numThread": 4,
         "monitorIteration": true,
-        "monitorIterationStep": 1,
+        "monitorIterationStep": 4,
         "monitorProgress": true
     },
     "predictOption": {
-		
+		"codeDistanceType": "hamming"
     },
    	"evaluateOption": {
 		"accelerate": true, 
-		"evaluateRating": true,
+		"evaluateRating": false,
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
 		"evaluateDiversity": true,

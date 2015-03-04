@@ -1,18 +1,19 @@
 {
 	"parameter": {
-		"dim": 128,
-	    "lambdaUserFeature": 0.06,
-   		"lambdaItemFeature": 0.06,
-		"lambdaUserBias": 0.000001,
-		"lambdaItemBias": 0.000001
+		"dim": 32,
+	    "lambdaUserFeature": 0.08,
+   		"lambdaItemFeature": 0.08,
+		"lambdaUserBias": 1e-6,
+		"lambdaItemBias": 1e-6
 	},
 	"trainOption": {
+		"randomInit": true,
 	    "iterations": 500,
 	    "learningRate": 0.001,
 	    "useRandomShuffle": true,
-	    "useRatingAverage": true,
-	    "numUserBlock": 12,
-	    "numItemBlock": 12,
+	    "useRatingAverage": false,
+	    "numUserBlock": 16,
+	    "numItemBlock": 16,
 		"accelerate": true, 
 	    "numThread": 4,
 	    "monitorIteration": true,
@@ -20,11 +21,11 @@
 	},
 	"evaluateOption": {
 		"accelerate": true, 
-		"evaluateRating": true,
+		"evaluateRating": false,
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
 		"evaluateNovelty": true,
-		"rankingListSizes": [20, 40, 60, 80, 100, 200, 300, 400, 500],
+		"rankingListSizes": [400, 10, 20, 40, 80, 100, 200, 400],
 		"monitorProgress": true
 	}
 }

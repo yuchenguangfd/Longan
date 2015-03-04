@@ -26,7 +26,6 @@ class ModelComputationMT;
 class Model {
 public:
     Model(const Parameter *param);
-    ~Model();
     int NumUser() const { return mNumUser; }
     int NumItem() const { return mNumItem; }
     float RatingAverage() const { return mRatingAverage; }
@@ -34,6 +33,8 @@ public:
     const Vector32F& ItemFeature(int itemId) const { return mItemFeatures[itemId]; }
     float UserBias(int userId) const { return mUserBiases[userId]; }
     float ItemBias(int itemId) const { return mItemBiases[itemId]; }
+    void Load(const std::string& filename);
+    void Save(const std::string& filename);
 protected:
     const Parameter *mParameter;
     int mNumUser;
@@ -49,17 +50,10 @@ class ModelTrain : public Model {
 public:
     ModelTrain(const Parameter *param, int numUser, int numItem, float ratingAverage);
     void RandomInit();
-    void Save(const std::string& filename);
     friend ModelComputation;
     friend ModelComputationST;
     friend ModelComputationMT;
     friend SVDTrain;
-};
-
-class ModelPredict : public Model {
-public:
-    using Model::Model;
-    void Load(const std::string& filename);
 };
 
 } //~ namespace SVD

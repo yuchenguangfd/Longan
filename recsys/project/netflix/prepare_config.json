@@ -1,0 +1,4 @@
+{
+	"testDataFrom": "randomSelect",
+	"trainRatio": 0.8
+}

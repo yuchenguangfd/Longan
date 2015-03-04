@@ -62,29 +62,22 @@ public:
     }
 
     inline static void Console(const std::string& tag, const char *msg) {
-        fprintf(stderr, "[%s]%s\n", tag.c_str(), msg);
+        fprintf(stderr, "[%s]%s\r", tag.c_str(), msg);
     }
 
     inline static void Console(const std::string& tag, const std::string& msg) {
-        fprintf(stderr, "[%s]%s\n", tag.c_str(), msg.c_str());
+        fprintf(stderr, "[%s]%s\r", tag.c_str(), msg.c_str());
     }
 
     template <class ...T>
     inline static void Console(const std::string& tag, const char *format, T... args) {
         fprintf(stderr, "[%s]", tag.c_str());
         fprintf(stderr, format, args...);
-        fprintf(stderr, "\n");
+        fprintf(stderr, "\r");
     }
 private:
-    static const int MESSAGE_BUFFER_SIZE = 256;
+    static const int MESSAGE_BUFFER_SIZE = 4096;
     DISALLOW_IMPLICIT_CONSTRUCTORS(Log);
-};
-
-class ConsoleLog {
-public:
-
-private:
-    DISALLOW_IMPLICIT_CONSTRUCTORS(ConsoleLog);
 };
 
 } //~ namespace longan

@@ -94,6 +94,7 @@ void CopyArray2D(T **src, T **dst, int rows, int cols) {
 void FillRange(int *array, int size);
 
 void FillRandom(double *array, int size);
+void FillRandom(double *array, int size, double from, double to);
 
 } //~ namespace ArrayHelper
 

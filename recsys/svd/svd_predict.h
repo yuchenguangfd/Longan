@@ -31,7 +31,7 @@ protected:
     RatingMatUsers *mTrainData = nullptr;
     SVD::TrainOption *mTrainOption = nullptr;
     SVD::Parameter *mParameter = nullptr;
-    SVD::ModelPredict *mModel = nullptr;
+    SVD::Model *mModel = nullptr;
     mutable std::vector<ItemIdList> mCachedTopNItems;
 };
 

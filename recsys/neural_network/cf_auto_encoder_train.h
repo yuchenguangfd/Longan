@@ -7,6 +7,7 @@
 #ifndef RECSYS_NEURAL_NETWORK_CF_AUTO_ENCODER_TRAIN_H
 #define RECSYS_NEURAL_NETWORK_CF_AUTO_ENCODER_TRAIN_H
 
+#include "cf_auto_encoder_model.h"
 #include "recsys/base/basic_train.h"
 #include "recsys/base/rating_matrix_as_users.h"
 #include "recsys/base/rating_matrix_as_items.h"
@@ -15,24 +16,29 @@
 
 namespace longan {
 
-class CFAutoEncoder;
-
 class CFAutoEncoderTrain : public BasicTrain {
 public:
-    using BasicTrain::BasicTrain;
+    CFAutoEncoderTrain(const std::string& ratingTrainFilepath, const std::string& ratingValidateFilepath,
+            const std::string& configFilepath, const std::string& modelFilepath);
     virtual void Train() override;
 private:
-    void LoadRatings();
-    void AdjustRatings();
+    void CreateTrainOption();
+    void CreateParameter();
+    void LoadTrainData();
+    void LoadValidateData();
     void InitModel();
     void TrainModel();
     void SaveModel();
     void Cleanup();
 private:
-    RatingMatrixAsUsers<> *mRatingMatrixAsUsers = nullptr;
-    RatingMatrixAsItems<> *mRatingMatrixAsItems = nullptr;
-//    RatingTrait *mRatingTrait = nullptr;
-    CFAutoEncoder *mAutoEncoder = nullptr;
+    const std::string mRatingValidateFilepath;
+    const CFAE::TrainOption *mTrainOption = nullptr;
+    const CFAE::Parameter *mParameter = nullptr;
+    RatingMatUsers *mTrainDataUsers = nullptr;
+    RatingMatItems *mTrainDataItems = nullptr;
+    RatingMatUsers *mValidateDataUsers = nullptr;
+    RatingMatItems *mValidateDataItems = nullptr;
+    CFAE::Model *mModel = nullptr;
 };
 
 

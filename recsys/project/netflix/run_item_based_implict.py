@@ -13,31 +13,31 @@ def run_command(cmd):
         
 def run_item_based_implict():
     run_command("../../util/implict_convert_longan "
-              + "-explictRatingTextFilepath=./MovieLens/rating_train.txt " 
+              + "-explictRatingTextFilepath=./Netflix/rating_train.txt " 
               + "-negativeToPositiveRatio=0 "
-              + "-implictRatingTextFilepath=./MovieLens/implict_rating_train.txt")
+              + "-implictRatingTextFilepath=./Netflix/implict_rating_train.txt")
     run_command("../../util/implict_convert_longan "
-              + "-explictRatingTextFilepath=./MovieLens/rating_test.txt "
+              + "-explictRatingTextFilepath=./Netflix/rating_test.txt "
               + "-negativeToPositiveRatio=0 "
-              + "-implictRatingTextFilepath=./MovieLens/implict_rating_test.txt")
-      
-    run_command("../../neighbor/item_based_convert_longan "
-              + "-ratingTextFilepath=./MovieLens/implict_rating_train.txt "
-              + "-ratingBinaryFilepath=./MovieLens/implict_rating_train.bin")
-    run_command("../../neighbor/item_based_convert_longan "
-              + "-ratingTextFilepath=./MovieLens/implict_rating_test.txt "
-              + "-ratingBinaryFilepath=./MovieLens/implict_rating_test.bin")
+              + "-implictRatingTextFilepath=./Netflix/implict_rating_test.txt")
     
+    run_command("../../neighbor/item_based_convert_longan "
+              + "-ratingTextFilepath=./Netflix/implict_rating_train.txt "
+              + "-ratingBinaryFilepath=./Netflix/implict_rating_train.bin")
+    run_command("../../neighbor/item_based_convert_longan "
+              + "-ratingTextFilepath=./Netflix/implict_rating_test.txt "
+              + "-ratingBinaryFilepath=./Netflix/implict_rating_test.bin")
+  
     run_command("../../neighbor/item_based_train_longan "
-            + "-ratingTrainFilepath=./MovieLens/implict_rating_train.bin "
+            + "-ratingTrainFilepath=./Netflix/implict_rating_train.bin "
             + "-configFilepath=./item_based_implict_config.json "
             + "-modelFilepath=./item_based_implict_model.dat") 
         
     run_command("../../neighbor/item_based_evaluate_longan " 
-              + "-ratingTrainFilepath=./MovieLens/implict_rating_train.bin "
+              + "-ratingTrainFilepath=./Netflix/implict_rating_train.bin "
               + "-configFilepath=./item_based_implict_config.json "
               + "-modelFilepath=./item_based_implict_model.dat "
-              + "-ratingTestFilepath=./MovieLens/implict_rating_test.bin " 
+              + "-ratingTestFilepath=./Netflix/implict_rating_test.bin " 
               + "-resultFilepath=./item_based_implict_result.json")
 
 if __name__=="__main__":

@@ -5,8 +5,8 @@
 		"roundIntRating": false
 	},
 	"evaluateOption": {
-		"accelerate": true, 
-		"evaluateRating": true,
+		"accelerate": false, 
+		"evaluateRating": false,
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
 		"evaluateNovelty": true,
