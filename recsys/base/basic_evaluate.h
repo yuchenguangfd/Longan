@@ -27,13 +27,13 @@ protected:
     virtual void LoadConfig() final;
     virtual void LoadTrainData();
     virtual void LoadTestData();
-    virtual void CreatePredict() = 0;
+    virtual void CreatePredict();
     virtual void CreateEvaluateOption();
     virtual void EvaluateRating();
     virtual void EvaluateRanking();
     virtual void EvaluateCoverage();
-    virtual void EvaluateDiversity();
     virtual void EvaluateNovelty();
+    virtual void EvaluateDiversity();
     virtual void WriteResult();
     virtual void Cleanup();
 protected:
@@ -46,7 +46,7 @@ protected:
     RatingList *mTrainData = nullptr;
     RatingList *mTestData = nullptr;
     BasicPredict *mPredict = nullptr;
-    EvaluateOption *mOption = nullptr;
+    EvaluateOption *mEvaluateOption = nullptr;
     Json::Value mResult;
     DISALLOW_COPY_AND_ASSIGN(BasicEvaluate);
 };

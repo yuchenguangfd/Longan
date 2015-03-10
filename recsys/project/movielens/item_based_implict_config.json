@@ -1,24 +1,24 @@
 {
-	"parameter": {
-		"ratingType": "binary",
-		"simType": "binaryCosine"
-	},
-	"trainOption": {
-		"accelerate": true,
-		"numThread": 4,
-		"monitorProgress": true
-	},
-	"predictOption": {
-		"neighborSize": 0
-	},
-	"evaluateOption": {
-		"accelerate": true, 
-		"evaluateRating": false,
-		"evaluateRanking": true,
-		"evaluateCoverage": true,
-		"evaluateDiversity": true,
-		"evaluateNovelty": true,
-		"rankingListSizes": [10, 20, 40, 80, 100, 200, 400],
-		"monitorProgress": true
-	}
+    "parameter": {
+        "ratingType": "binary",
+        "simType": "binaryCosine"
+    },
+    "trainOption": {
+        "accelerate": true,
+        "monitorProgress": true
+    },
+    "predictOption": {
+        "predictRankingMethod": "neighborSimilarity",
+        "neighborSize": 0
+    },
+    "evaluateOption": {
+        "accelerate": true, 
+        "evaluateRating": false,
+        "evaluateRanking": true,
+        "evaluateCoverage": true,
+        "evaluateDiversity": true,
+        "evaluateNovelty": true,
+        "rankingListSizes": [10, 20, 40, 80, 100, 200, 400],
+        "monitorProgress": true
+    }
 }

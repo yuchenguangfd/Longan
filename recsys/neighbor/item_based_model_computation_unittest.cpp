@@ -5,7 +5,7 @@
  */
 
 #include "item_based_model_computation.h"
-#include "recsys/util/recsys_test_helper.h"
+#include "recsys/util/recsys_util.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -19,7 +19,7 @@ TEST(ModelComputationTest, ComputeSimilarityOK) {
     class ModelComputationMock : public ModelComputation {
     public:
         virtual void ComputeModel(const TrainOption *option, RatingMatItems *trainData,
-                ModelTrain *model) { }
+                Model *model) { }
         float ComputeCosineSimilarityMock(ItemVec& iv1, ItemVec& iv2) {
             return ComputeCosineSimilarity(iv1, iv2);
         }
@@ -45,40 +45,40 @@ TEST(ModelComputationTest, ComputeModelSTAndMTResultSame) {
     int numUser = 60;
     int numItem = 5000;
     int numRating = 30000;
-    RatingMatItems trainData = RecsysTestHelper::CreateRandomRatingMatItems(numUser, numItem, numRating);
-    ModelTrain model1(&parameter, numItem);
-    ModelTrain model2(&parameter, numItem);
+    RatingMatItems trainData = RecsysUtil::RandomRatingMatItems(numUser, numItem, numRating);
+    Model model1(&parameter, numItem);
+    Model model2(&parameter, numItem);
     ModelComputationST comp1;
     ModelComputationMT comp2;
     comp1.ComputeModel(&option, &trainData, &model1);
     comp2.ComputeModel(&option, &trainData, &model2);
     for (int iid1 = 0; iid1 < numItem; ++iid1) {
         for (int iid2 = iid1 + 1; iid2 < numItem; ++iid2) {
-            ASSERT_FLOAT_EQ(model1.GetSimilarity(iid1, iid2), model2.GetSimilarity(iid1, iid2));
+            ASSERT_FLOAT_EQ(model1.Get(iid1, iid2), model2.Get(iid1, iid2));
         }
     }
 }
 
 TEST(ModelComputationTest, ComputeModelMTAndMTStaticScheduleResultSame) {
     Json::Value config;
-    config["parameter"]["ratingType"] = "numerical";
-    config["parameter"]["simType"] = "cosine";
+    config["parameter"]["ratingType"] = "binary";
+    config["parameter"]["simType"] = "binaryCosine";
     config["trainOption"]["accelerate"] = true;
     TrainOption option(config["trainOption"]);
     Parameter parameter(config["parameter"]);
     int numUser = 60;
     int numItem = 5000;
     int numRating = 30000;
-    RatingMatItems trainData = RecsysTestHelper::CreateRandomRatingMatItems(numUser, numItem, numRating);
-    ModelTrain model1(&parameter, numItem);
-    ModelTrain model2(&parameter, numItem);
+    RatingMatItems trainData = RecsysUtil::RandomRatingMatItems(numUser, numItem, numRating);
+    Model model1(&parameter, numItem);
+    Model model2(&parameter, numItem);
     ModelComputationMT comp1;
     ModelComputationMTStaticSchedule comp2;
     comp1.ComputeModel(&option, &trainData, &model1);
     comp2.ComputeModel(&option, &trainData, &model2);
     for (int iid1 = 0; iid1 < numItem; ++iid1) {
         for (int iid2 = iid1 + 1; iid2 < numItem; ++iid2) {
-            ASSERT_FLOAT_EQ(model1.GetSimilarity(iid1, iid2), model2.GetSimilarity(iid1, iid2));
+            ASSERT_FLOAT_EQ(model1.Get(iid1, iid2), model2.Get(iid1, iid2));
         }
     }
 }

@@ -41,20 +41,20 @@ TEST(SVDPredictTest, PredictRatingOK) {
         SVDPredictMock(const std::string& modelFilename, SVD::Parameter *parameter, SVD::TrainOption *option) :
             SVDPredict("", "", modelFilename) {
             mParameter = parameter;
-            mTrainOption = option;
             mModel = new SVD::Model(mParameter);
             mModel->Load(mModelFilepath);
         }
     };
     Json::Value config;
+    config["parameter"]["ratingType"] = "numerical";
     config["parameter"]["dim"] = 3;
     config["parameter"]["lambdaUserFeature"] = 0.01;
     config["parameter"]["lambdaItemFeature"] = 0.02;
     config["parameter"]["lambdaUserBias"] = 0.001;
     config["parameter"]["lambdaItemBias"] = 0.002;
+    config["parameter"]["useRatingAverage"] = true;
     config["trainOption"]["iterations"] = 1;
     config["trainOption"]["learningRate"] = 0.1;
-    config["trainOption"]["useRatingAverage"] = true;
     config["trainOption"]["numUserBlock"] = 2;
     config["trainOption"]["numItemBlock"] = 2;
     SVD::Parameter parameter(config["parameter"]);

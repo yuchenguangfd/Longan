@@ -1,12 +1,22 @@
 Import("env_recsys")
 
-env_recsys.lib_objects.append(env_recsys.Object("recsys_test_helper.cpp"));
+env_recsys.lib_objects.append(env_recsys.Object("recsys_util.cpp"))
 
 build_env = env_recsys.Clone()
 # add gflags support
 build_env.Prepend(CPPPATH = "#/external/gflags/include",
                   LIBPATH = "#/external/gflags",
                   LIBS = "gflags")
+# add gtest support
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
+
+build_env.Program("recsys_util_unittest",
+                 ["recsys_util_unittest.cpp"])
+
 build_env.Program("implict_convert_longan", 
                  ["implict_convert_longan.cpp",
                   "implict_convert.cpp"])
+

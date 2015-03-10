@@ -5,10 +5,10 @@
 	},
 	"trainOption": {
 		"accelerate": true,
-		"numThread": 4,
 		"monitorProgress": true
 	},
 	"predictOption": {
+		"predictRankingMethod": "predictRating",
 		"neighborSize": 0
 	},
 	"evaluateOption": {

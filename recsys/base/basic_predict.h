@@ -7,6 +7,7 @@
 #ifndef RECSYS_BASE_BASIC_PREDICT_H
 #define RECSYS_BASE_BASIC_PREDICT_H
 
+#include "rating_matrix_as_users.h"
 #include "common/lang/defines.h"
 #include <json/json.h>
 #include <vector>
@@ -20,20 +21,29 @@ class BasicPredict {
 public:
     BasicPredict(const std::string& ratingTrainFilepath, const std::string& configFilepath,
             const std::string& modelFilepath);
-    virtual ~BasicPredict();
-    virtual void Init() = 0;
-    virtual void Cleanup() = 0;
-    virtual float PredictRating(int userId, int itemId) const = 0;
-    virtual ItemIdList PredictTopNItem(int userId, int listSize) const = 0;
-    // return item-item similarity in range [0, 1]
+    virtual ~BasicPredict() { }
+    virtual void Init();
+    virtual void Cleanup();
+    virtual float PredictRating(int userId, int itemId) const;
+    virtual ItemIdList PredictTopNItem(int userId, int listSize) const;
     virtual float ComputeItemSimilarity(int itemId1, int itemId2) const;
 protected:
-    virtual void LoadConfig();
+    virtual void LoadConfig() final;
+    virtual void CreatePredictOption();
+    virtual void CreateParameter();
+    virtual void LoadTrainData();
+    virtual void LoadModel();
+    virtual float ComputeTopNItemScore(int userId, int itemId) const;
+private:
+    void InitCachedTopNItems();
+    ItemIdList PredictTopNItemFromCache(int userId, int listSize) const;
 protected:
     const std::string mRatingTrainFilepath;
     const std::string mConfigFilepath;
     const std::string mModelFilepath;
     Json::Value mConfig;
+    RatingMatUsers *mTrainData = nullptr;
+    mutable std::vector<ItemIdList> mCachedTopNItems;
     DISALLOW_COPY_AND_ASSIGN(BasicPredict);
 };
 

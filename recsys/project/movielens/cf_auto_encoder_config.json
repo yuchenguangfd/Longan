@@ -15,7 +15,7 @@
         "monitorProgress": true
     },
     "predictOption": {
-		
+		"predictRatingMethod": "reconstruct"
     },
    	"evaluateOption": {
 		"accelerate": true, 

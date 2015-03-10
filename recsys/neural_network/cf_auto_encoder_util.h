@@ -18,12 +18,12 @@ namespace CFAE {
 class Parameter {
 public:
     enum RatingType {
-        RatingTypeNumerical,
-        RatingTypeBinary
+        RatingType_Numerical,
+        RatingType_Binary
     };
     enum CodeType {
-        CodeTypeUser,
-        CodeTypeItem
+        CodeType_User,
+        CodeType_Item
     };
     Parameter(const Json::Value& param);
     int RatingType() const { return mRatingType; }
@@ -62,13 +62,33 @@ private:
 
 class PredictOption {
 public:
+    enum PredictRatingMethod {
+        PredictRatingMethod_Reconstruct,
+        PredictRatingMethod_CodeItemNeighbor,
+        PredictRatingMethod_CodeUserNeighbor
+    };
+    enum PredictRankingMethod {
+        PredictRankingMethod_PredictRating,
+        PredictRankingMethod_CodeItemNeighbor,
+        PredictRankingMethod_CodeUserNeighbor
+    };
     enum CodeDistanceType {
-        CodeDistanceTypeHamming,
+        CodeDistanceType_NormL1,
+        CodeDistanceType_NormL2,
+        CodeDistanceType_Cosine,
+        CodeDistanceType_Correlation,
+        CodeDistanceType_Hamming,
     };
     PredictOption(const Json::Value& option);
+    int PredictRatingMethod() const { return mPredictRatingMethod; }
+    int PredictRankingMethod() const { return mPredictRankingMethod; }
     int CodeDistanceType() const { return mCodeDistanceType; }
+    int NeighborSize() const { return mNeighborSize; }
 private:
+    int mPredictRatingMethod;
+    int mPredictRankingMethod;
     int mCodeDistanceType;
+    int mNeighborSize;
 };
 
 class BinaryCode {

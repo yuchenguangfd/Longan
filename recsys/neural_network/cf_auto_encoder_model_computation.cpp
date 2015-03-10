@@ -251,9 +251,9 @@ double TrainSparseLayerDelegate::ComputeRegLoss() {
 }
 
 double TrainSparseLayerDelegate::ComputeValidateLoss() {
-    if (mModel->mParameter->CodeType() == Parameter::CodeTypeUser) {
+    if (mModel->mParameter->CodeType() == Parameter::CodeType_User) {
         return ComputeValidateLossUser();
-    } else if (mModel->mParameter->CodeType() == Parameter::CodeTypeItem) {
+    } else if (mModel->mParameter->CodeType() == Parameter::CodeType_Item) {
         return ComputeValidateLossItem();
     } else {
         return 0.0;
@@ -524,12 +524,12 @@ void TrainSparseLayerDelegateMT::WorkerRun(int threadId) {
 }
 
 void TrainSparseLayerDelegateMT::SGDOnSample(int threadId, int sampleId) {
-    if (mModel->mParameter->CodeType() == Parameter::CodeTypeUser) {
+    if (mModel->mParameter->CodeType() == Parameter::CodeType_User) {
         ForwardUser(sampleId, mActivation1[threadId], mActivation2[threadId]);
         BackwardUser(sampleId, mActivation1[threadId], mActivation2[threadId],
                 mDelta1[threadId], mDelta2[threadId]);
         UpdateUser(sampleId, mActivation1[threadId], mDelta1[threadId], mDelta2[threadId]);
-    } else if (mModel->mParameter->CodeType() == Parameter::CodeTypeItem) {
+    } else if (mModel->mParameter->CodeType() == Parameter::CodeType_Item) {
         ForwardItem(sampleId, mActivation1[threadId], mActivation2[threadId]);
         BackwardItem(sampleId, mActivation1[threadId], mActivation2[threadId],
                 mDelta1[threadId], mDelta2[threadId]);

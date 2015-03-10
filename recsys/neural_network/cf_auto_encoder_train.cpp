@@ -11,25 +11,6 @@
 
 namespace longan {
 
-CFAutoEncoderTrain::CFAutoEncoderTrain(
-    const std::string& ratingTrainFilepath, const std::string& ratingValidateFilepath,
-    const std::string& configFilepath, const std::string& modelFilepath) :
-    BasicTrain(ratingTrainFilepath, configFilepath, modelFilepath),
-    mRatingValidateFilepath(ratingValidateFilepath) { }
-
-void CFAutoEncoderTrain::Train() {
-    Log::I("recsys", "CFAutoEncoderTrain::Train()");
-    LoadConfig();
-    CreateTrainOption();
-    CreateParameter();
-    LoadTrainData();
-    LoadValidateData();
-    InitModel();
-    TrainModel();
-    SaveModel();
-    Cleanup();
-}
-
 void CFAutoEncoderTrain::CreateTrainOption() {
     Log::I("recsys", "CFAutoEncoderTrain::CreateTrainOption()");
     mTrainOption = new CFAE::TrainOption(mConfig["trainOption"]);
@@ -44,10 +25,10 @@ void CFAutoEncoderTrain::LoadTrainData() {
     Log::I("recsys", "CFAutoEncoderTrain::LoadRatings()");
     Log::I("recsys", "train file = " + mRatingTrainFilepath);
     RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    if (mParameter->CodeType() == CFAE::Parameter::CodeTypeUser) {
+    if (mParameter->CodeType() == CFAE::Parameter::CodeType_User) {
         mTrainDataUsers = new RatingMatUsers();
         mTrainDataUsers->Init(rlist);
-    } else if (mParameter->CodeType() == CFAE::Parameter::CodeTypeItem) {
+    } else if (mParameter->CodeType() == CFAE::Parameter::CodeType_Item) {
         mTrainDataItems = new RatingMatItems();
         mTrainDataItems->Init(rlist);
     }
@@ -57,10 +38,10 @@ void CFAutoEncoderTrain::LoadValidateData() {
     Log::I("recsys", "CFAutoEncoderTrain::LoadValidateData()");
     Log::I("recsys", "validate file = " + mRatingValidateFilepath);
     RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    if (mParameter->CodeType() == CFAE::Parameter::CodeTypeUser) {
+    if (mParameter->CodeType() == CFAE::Parameter::CodeType_User) {
         mValidateDataUsers = new RatingMatUsers();
         mValidateDataUsers->Init(rlist);
-    } else if (mParameter->CodeType() == CFAE::Parameter::CodeTypeItem) {
+    } else if (mParameter->CodeType() == CFAE::Parameter::CodeType_Item) {
         mValidateDataItems = new RatingMatItems();
         mValidateDataItems->Init(rlist);
     }
@@ -68,9 +49,9 @@ void CFAutoEncoderTrain::LoadValidateData() {
 
 void CFAutoEncoderTrain::InitModel() {
     Log::I("recsys", "CFAutoEncoderTrain::InitModel()");
-    if (mParameter->CodeType() == CFAE::Parameter::CodeTypeUser) {
+    if (mParameter->CodeType() == CFAE::Parameter::CodeType_User) {
         mModel = new CFAE::Model(mParameter, mTrainDataUsers->NumItem(), mTrainDataUsers->NumUser());
-    } else if (mParameter->CodeType() == CFAE::Parameter::CodeTypeItem) {
+    } else if (mParameter->CodeType() == CFAE::Parameter::CodeType_Item) {
         mModel = new CFAE::Model(mParameter, mTrainDataItems->NumUser(), mTrainDataItems->NumItem());
     }
     if (mTrainOption->RandomInit()) {
@@ -82,15 +63,15 @@ void CFAutoEncoderTrain::InitModel() {
     }
 }
 
-void CFAutoEncoderTrain::TrainModel() {
+void CFAutoEncoderTrain::ComputeModel() {
     Log::I("recsys", "CFAutoEncoderTrain::TrainModel()");
-    CFAE::ModelComputation *computationDelegate = new CFAE::ModelComputation() ;
-    if (mParameter->CodeType() == CFAE::Parameter::CodeTypeUser) {
-        computationDelegate->ComputeModelUser(mTrainOption, mTrainDataUsers, mValidateDataUsers, mModel);
-    } else if (mParameter->CodeType() == CFAE::Parameter::CodeTypeItem) {
-        computationDelegate->ComputeModelItem(mTrainOption, mTrainDataItems, mValidateDataItems, mModel);
+    CFAE::ModelComputation *delegate = new CFAE::ModelComputation() ;
+    if (mParameter->CodeType() == CFAE::Parameter::CodeType_User) {
+        delegate->ComputeModelUser(mTrainOption, mTrainDataUsers, mValidateDataUsers, mModel);
+    } else if (mParameter->CodeType() == CFAE::Parameter::CodeType_Item) {
+        delegate->ComputeModelItem(mTrainOption, mTrainDataItems, mValidateDataItems, mModel);
     }
-    delete computationDelegate;
+    delete delegate;
 }
 
 void CFAutoEncoderTrain::SaveModel() {
@@ -103,7 +84,9 @@ void CFAutoEncoderTrain::Cleanup() {
     delete mTrainOption;
     delete mParameter;
     delete mTrainDataUsers;
+    delete mValidateDataUsers;
     delete mTrainDataItems;
+    delete mValidateDataItems;
     delete mModel;
 }
 

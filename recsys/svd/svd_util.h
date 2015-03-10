@@ -18,18 +18,28 @@ namespace SVD {
 
 class Parameter {
 public:
-    Parameter(const Json::Value& parameter);
+    enum RatingType {
+        RatingType_Numerical,
+        RatingType_Binary
+    };
+    Parameter(const Json::Value& param);
+    int RatingType() const { return mRatingType; }
     int Dim() const { return mDim; }
     float LambdaUserFeature() const { return mLambdaUserFeature; }
     float LambdaItemFeature() const { return mLambdaItemFeature; }
     float LambdaUserBias() const { return mLambdaUserBias; }
     float LambdaItemBias() const { return mLambdaItemBias; }
+    bool UseRatingAverage() const { return mUseRatingAverage; }
+    bool UseSigmoid() const { return mUseSigmoid; }
 private:
+    int mRatingType;
     int mDim;
     float mLambdaUserFeature;
     float mLambdaItemFeature;
     float mLambdaUserBias;
     float mLambdaItemBias;
+    bool mUseRatingAverage;
+    bool mUseSigmoid;
 };
 
 class TrainOption {
@@ -42,7 +52,6 @@ public:
     int NumUserBlock() const { return mNumUserBlock; }
     int NumItemBlock() const { return mNumItemBlock; }
     bool UseRandomShuffle() const { return mUseRandomShuffle; }
-    bool UseRatingAverage() const { return mUseRatingAverage; }
     bool Accelerate() const { return mAccelerate; }
     bool MonitorIteration() const { return mMonitorIteration; }
     int MonitorIterationStep() const { return mMonitorIterationStep; }
@@ -54,10 +63,32 @@ private:
     int mNumUserBlock;
     int mNumItemBlock;
     bool mUseRandomShuffle;
-    bool mUseRatingAverage;
     bool mAccelerate;
     bool mMonitorIteration;
     int mMonitorIterationStep;
+};
+
+class PredictOption {
+public:
+   enum PredictRankingMethod {
+        PredictRankingMethod_PredictRating,
+        PredictRankingMethod_LatentItemNeighbor,
+        PredictRankingMethod_LatentUserNeighbor
+    };
+   enum LatentDistanceType {
+       LatentDistanceType_NormL1,
+       LatentDistanceType_NormL2,
+       LatentDistanceType_Cosine,
+       LatentDistanceType_Correlation
+   };
+    PredictOption(const Json::Value& option);
+    int PredictRankingMethod() const { return mPredictRankingMethod; }
+    int NeighborSize() const { return mNeighborSize; }
+    int LatentDistanceType() const { return mLatentDistanceType; }
+private:
+    int mPredictRankingMethod;
+    int mNeighborSize;
+    int mLatentDistanceType;
 };
 
 class Node {
@@ -109,6 +140,7 @@ public:
     const Matrix& Get(int gridId) const { return mGrids[gridId]; }
     int NumUser() const { return mNumUser; }
     int NumItem() const { return mNumItem; }
+    float RatingAverage() const { return mRatingAverage; }
     int NumUserBlock() const { return mNumUserBlock; }
     int NumItemBlock() const { return mNumItemBlock; }
     int NumBlock() const { return mNumUserBlock * mNumItemBlock; }

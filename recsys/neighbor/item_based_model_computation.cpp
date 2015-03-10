@@ -6,32 +6,29 @@
 
 #include "item_based_model_computation.h"
 #include "recsys/base/rating_adjust.h"
-#include "common/math/math.h"
-#include "common/lang/double.h"
-#include "common/time/stopwatch.h"
-#include "common/logging/logging.h"
+#include "common/common.h"
 
 namespace longan {
 
 namespace ItemBased {
 
 void ModelComputation::AdjustRating() {
-    if (mModel->GetParameter()->RatingType() == Parameter::RatingTypeNumerical) {
-        if (mModel->GetParameter()->SimType() == Parameter::SimTypeAdjustedCosine) {
+    if (mModel->GetParameter()->RatingType() == Parameter::RatingType_Numerical) {
+        if (mModel->GetParameter()->SimType() == Parameter::SimType_AdjustedCosine) {
             AdjustRatingByMinusUserAverage(mTrainData);
-        } else if (mModel->GetParameter()->SimType() == Parameter::SimTypeCorrelation) {
+        } else if (mModel->GetParameter()->SimType() == Parameter::SimType_Correlation) {
             AdjustRatingByMinusItemAverage(mTrainData);
         }
     }
 }
 
 float ModelComputation::ComputeSimilarity(const ItemVec& iv1, const ItemVec& iv2) const {
-    if (mModel->GetParameter()->RatingType() == Parameter::RatingTypeNumerical) {
+    if (mModel->GetParameter()->RatingType() == Parameter::RatingType_Numerical) {
         return ComputeCosineSimilarity(iv1, iv2);
     } else {
-        if (mModel->GetParameter()->SimType() == Parameter::SimTypeBinaryCosine) {
+        if (mModel->GetParameter()->SimType() == Parameter::SimType_BinaryCosine) {
             return ComputeBinaryCosineSimilarity(iv1, iv2);
-        } else if (mModel->GetParameter()->SimType() == Parameter::SimTypeBinaryJaccard) {
+        } else if (mModel->GetParameter()->SimType() == Parameter::SimType_BinaryJaccard) {
             return ComputeBinaryJaccardSimilarity(iv1, iv2);
         } else {
             return 0.0f;
@@ -144,7 +141,7 @@ float ModelComputation::ComputeBinaryJaccardSimilarity(const ItemVec& iv1, const
 }
 
 void ModelComputationST::ComputeModel(const TrainOption *option, RatingMatItems *trainData,
-        ModelTrain *model) {
+        Model *model) {
     mTrainOption = option;
     mTrainData = trainData;
     mModel = model;
@@ -154,13 +151,13 @@ void ModelComputationST::ComputeModel(const TrainOption *option, RatingMatItems 
         for (int iid2 = iid1 + 1; iid2 < mTrainData->NumItem(); ++iid2) {
             const ItemVec& iv2 = mTrainData->GetItemVector(iid2);
             float sim = ComputeSimilarity(iv1, iv2);
-            mModel->PutSimilarity(iid1, iid2, sim);
+            mModel->DirectPut(iid2, iid1, sim);
         }
     }
 }
 
 void ModelComputationMT::ComputeModel(const TrainOption *option, RatingMatItems *trainData,
-        ModelTrain *model) {
+        Model *model) {
     mTrainOption = option;
     mTrainData = trainData;
     mModel = model;
@@ -214,7 +211,7 @@ void ModelComputationMT::ConsumerRun() {
         if (currentBundle == nullptr) break;
         for (int i = 0; i < currentBundle->size(); ++i) {
             Task& task = currentBundle->at(i);
-            mModel->PutSimilarity(task.iid1, task.iid2, task.sim);
+            mModel->DirectPut(task.iid2, task.iid1, task.sim);
         }
         mProcessedTask += currentBundle->size();
         delete currentBundle;
@@ -229,12 +226,12 @@ void ModelComputationMT::MonitorRun() {
         Log::Console("recsys", "computing item-item similarity...%d%%(%lld/%lld) done. total time=%.2lfs",
                 progress, mProcessedTask, mTotoalTask, stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 
 void ModelComputationMTStaticSchedule::ComputeModel(const TrainOption *option,
-        RatingMatItems *trainData, ModelTrain *model) {
+        RatingMatItems *trainData, Model *model) {
     mTrainOption = option;
     mTrainData = trainData;
     mModel = model;
@@ -261,7 +258,7 @@ void ModelComputationMTStaticSchedule::ThreadRun(int64 taskIdBegin, int64 taskId
         const ItemVec& iv1 = mTrainData->GetItemVector(iid1);
         const ItemVec& iv2 = mTrainData->GetItemVector(iid2);
         float sim = ComputeSimilarity(iv1, iv2);
-        mModel->PutSimilarity(iid1, iid2, sim);
+        mModel->Put(iid1, iid2, sim);
     }
 }
 

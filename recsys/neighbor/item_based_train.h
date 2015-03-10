@@ -17,20 +17,19 @@ namespace longan {
 class ItemBasedTrain : public BasicTrain {
 public:
     using BasicTrain::BasicTrain;
-    virtual void Train() override;
 protected:
-    void CreateTrainOption();
-    void CreateParameter();
-    void LoadTrainData();
-    void InitModel();
-    void ComputeModel();
-    void SaveModel();
-    void Cleanup();
-protected:
+    virtual void CreateTrainOption() override;
+    virtual void CreateParameter() override;
+    virtual void LoadTrainData() override;
+    virtual void InitModel() override;
+    virtual void ComputeModel() override;
+    virtual void SaveModel() override;
+    virtual void Cleanup() override;
+private:
     const ItemBased::TrainOption *mTrainOption = nullptr;
     const ItemBased::Parameter *mParameter = nullptr;
     RatingMatItems *mTrainData = nullptr;
-    ItemBased::ModelTrain *mModel = nullptr;
+    ItemBased::Model *mModel = nullptr;
 };
 
 } //~ namespace longan

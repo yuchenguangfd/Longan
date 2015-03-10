@@ -22,26 +22,29 @@ class ModelComputation {
 public:
     virtual ~ModelComputation() { }
     virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
-            ModelTrain *model) = 0;
+            Model *model) = 0;
 protected:
     void AdjustRating();
-    float ComputeSimilarity(const UserVec& uv1, const UserVec& uv2);
+    float ComputeSimilarity(const UserVec& uv1, const UserVec& uv2) const;
+    float ComputeCosineSimilarity(const UserVec& uv1, const UserVec& uv2) const;
+    float ComputeBinaryCosineSimilarity(const UserVec& iv1, const UserVec& iv2) const;
+    float ComputeBinaryJaccardSimilarity(const UserVec& iv1, const UserVec& iv2) const;
 protected:
     const TrainOption *mTrainOption = nullptr;
     RatingMatUsers *mTrainData = nullptr;
-    ModelTrain *mModel = nullptr;
+    Model *mModel = nullptr;
 };
 
 class ModelComputationST : public ModelComputation {
 public:
     virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
-            ModelTrain *model) override;
+            Model *model) override;
 };
 
 class ModelComputationMT : public ModelComputation, public PipelinedSchedulerClient {
 public:
     virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
-            ModelTrain *model) override;
+            Model *model) override;
     virtual std::thread* CreateProducerThread() {
         return new std::thread(&ModelComputationMT::ProducerRun, this);
     }
@@ -77,7 +80,7 @@ protected:
 class ModelComputationMTStaticSchedule : public ModelComputation {
 public:
     virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
-            ModelTrain *model) override;
+            Model *model) override;
 private:
     void ThreadRun(int64 taskIdBegin, int64 taskIdEnd);
 };

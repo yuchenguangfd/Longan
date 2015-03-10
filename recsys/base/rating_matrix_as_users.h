@@ -32,14 +32,8 @@ public:
     double Sparsity() const {
         return 1.0 - static_cast<double>(mNumRating) / mNumUser / mNumItem;
     }
-    const UserVector<UserVectorAlloc>& GetUserVector(int userId) const {
-        assert(userId >= 0 && userId < mUserVectors.size());
-        return mUserVectors[userId];
-    }
-    UserVector<UserVectorAlloc>& GetUserVector(int userId) {
-        assert(userId >= 0 && userId < mUserVectors.size());
-        return mUserVectors[userId];
-    }
+    const UserVector<UserVectorAlloc>& GetUserVector(int userId) const { return mUserVectors[userId]; }
+    UserVector<UserVectorAlloc>& GetUserVector(int userId) { return mUserVectors[userId]; }
 protected:
     int mNumRating;
     int mNumUser;

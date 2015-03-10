@@ -7,10 +7,7 @@
 #include "evaluate_ranking_delegate.h"
 #include "recsys/base/rating_list.h"
 #include "recsys/base/basic_predict.h"
-#include "common/base/algorithm.h"
-#include "common/time/stopwatch.h"
-#include "common/logging/logging.h"
-#include <cassert>
+#include "common/common.h"
 
 namespace longan {
 
@@ -122,7 +119,7 @@ void EvaluateRankingDelegateMT::MonitorRun() {
                 static_cast<double>(mRunningHitCount) / mRunningNRecall,
                 stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 

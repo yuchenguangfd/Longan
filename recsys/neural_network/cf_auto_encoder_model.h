@@ -32,22 +32,17 @@ public:
     void Load(const std::string& filename);
     int NumSample() const { return mNumSample; }
     const Vector64F& Code(int sampleId) const { return mCodes[sampleId]; }
+    float Reconstruct(int userId, int itemId) const;
     friend class ModelComputation;
     friend class TrainSparseLayerDelegate;
     friend class TrainSparseLayerDelegateST;
     friend class TrainSparseLayerDelegateMT;
     friend class EncodeSamplesDelegateST;
-//    Vector64F Reconstruct(const UserVector<>& input) const;
-//    Vector64F Reconstruct(int userId) const;
-//    Vector64F Reconstruct(int userId, int itemId) const;
-//    Vector64F Reconstruct(const UserVector<>& input, int itemId) const;
-private:
-    Vector64F Encode(const UserVector<>& input) const;
-    Vector64F Decode(const Vector64F& code) const;
 private:
     const Parameter *mParameter;
     int mNumInputUnit;
     int mNumSample;
+    int mCodeLength;
     std::vector<Matrix64F> mEncodeWeights;
     std::vector<Vector64F> mEncodeBiases;
     std::vector<Matrix64F> mDecodeWeights;

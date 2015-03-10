@@ -7,11 +7,8 @@
 #include "evaluate_coverage_delegate.h"
 #include "recsys/base/rating_list.h"
 #include "recsys/base/basic_predict.h"
-#include "common/math/math.h"
-#include "common/time/stopwatch.h"
-#include "common/logging/logging.h"
-#include <algorithm>
-#include <cassert>
+#include "common/common.h"
+
 
 namespace longan {
 
@@ -145,7 +142,7 @@ void EvaluateCoverageDelegateMT::MonitorRun() {
                 progress, mProcessedTask, mTotoalTask,
                 stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 

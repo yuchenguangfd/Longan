@@ -6,7 +6,7 @@
 
 #include "evaluate_diversity_delegate.h"
 #include "recsys/base/basic_predict.h"
-#include "recsys/util/recsys_test_helper.h"
+#include "recsys/util/recsys_util.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -41,7 +41,7 @@ TEST(EvaluateDiversityDelegateTest, EvaluateDiversitySTOK) {
 }
 
 TEST(EvaluateDiversityDelegateTest, EvaluateDiversitySTAndMTResultSame) {
-    RatingList testData = RecsysTestHelper::CreateRandomRatingList(50000, 600, 1000000);
+    RatingList testData = RecsysUtil::RandomRatingList(50000, 600, 1000000);
     BasicPredictStub predict;
     EvaluateDiversityDelegateST evaluate1;
     EvaluateDiversityDelegateMT evaluate2;

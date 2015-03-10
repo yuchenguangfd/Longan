@@ -32,9 +32,9 @@ Model::Model(const Parameter *param, int numInputUnit, int numSample) :
         mDecodeBiases[layer] = std::move(Vector64F(rows));
     }
     mCodes.resize(mNumSample);
-    int codeLen = mParameter->NumLayerUnit(mParameter->NumLayer()-1);
+    mCodeLength = mParameter->NumLayerUnit(mParameter->NumLayer()-1);
     for (int i = 0; i < mNumSample; ++i) {
-        mCodes[i] = std::move(Vector64F(codeLen));
+        mCodes[i] = std::move(Vector64F(mCodeLength));
     }
 }
 
@@ -100,100 +100,29 @@ void Model::Load(const std::string& filename) {
     }
 }
 
+float Model::Reconstruct(int userId, int itemId) const {
+    if (mParameter->CodeType() == Parameter::CodeType_User) {
+        const Vector64F& code = mCodes[userId];
+        float output = mDecodeBiases[0][itemId];
+        for (int j = 0; j < mCodeLength; ++j) {
+            output += mDecodeWeights[0][itemId][j] * code[j];
+        }
+        output = Math::Sigmoid(output);
+        return output;
+    } else if (mParameter->CodeType() == Parameter::CodeType_Item) {
+        const Vector64F& code = mCodes[itemId];
+        float output = mDecodeBiases[0][userId];
+        for (int j = 0; j < mCodeLength; ++j) {
+            output += mDecodeWeights[0][userId][j] * code[j];
+        }
+        output = Math::Sigmoid(output);
+        return output;
+    } else {
+        return 0.0f;
+    }
+}
+
 } //~ namespace CFAE
 
-//Vector64F CFAutoEncoder::Reconstruct(const UserVector<>& input) const {
-//    return std::move(Decode(Encode(input)));
-//}
-//
-//Vector64F CFAutoEncoder::Reconstruct(int userId) const {
-//    assert(0 <= userId && userId < mCodes.size());
-//    return std::move(Decode(mCodes[userId]));
-//}
-//
-//Vector64F CFAutoEncoder::Reconstruct(int userId, int itemId) const {
-//    assert(0 <= userId && userId < mCodes.size());
-//    const Vector64F& code = mCodes[userId];
-//    Vector64F output(mNumPossibleRating);
-//    for (int i = itemId * mNumPossibleRating, ii = 0; ii < mNumPossibleRating; ++i, ++ii) {
-//        double sum = mBias2[i];
-//        for (int j = 0; j < mNumHiddenUnit; ++j) {
-//            sum += mWeight2[i][j] * code[j];
-//        }
-//        output[ii] = Math::Sigmoid(sum);
-//    }
-//    return std::move(output);
-//}
-//
-//Vector64F CFAutoEncoder::Reconstruct(const UserVector<>& input, int itemId) const {
-//    Vector64F code(mNumHiddenUnit);
-//    const ItemRating *data = input.Data();
-//    int size = input.Size();
-//    for (int i = 0; i < mNumHiddenUnit; ++i) {
-//        double sum = mBias1[i];
-//        for (int j = 0; j < size; ++j) {
-//            int jj = data[j].ItemId() * mNumPossibleRating
-//                    + static_cast<int>(data[j].Rating());
-//            sum += mWeight1[i][jj];
-//        }
-//        for (int jj = itemId * mNumPossibleRating; jj < itemId*5+5; ++jj) {
-//            sum += mWeight1[i][jj] * 0.2;
-//        }
-//        code[i] = Math::Sigmoid(sum);
-//    }
-//    Vector64F output(mNumPossibleRating);
-//    for (int i = itemId * mNumPossibleRating, ii = 0; ii < mNumPossibleRating; ++i, ++ii) {
-//        double sum = mBias2[i];
-//        for (int j = 0; j < mNumHiddenUnit; ++j) {
-//            sum += mWeight2[i][j] * code[j];
-//        }
-//        output[ii] = Math::Sigmoid(sum);
-//    }
-//    return std::move(output);
-//}
-//
-//void CFAutoEncoder::Train(const CFAE::Parameter *param, const CFAE::TrainOption *trainOption,
-//        RatingMatrixAsUsers<> *data) {
-//    mTrainData = data;
-//    mNumPossibleRating = param->PossibleRatings();
-//    mNumInputUnit = mNumOutputUnit = data->NumItem() * mNumPossibleRating;
-//
-//    CFAutoEncoderComputation *computationDelegate;
-//     if (!trainOption->Accelerate()) {
-//         computationDelegate = new CFAutoEncoderComputationST();
-//     } else {
-//         computationDelegate = new CFAutoEncoderComputationMT();
-//     }
-//     computationDelegate->Train(this, trainOption, data);
-//     delete computationDelegate;
-//}
-//
-//Vector64F CFAutoEncoder::Encode(const UserVector<>& input) const {
-//    Vector64F code(mNumHiddenUnit);
-//    const ItemRating *data = input.Data();
-//    int size = input.Size();
-//    for (int i = 0; i < mNumHiddenUnit; ++i) {
-//        double sum = mBias1[i];
-//        for (int j = 0; j < size; ++j) {
-//            int jj = data[j].ItemId() * mNumPossibleRating
-//                    + static_cast<int>(data[j].Rating());
-//            sum += mWeight1[i][jj];
-//        }
-//        code[i] = Math::Sigmoid(sum);
-//    }
-//    return std::move(code);
-//}
-//
-//Vector64F CFAutoEncoder::Decode(const Vector64F& code) const {
-//    Vector64F output(mNumOutputUnit);
-//    for (int i = 0; i < mNumOutputUnit; ++i) {
-//        double sum = mBias2[i];
-//        for (int j = 0; j < mNumHiddenUnit; ++j) {
-//            sum += mWeight2[i][j] * code[j];
-//        }
-//        output[i] = Math::Sigmoid(sum);
-//    }
-//    return std::move(output);
-//}
+}//~ namespace longan
 
-} //~ namespace longan

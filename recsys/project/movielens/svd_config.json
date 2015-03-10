@@ -1,31 +1,35 @@
 {
-	"parameter": {
-		"dim": 64,
-	    "lambdaUserFeature": 0.06,
-   		"lambdaItemFeature": 0.06,
-		"lambdaUserBias": 1e-6,
-		"lambdaItemBias": 1e-6
-	},
-	"trainOption": {
-		"randomInit": true,
-	    "iterations": 500,
-	    "learningRate": 0.001,
-	    "useRandomShuffle": true,
-	    "useRatingAverage": true,
-	    "numUserBlock": 16,
-	    "numItemBlock": 16,
-		"accelerate": true, 
-	    "numThread": 4,
-	    "monitorIteration": true,
-	    "monitorIterationStep": 20
-	},
-	"evaluateOption": {
-		"accelerate": true, 
-		"evaluateRating": true,
-		"evaluateRanking": true,
-		"evaluateCoverage": true,
-		"evaluateNovelty": true,
-		"rankingListSizes": [10, 20, 40, 80, 100, 200, 400],
-		"monitorProgress": true
-	}
+    "parameter": {
+        "ratingType": "numerical",
+        "dim": 64,
+        "lambdaUserFeature": 0.06,
+        "lambdaItemFeature": 0.06,
+        "lambdaUserBias": 1e-6,
+        "lambdaItemBias": 1e-6,
+        "useRatingAverage": true,
+        "useSigmoid": false
+    },
+    "trainOption": {
+        "randomInit": true,
+        "iterations": 500,
+        "learningRate": 0.001,
+        "useRandomShuffle": true,
+        "numUserBlock": 16,
+        "numItemBlock": 16,
+        "accelerate": true, 
+        "monitorIteration": true,
+        "monitorIterationStep": 20
+    },
+    "predictOption": {
+        "predictRankingMethod": "predictRating"
+    },
+    "evaluateOption": {
+        "accelerate": true, 
+        "evaluateRating": true,
+        "evaluateRanking": true,
+        "evaluateCoverage": true,
+        "evaluateNovelty": true,
+        "rankingListSizes": [10, 20, 40, 80, 100, 200, 400],
+        "monitorProgress": true
+    }
 }

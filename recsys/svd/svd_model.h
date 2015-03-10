@@ -11,7 +11,6 @@
 #include "common/math/vector.h"
 #include <string>
 #include <vector>
-#include <cassert>
 
 namespace longan {
 
@@ -50,9 +49,9 @@ class ModelTrain : public Model {
 public:
     ModelTrain(const Parameter *param, int numUser, int numItem, float ratingAverage);
     void RandomInit();
-    friend ModelComputation;
-    friend ModelComputationST;
-    friend ModelComputationMT;
+    friend class ModelComputation;
+    friend class ModelComputationST;
+    friend class ModelComputationMT;
     friend SVDTrain;
 };
 

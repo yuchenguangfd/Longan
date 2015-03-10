@@ -10,7 +10,6 @@
 #include "svd_util.h"
 #include "svd_model.h"
 #include "common/threading/pipelined_scheduler.h"
-#include <vector>
 
 namespace longan {
 

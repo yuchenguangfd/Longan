@@ -22,7 +22,7 @@ void CFAutoEncoderConvert::Convert() {
     Log::I("recsys", "loading text rating file %s...", mRatingTextFilepath.c_str());
     RatingList rlist = RatingList::LoadFromTextFile(mRatingTextFilepath);
     if (mNeedNormalize) {
-        Log::I("recsys", "normalize rating...");
+        Log::I("recsys", "normalize rating by divide max value...");
         NormalizeRatingByDivideMax(&rlist);
     }
     Log::I("recsys", "rating file meta:\nNumRating=%d\nNumUser=%d\nNumItem=%d\nSparsity=%lf\n",

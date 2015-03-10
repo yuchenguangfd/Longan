@@ -6,26 +6,13 @@
 
 #include "svd_predict.h"
 #include "recsys/base/rating_list.h"
-#include "common/logging/logging.h"
-#include "common/lang/binary_input_stream.h"
-#include <algorithm>
-#include <cassert>
+#include "common/common.h"
 
 namespace longan {
 
-void SVDPredict::Init() {
-    Log::I("recsys", "SVDPredict::Init()");
-    LoadConfig();
-    CreateTrainOption();
-    CreateParameter();
-    LoadTrainData();
-    LoadModel();
-    InitCachedTopNItems();
-}
-
-void SVDPredict::CreateTrainOption() {
-    Log::I("recsys", "SVDPredict::CreateTrainOption()");
-    mTrainOption = new SVD::TrainOption(mConfig["trainOption"]);
+void SVDPredict::CreatePredictOption() {
+    Log::I("recsys", "SVDPredict::CreatePredictOption()");
+    mPredictOption = new SVD::PredictOption(mConfig["predictOption"]);
 }
 
 void SVDPredict::CreateParameter() {
@@ -50,6 +37,10 @@ void SVDPredict::LoadTrainData() {
     }
     mTrainData = new RatingMatUsers();
     mTrainData->Init(rlist);
+    if (mPredictOption->PredictRankingMethod() == SVD::PredictOption::PredictRankingMethod_LatentUserNeighbor) {
+        mTrainDataItems = new RatingMatItems();
+        mTrainDataItems->Init(rlist);
+    }
 }
 
 void SVDPredict::LoadModel() {
@@ -57,18 +48,6 @@ void SVDPredict::LoadModel() {
     Log::I("recsys", "model file = " + mModelFilepath);
     mModel = new SVD::Model(mParameter);
     mModel->Load(mModelFilepath);
-}
-
-void SVDPredict::InitCachedTopNItems() {
-    Log::I("recsys", "SVDPredict::InitCachedTopNItems()");
-    mCachedTopNItems.resize(mTrainData->NumUser());
-}
-
-void SVDPredict::Cleanup() {
-    delete mTrainOption;
-    delete mParameter;
-    delete mTrainData;
-    delete mModel;
 }
 
 float SVDPredict::PredictRating(int userId, int itemId) const {
@@ -83,63 +62,101 @@ float SVDPredict::PredictRating(int userId, int itemId) const {
     if (mParameter->LambdaItemBias() >= 0.0f) {
         predRating += mModel->ItemBias(itemId);
     }
-    if (mTrainOption->UseRatingAverage()) {
+    if (mParameter->UseRatingAverage()) {
         predRating += mModel->RatingAverage() ;
     }
-    return predRating;
+    return mParameter->UseSigmoid() ? Math::Sigmoid(predRating) : predRating;
 }
 
-ItemIdList SVDPredict::PredictTopNItem(int userId, int listSize) const {
-    assert(userId >= 0 && userId < mModel->NumUser());
-    assert(listSize > 0);
-    if (listSize <= mCachedTopNItems[userId].size()) {
-        return PredictTopNItemFromCache(userId, listSize);
-    }
-    int numItem = mTrainData->NumItem();
-    const UserVec& uv = mTrainData->GetUserVector(userId);
-    const ItemRating *data = uv.Data();
-    int size = uv.Size();
-    std::vector<ItemRating> scores;
-    scores.reserve(numItem);
-    int begin = -1, end = -1;
-    for (int i = 0; i < size; ++i) {
-        begin = end + 1;
-        end = data[i].ItemId();
-        for (int iid = begin; iid < end; ++iid) {
-            float predRating = PredictRating(userId, iid);
-            scores.push_back(ItemRating(iid, predRating));
-        }
-    }
-    begin = end + 1;
-    end = numItem;
-    for (int iid = begin; iid < end; ++iid) {
-        float predRating = PredictRating(userId, iid);
-        scores.push_back(ItemRating(iid, predRating));
-    }
-    std::sort(scores.begin(), scores.end(),
-        [](const ItemRating& lhs, const ItemRating& rhs)->bool {
-            return lhs.Rating() > rhs.Rating();
-    });
-    ItemIdList topNItem(listSize);
-    if (listSize <= scores.size()) {
-        for (int i = 0; i < listSize; ++i) {
-            topNItem[i] = scores[i].ItemId();
-        }
+float SVDPredict::ComputeTopNItemScore(int userId, int itemId) const {
+    if (mPredictOption->PredictRankingMethod() == SVD::PredictOption::PredictRankingMethod_PredictRating) {
+        return PredictRating(userId, itemId);
+    } else if (mPredictOption->PredictRankingMethod() == SVD::PredictOption::PredictRankingMethod_LatentItemNeighbor) {
+        return ComputeTopNItemScoreByLatentItemNeighbor(userId, itemId);
+    } else if (mPredictOption->PredictRankingMethod() == SVD::PredictOption::PredictRankingMethod_LatentUserNeighbor) {
+        return ComputeTopNItemScoreByLatentUserNeighbor(userId, itemId);
     } else {
-        for (int i = 0; i < scores.size(); ++i) {
-           topNItem[i] = scores[i].ItemId();
-        }
+        return 0.0f;
     }
-    mCachedTopNItems[userId] = topNItem;
-    return std::move(topNItem);
 }
 
-ItemIdList SVDPredict::PredictTopNItemFromCache(int userId, int listSize) const {
-    ItemIdList topNItem(listSize);
-    for (int i = 0; i < listSize; ++i) {
-        topNItem[i] = mCachedTopNItems[userId][i];
+float SVDPredict::ComputeTopNItemScoreByLatentItemNeighbor(int userId, int itemId) const {
+    if (mPredictOption->NeighborSize() <= 0) {
+        const UserVec& uv = mTrainData->GetUserVector(userId);
+        float score = 0.0f;
+        for (const ItemRating *ir = uv.Begin(), *end = uv.End(); ir != end; ++ir) {
+            float dist = ComputeLatentDistance(mModel->ItemFeature(ir->ItemId()), mModel->ItemFeature(itemId));
+            score += dist;
+        }
+        score = -score;
+        return score;
+    } else {
+        const UserVec& uv = mTrainData->GetUserVector(userId);
+        int neighborSize = Math::Min(mPredictOption->NeighborSize(), uv.Size());
+        RunningMinK<float> neighbors(neighborSize);
+        for (const ItemRating *ir = uv.Begin(), *end = uv.End(); ir != end; ++ir) {
+            float dist = ComputeLatentDistance(mModel->ItemFeature(ir->ItemId()), mModel->ItemFeature(itemId));
+            neighbors.Add(dist);
+        }
+        float score = 0.0f;
+        for (const float *ni = neighbors.CurrentMinKBegin(), *end = neighbors.CurrentMinKEnd();
+                ni != end; ++ni) {
+            score += *ni;
+        }
+        score = -score;
+        return score;
     }
-    return std::move(topNItem);
+}
+
+float SVDPredict::ComputeTopNItemScoreByLatentUserNeighbor(int userId, int itemId) const {
+    if (mPredictOption->NeighborSize() <= 0) {
+        const ItemVec& iv = mTrainDataItems->GetItemVector(itemId);
+        float score = 0.0f;
+        for (const UserRating *ur = iv.Begin(), *end = iv.End(); ur != end; ++ur) {
+            float dist = ComputeLatentDistance(mModel->UserFeature(ur->UserId()), mModel->UserFeature(userId));
+            score += dist;
+        }
+        score = -score;
+        return score;
+    } else {
+        const ItemVec& iv = mTrainDataItems->GetItemVector(itemId);
+        int neighborSize = Math::Min(mPredictOption->NeighborSize(), iv.Size());
+        RunningMinK<float> neighbors(neighborSize);
+        for (const UserRating *ur = iv.Begin(), *end = iv.End(); ur != end; ++ur) {
+            float dist = ComputeLatentDistance(mModel->UserFeature(ur->UserId()), mModel->UserFeature(userId));
+            neighbors.Add(dist);
+        }
+        float score = 0.0f;
+        for (const float *nu = neighbors.CurrentMinKBegin(), *end = neighbors.CurrentMinKEnd();
+                nu != end; ++nu) {
+            score += *nu;
+        }
+        score = -score;
+        return score;
+    }
+}
+
+float SVDPredict::ComputeLatentDistance(const Vector32F& vec1, const Vector32F& vec2) const {
+    switch (mPredictOption->LatentDistanceType()) {
+        case SVD::PredictOption::LatentDistanceType_NormL1:
+            return DistanceL1(vec1, vec2);
+        case SVD::PredictOption::LatentDistanceType_NormL2:
+            return DistanceL2(vec1, vec2);
+        case SVD::PredictOption::LatentDistanceType_Cosine:
+            return DistanceCosine(vec1, vec2);
+        case SVD::PredictOption::LatentDistanceType_Correlation:
+            return DistanceCorrelation(vec1, vec2);
+        default:
+            return 0.0f;
+    }
+}
+
+void SVDPredict::Cleanup() {
+    delete mPredictOption;
+    delete mParameter;
+    delete mTrainData;
+    delete mTrainDataItems;
+    delete mModel;
 }
 
 } //~ namespace longan

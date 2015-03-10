@@ -17,21 +17,20 @@ namespace longan {
 
 class SVDTrain : public BasicTrain {
 public:
-    SVDTrain(const std::string& ratingTrainFilepath, const std::string& ratingValidateFilepath,
-            const std::string& configFilepath, const std::string& modelFilepath);
-    virtual void Train() override;
+    using BasicTrain::BasicTrain;
+protected:
+    virtual void CreateTrainOption() override;
+    virtual void CreateParameter() override;
+    virtual void LoadTrainData() override;
+    virtual void LoadValidateData() override;
+    virtual void InitModel() override;
+    virtual void ComputeModel() override;
+    virtual void SaveModel() override;
+    virtual void Cleanup() override;
 private:
-    void CreateTrainOption();
-    void CreateParameter();
-    void InitModel();
-    void LoadRatings();
     void GenerateIdMapping(int size, std::vector<int> *idMapping);
-    void ComputeModel();
-    void SaveModel();
-    void Cleanup();
     void InverseShuffleModel();
 private:
-    const std::string mRatingValidateFilepath;
     SVD::TrainOption *mTrainOption = nullptr;
     SVD::Parameter *mParameter = nullptr;
     SVD::ModelTrain *mModel = nullptr;

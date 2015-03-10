@@ -18,22 +18,25 @@ public:
 	virtual void Init() override;
 	virtual void Cleanup() override;
     virtual float PredictRating(int userId, int itemId) const override;
-    virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
+protected:
+    virtual void CreatePredictOption() override;
+    virtual void CreateParameter() override;
+    virtual void LoadTrainData() override;
+    virtual void LoadModel() override;
+    virtual float ComputeTopNItemScore(int userId, int itemId) const;
 private:
-    void CreatePredictOption();
-    void CreateParameter();
-    void LoadTrainData();
-    void LoadModel();
-    void InitCachedTopNItems();
     void InitBinaryCodes();
-    ItemIdList PredictTopNItemFromCache(int userId, int listSize) const;
-    float PredictTopNItemComputeScore(int userId, int itemId) const;
+    float PredictRatingByCodeItemNeighbor(int userId, int itemId) const;
+    float PredictRatingByCodeUserNeighbor(int userId, int itemId) const;
+    float ComputeTopNItemScoreByCodeItemNeighbor(int userId, int itemId) const;
+    float ComputeTopNItemScoreByCodeUserNeighbor(int userId, int itemId) const;
+    float ComputeCodeSimilarity(int sampleId1, int sampleId2) const;
+    float ComputeCodeDistance(int sampleId1, int sampleId2) const;
 private:
     const CFAE::PredictOption *mPredictOption = nullptr;
     const CFAE::Parameter *mParameter = nullptr;
-    RatingMatUsers *mTrainData = nullptr;
     CFAE::Model *mModel = nullptr;
-    mutable std::vector<ItemIdList> mCachedTopNItems;
+    RatingMatItems *mTrainDataItems = nullptr;
     std::vector<CFAE::BinaryCode> mBinaryCodes;
 };
 

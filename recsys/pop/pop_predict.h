@@ -13,41 +13,42 @@
 
 namespace longan {
 
-class PopPredictOption {
+namespace Pop {
+
+class PredictOption {
 public:
-    PopPredictOption(const Json::Value& option);
-    bool PredictRatingByItemAverage() const { return mPredictRatingByItemAverage; }
-    bool PredictRatingByUserAverage() const { return mPredictRatingByUserAverage; }
-    bool PredictRankingByItemAverage() const { return mPredictRankingByItemAverage; }
-    bool PredictRankingByItemPopularity() const { return mPredictRankingByItemPopularity; }
-    bool RoundInt() const { return mRoundIntRating; }
+    enum PredictRatingMethod {
+        PredictRatingMethod_ItemAverage,
+        PredictRatingMethod_UserAverage
+    };
+    enum PredictRankingMethod {
+        PredictRankingMethod_ItemPopularity,
+        PredictRankingMethod_ItemAverage
+    };
+    PredictOption(const Json::Value& option);
+    bool PredictRatingMethod() const { return mPredictRatingMethod; }
+    bool PredictRankingMethod() const { return mPredictRankingMethod; }
 private:
-    bool mPredictRatingByItemAverage;
-    bool mPredictRatingByUserAverage;
-    bool mPredictRankingByItemAverage;
-    bool mPredictRankingByItemPopularity;
-    bool mRoundIntRating;
+    int mPredictRatingMethod;
+    int mPredictRankingMethod;
 };
+
+}  // namespace Pop
 
 class PopPredict : public BasicPredict {
 public:
     using BasicPredict::BasicPredict;
-    virtual void Init() override;
     virtual void Cleanup() override;
     virtual float PredictRating(int userId, int itemId) const override;
-    virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
+protected:
+    virtual void CreatePredictOption() override;
+    virtual void LoadModel() override;
+    virtual float ComputeTopNItemScore(int userId, int itemId) const override;
 private:
-    void CreateOption();
-    void LoadTrainData();
-    void LoadModel();
-    void SortItemRatings();
-private:
-    const PopPredictOption *mOption = nullptr;
-    RatingMatUsers *mTrainData = nullptr;
+    const Pop::PredictOption *mPredictOption = nullptr;
     std::vector<float> mUserAverages;
     std::vector<float> mItemAverages;
     std::vector<float> mItemPopularities;
-    std::vector<ItemRating> mSortedItemRatings;
 };
 
 } //~ namespace longan

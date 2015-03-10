@@ -169,7 +169,7 @@ inline int Floor(float x) {
 }
 
 inline double Sigmoid(double x) {
-    return 1.0 / (1.0 + exp(-x));
+    return 1.0 / (1.0 + ::exp(-x));
 }
 
 int Factorial(int n);

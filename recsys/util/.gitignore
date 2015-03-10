@@ -1,4 +1,6 @@
-/recsys_test_helper.o
 /implict_convert_longan
 /implict_convert_longan.o
 /implict_convert.o
+/recsys_util_unittest
+/recsys_util_unittest.o
+/recsys_util.o

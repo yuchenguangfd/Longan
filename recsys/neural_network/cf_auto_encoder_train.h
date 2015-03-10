@@ -18,20 +18,17 @@ namespace longan {
 
 class CFAutoEncoderTrain : public BasicTrain {
 public:
-    CFAutoEncoderTrain(const std::string& ratingTrainFilepath, const std::string& ratingValidateFilepath,
-            const std::string& configFilepath, const std::string& modelFilepath);
-    virtual void Train() override;
+    using BasicTrain::BasicTrain;
+protected:
+    virtual void CreateTrainOption() override;
+    virtual void CreateParameter() override;
+    virtual void LoadTrainData() override;
+    virtual void LoadValidateData() override;
+    virtual void InitModel() override;
+    virtual void ComputeModel() override;
+    virtual void SaveModel() override;
+    virtual void Cleanup() override;
 private:
-    void CreateTrainOption();
-    void CreateParameter();
-    void LoadTrainData();
-    void LoadValidateData();
-    void InitModel();
-    void TrainModel();
-    void SaveModel();
-    void Cleanup();
-private:
-    const std::string mRatingValidateFilepath;
     const CFAE::TrainOption *mTrainOption = nullptr;
     const CFAE::Parameter *mParameter = nullptr;
     RatingMatUsers *mTrainDataUsers = nullptr;

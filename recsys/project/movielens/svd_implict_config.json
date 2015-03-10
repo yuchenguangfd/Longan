@@ -1,23 +1,27 @@
 {
 	"parameter": {
+		"ratingType": "binary",
 		"dim": 32,
 	    "lambdaUserFeature": 0.08,
    		"lambdaItemFeature": 0.08,
 		"lambdaUserBias": 1e-6,
-		"lambdaItemBias": 1e-6
+		"lambdaItemBias": 1e-6,
+		"useRatingAverage": false,
+		"useSigmoid": true
 	},
 	"trainOption": {
 		"randomInit": true,
 	    "iterations": 500,
 	    "learningRate": 0.001,
 	    "useRandomShuffle": true,
-	    "useRatingAverage": false,
 	    "numUserBlock": 16,
 	    "numItemBlock": 16,
 		"accelerate": true, 
-	    "numThread": 4,
 	    "monitorIteration": true,
 	    "monitorIterationStep": 20
+	},
+	"predictOption": {
+		"predictRankingMethod": "predictRating"
 	},
 	"evaluateOption": {
 		"accelerate": true, 

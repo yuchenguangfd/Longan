@@ -13,3 +13,4 @@
 /basic_train.o
 /basic_convert.o
 /rating_adjust.o
+/similarity_matrix.o

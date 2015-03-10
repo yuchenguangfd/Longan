@@ -5,56 +5,34 @@
  */
 
 #include "pop_predict.h"
-#include "common/math/math.h"
-#include "common/logging/logging.h"
-#include "common/lang/binary_input_stream.h"
-#include "common/base/algorithm.h"
-#include <algorithm>
-#include <cassert>
+#include "common/common.h"
 
 namespace longan {
 
-PopPredictOption::PopPredictOption(const Json::Value& option) {
-    if (option["predictRatingBy"].asString() == "userAverage") {
-        mPredictRatingByUserAverage = true;
-        mPredictRatingByItemAverage = false;
-    } else if (option["predictRatingBy"].asString() == "itemAverage") {
-        mPredictRatingByUserAverage = false;
-        mPredictRatingByItemAverage = true;
+namespace Pop {
+
+PredictOption::PredictOption(const Json::Value& option) {
+    if (option["predictRatingMethod"].asString() == "userAverage") {
+        mPredictRatingMethod = PredictRatingMethod_UserAverage;
+    } else if (option["predictRatingMethod"].asString() == "itemAverage") {
+        mPredictRatingMethod = PredictRatingMethod_ItemAverage;
     } else {
         throw LonganConfigError();
     }
-    if (option["predictRankingBy"].asString() == "itemPopularity") {
-        mPredictRankingByItemAverage = false;
-        mPredictRankingByItemPopularity = true;
-    } else if (option["predictRankingBy"].asString() == "itemAverage") {
-        mPredictRankingByItemAverage = true;
-        mPredictRankingByItemPopularity = false;
+    if (option["predictRankingMethod"].asString() == "itemPopularity") {
+        mPredictRankingMethod = PredictRankingMethod_ItemPopularity;
+    } else if (option["predictRankingMethod"].asString() == "itemAverage") {
+        mPredictRankingMethod = PredictRankingMethod_ItemAverage;
     } else {
         throw LonganConfigError();
     }
-    mRoundIntRating = option["roundIntRating"].asBool();
 }
 
-void PopPredict::Init() {
-    Log::I("recsys", "PopPredict::Init()");
-    LoadConfig();
-    CreateOption();
-    LoadTrainData();
-    LoadModel();
-    SortItemRatings();
-}
+} //~ namespace Pop
 
-void PopPredict::CreateOption() {
-    Log::I("recsys", "PopPredict::CreateOption()");
-    mOption = new PopPredictOption(mConfig["predictOption"]);
-}
-
-void PopPredict::LoadTrainData() {
-    Log::I("recsys", "PopPredict::LoadTrainRating()");
-    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    mTrainData = new RatingMatUsers();
-    mTrainData->Init(rlist);
+void PopPredict::CreatePredictOption() {
+    Log::I("recsys", "PopPredict::CreatePredictOption()");
+    mPredictOption = new Pop::PredictOption(mConfig["predictOption"]);
 }
 
 void PopPredict::LoadModel() {
@@ -74,58 +52,31 @@ void PopPredict::LoadModel() {
     bis.Read(mUserAverages.data(), mUserAverages.size());
 }
 
-void PopPredict::SortItemRatings() {
-    Log::I("recsys", "PopPredict::SortItemRatings()");
-    mSortedItemRatings.resize(mTrainData->NumItem());
-    for (int i = 0; i < mTrainData->NumItem(); ++i) {
-        if (mOption->PredictRankingByItemAverage()) {
-            mSortedItemRatings[i] = ItemRating(i, mItemAverages[i]);
-        } else if (mOption->PredictRankingByItemPopularity()) {
-            mSortedItemRatings[i] = ItemRating(i, mItemPopularities[i]);
-        }
-    }
-    std::sort(mSortedItemRatings.begin(), mSortedItemRatings.end(),
-        [](const ItemRating& lhs, const ItemRating& rhs)->bool {
-            return (lhs.Rating() > rhs.Rating());
-    });
-}
-
 float PopPredict::PredictRating(int userId, int itemId) const {
     assert(userId >= 0 && userId < mTrainData->NumUser());
     assert(itemId >= 0 && itemId < mTrainData->NumItem());
     float predRating = 0.0f;
-    if (mOption->PredictRatingByItemAverage()) {
+    if (mPredictOption->PredictRatingMethod() == Pop::PredictOption::PredictRatingMethod_ItemAverage) {
         predRating = mItemAverages[itemId];
-    } else if (mOption->PredictRatingByUserAverage()) {
+    } else if (mPredictOption->PredictRatingMethod() == Pop::PredictOption::PredictRatingMethod_UserAverage) {
         predRating = mUserAverages[userId];
     }
-    return mOption->RoundInt() ? Math::Round(predRating) : predRating;
+    return predRating;
 }
 
-ItemIdList PopPredict::PredictTopNItem(int userId, int listSize) const {
-    assert(userId >= 0 && userId < mTrainData->NumUser());
-    assert(listSize > 0);
-    ItemIdList topItems(listSize);
-    int count = 0;
-    const UserVec& uv = mTrainData->GetUserVector(userId);
-    for (int i = 0; i < mSortedItemRatings.size(); ++i) {
-        int iid = mSortedItemRatings[i].ItemId();
-        int pos = BSearch(iid, uv.Data(), uv.Size(),
-            [](int lhs, const ItemRating& rhs)->int {
-                return lhs - rhs.ItemId();
-            });
-        if (pos == -1) {
-            topItems[count++] = iid;
-            if (count == listSize) {
-                break;
-            }
-        }
+float PopPredict::ComputeTopNItemScore(int userId, int itemId) const {
+    float score = 0.0f;
+    if (mPredictOption->PredictRankingMethod() == Pop::PredictOption::PredictRankingMethod_ItemAverage) {
+        score = mItemAverages[itemId];
+    } else if (mPredictOption->PredictRankingMethod() == Pop::PredictOption::PredictRankingMethod_ItemPopularity) {
+        score = mItemPopularities[itemId];
     }
-    return std::move(topItems);
+    return score;
 }
 
 void PopPredict::Cleanup() {
-    delete mOption;
+    Log::I("recsys", "PopPredict::Cleanup()");
+    delete mPredictOption;
     delete mTrainData;
 }
 

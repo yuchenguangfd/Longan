@@ -12,33 +12,25 @@ namespace longan {
 
 namespace UserBased {
 
-ModelTrain::ModelTrain(const Parameter *param, int numUser) :
-    mParameter(param),
-    mNumUser(numUser) {
-    mSimMat.resize(mNumUser);
-    for (int uid = 0; uid < mNumUser; ++uid) {
-        mSimMat[uid].resize(uid+1);
-    }
-}
+Model::Model(const Parameter *param, int numUser) :
+    SimilarityMatrix(numUser),
+    mParameter(param) { }
 
-void ModelTrain::Save(const std::string& filename) {
+void Model::Save(const std::string& filename) {
     BinaryOutputStream bos(filename);
-    bos << mNumUser;
-    for (int uid = 0; uid < mNumUser; ++uid) {
-        bos.Write(mSimMat[uid].data(), mSimMat[uid].size());
+    bos << mSize;
+    for (int uid = 0; uid < mSize; ++uid) {
+        bos.Write(mMat[uid].data(), mMat[uid].size());
     }
 }
 
-ModelPredict::ModelPredict() :
-    mNumUser(0) { }
-
-void ModelPredict::Load(const std::string& filename) {
+void Model::Load(const std::string& filename) {
     BinaryInputStream bis(filename);
-    bis >> mNumUser;
-    mSimMat.resize(mNumUser);
-    for (int uid = 0; uid < mNumUser; ++uid) {
-        mSimMat[uid].resize(uid+1);
-        bis.Read(mSimMat[uid].data(), mSimMat[uid].size());
+    bis >> mSize;
+    mMat.resize(mSize);
+    for (int i = 0; i < mSize; ++i) {
+        mMat[i].resize(i+1);
+        bis.Read(mMat[i].data(), mMat[i].size());
     }
 }
 

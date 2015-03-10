@@ -5,37 +5,35 @@
  */
 
 #include "item_based_util.h"
-#include "common/system/system_info.h"
-#include "common/error.h"
-#include <cassert>
+#include "common/common.h"
 
 namespace longan {
 
 namespace ItemBased {
 
-Parameter::Parameter(const Json::Value& parameter) {
-    if (parameter["ratingType"].asString() == "numerical") {
-        mRatingType = RatingTypeNumerical;
-    } else if (parameter["ratingType"].asString() == "binary") {
-        mRatingType = RatingTypeBinary;
+Parameter::Parameter(const Json::Value& param) {
+    if (param["ratingType"].asString() == "numerical") {
+        mRatingType = RatingType_Numerical;
+    } else if (param["ratingType"].asString() == "binary") {
+        mRatingType = RatingType_Binary;
     } else {
         throw LonganConfigError();
     }
-    if (parameter["simType"].asString() == "cosine") {
-        mSimType = SimTypeCosine;
-        assert(mRatingType == RatingTypeNumerical);
-    } else if (parameter["simType"].asString() == "adjustedCosine") {
-        mSimType = SimTypeAdjustedCosine;
-        assert(mRatingType == RatingTypeNumerical);
-    } else if (parameter["simType"].asString() == "correlation") {
-        mSimType = SimTypeCorrelation;
-        assert(mRatingType == RatingTypeNumerical);
-    } else if (parameter["simType"].asString() == "binaryCosine") {
-        mSimType = SimTypeBinaryCosine;
-        assert(mRatingType == RatingTypeBinary);
-    } else if (parameter["simType"].asString() == "binaryJaccard") {
-        mSimType = SimTypeBinaryJaccard;
-        assert(mRatingType == RatingTypeBinary);
+    if (param["simType"].asString() == "cosine") {
+        assert(mRatingType == RatingType_Numerical);
+        mSimType = SimType_Cosine;
+    } else if (param["simType"].asString() == "adjustedCosine") {
+        assert(mRatingType == RatingType_Numerical);
+        mSimType = SimType_AdjustedCosine;
+    } else if (param["simType"].asString() == "correlation") {
+        assert(mRatingType == RatingType_Numerical);
+        mSimType = SimType_Correlation;
+    } else if (param["simType"].asString() == "binaryCosine") {
+        assert(mRatingType == RatingType_Binary);
+        mSimType = SimType_BinaryCosine;
+    } else if (param["simType"].asString() == "binaryJaccard") {
+        assert(mRatingType == RatingType_Binary);
+        mSimType = SimType_BinaryJaccard;
     } else {
         throw LonganConfigError();
     }
@@ -55,6 +53,13 @@ TrainOption::TrainOption(const Json::Value& option) {
 }
 
 PredictOption::PredictOption(const Json::Value& option) {
+    if (option["predictRankingMethod"].asString() == "predictRating") {
+        mPredictRankingMethod = PredictRankingMethod_PredictRating;
+    } else if (option["predictRankingMethod"].asString() == "neighborSimilarity") {
+        mPredictRankingMethod = PredictRankingMethod_NeighborSimilarity;
+    } else {
+        throw LonganConfigError();
+    }
     mNeighborSize = option["neighborSize"].asInt();
 }
 

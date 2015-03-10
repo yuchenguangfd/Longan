@@ -5,7 +5,7 @@
  */
 
 #include "user_based_model_computation.h"
-#include "recsys/util/recsys_test_helper.h"
+#include "recsys/util/recsys_util.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -19,54 +19,66 @@ TEST(ModelComputationTest, ComputeSimilarityOK) {
     class ModelComputationMock : public ModelComputation {
     public:
         virtual void ComputeModel(const TrainOption *option, RatingMatUsers *trainData,
-                ModelTrain *model) { }
-        float ComputeSimilarityMock(UserVec& uv1, UserVec& uv2) {
-            return ComputeSimilarity(uv1, uv2);
+                Model *model) { }
+        float ComputeCosineSimilarityMock(UserVec& uv1, UserVec& uv2) {
+            return ComputeCosineSimilarity(uv1, uv2);
+        }
+        float ComputeBinaryCosineSimilarityMock(UserVec& uv1, UserVec& uv2) {
+            return ComputeBinaryCosineSimilarity(uv1, uv2);
+        }
+        float ComputeBinaryJaccardSimilarityMock(UserVec& uv1, UserVec& uv2) {
+            return ComputeBinaryJaccardSimilarity(uv1, uv2);
         }
     };
-    ASSERT_FLOAT_EQ(0.9557790f, ModelComputationMock().ComputeSimilarityMock(uv1, uv2));
+    ASSERT_FLOAT_EQ(0.9557790f, ModelComputationMock().ComputeCosineSimilarityMock(uv1, uv2));
+    ASSERT_FLOAT_EQ(0.5773502f, ModelComputationMock().ComputeBinaryCosineSimilarityMock(uv1, uv2));
+    ASSERT_FLOAT_EQ(0.4f, ModelComputationMock().ComputeBinaryJaccardSimilarityMock(uv1, uv2));
 }
 
 TEST(ModelComputationTest, ComputeModelSTAndMTResultSame) {
     Json::Value config;
+    config["parameter"]["ratingType"] = "numerical";
+    config["parameter"]["simType"] = "cosine";
     config["trainOption"]["accelerate"] = true;
     TrainOption option(config["trainOption"]);
-    Parameter parameter(config);
+    Parameter parameter(config["parameter"]);
     int numUser = 6000;
     int numItem = 50;
     int numRating = 30000;
-    RatingMatUsers trainData = RecsysTestHelper::CreateRandomRatingMatUsers(numUser, numItem, numRating);
-    ModelTrain model1(&parameter, numUser);
-    ModelTrain model2(&parameter, numUser);
+    RatingMatUsers trainData = RecsysUtil::RandomRatingMatUsers(numUser, numItem, numRating);
+    Model model1(&parameter, numUser);
+    Model model2(&parameter, numUser);
     ModelComputationST comp1;
     ModelComputationMT comp2;
     comp1.ComputeModel(&option, &trainData, &model1);
     comp2.ComputeModel(&option, &trainData, &model2);
     for (int uid1 = 0; uid1 < numUser; ++uid1) {
         for (int uid2 = uid1 + 1; uid2 < numUser; ++uid2) {
-            ASSERT_FLOAT_EQ(model1.GetSimilarity(uid1, uid2), model2.GetSimilarity(uid1, uid2));
+            ASSERT_FLOAT_EQ(model1.Get(uid1, uid2), model2.Get(uid1, uid2));
         }
     }
 }
 
 TEST(ModelComputationTest, ComputeModelMTAndMTStaticScheduleResultSame) {
     Json::Value config;
+    config["parameter"]["ratingType"] = "binary";
+    config["parameter"]["simType"] = "binaryJaccard";
     config["trainOption"]["accelerate"] = true;
     TrainOption option(config["trainOption"]);
-    Parameter parameter(config);
+    Parameter parameter(config["parameter"]);
     int numUser = 6000;
     int numItem = 50;
     int numRating = 30000;
-    RatingMatUsers trainData = RecsysTestHelper::CreateRandomRatingMatUsers(numUser, numItem, numRating);
-    ModelTrain model1(&parameter, numUser);
-    ModelTrain model2(&parameter, numUser);
+    RatingMatUsers trainData = RecsysUtil::RandomRatingMatUsers(numUser, numItem, numRating);
+    Model model1(&parameter, numUser);
+    Model model2(&parameter, numUser);
     ModelComputationMT comp1;
     ModelComputationMTStaticSchedule comp2;
     comp1.ComputeModel(&option, &trainData, &model1);
     comp2.ComputeModel(&option, &trainData, &model2);
     for (int uid1 = 0; uid1 < numUser; ++uid1) {
         for (int uid2 = 0; uid2 < numUser; ++uid2) {
-            ASSERT_FLOAT_EQ(model1.GetSimilarity(uid1, uid2), model2.GetSimilarity(uid1, uid2));
+            ASSERT_FLOAT_EQ(model1.Get(uid1, uid2), model2.Get(uid1, uid2));
         }
     }
 }

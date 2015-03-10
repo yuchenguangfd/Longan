@@ -23,18 +23,18 @@ TEST(ModelTest, SaveAndLoadOK) {
     config["ratingType"] = "numerical";
     config["simType"] = "adjustedCosine";
     Parameter param(config);
-    ModelTrain modelTrain(&param, numItem);
+    Model model1(&param, numItem);
     for (int i = 0; i < numItem; ++i) {
         for (int j = i + 1; j < numItem; ++j) {
-            modelTrain.PutSimilarity(i, j, i+j);
+            model1.Put(i, j, i+j);
         }
     }
-    modelTrain.Save("model.tmp");
-    ModelPredict modelPredict;
-    modelPredict.Load("model.tmp");
-    for (int i = 0; i < modelPredict.NumItem(); ++i) {
-        for (int j = modelPredict.NumItem()-1; j > i; --j) {
-            ASSERT_FLOAT_EQ(i+j, modelPredict.GetSimilarity(i, j));
+    model1.Save("model.tmp");
+    Model model2(&param, numItem);
+    model2.Load("model.tmp");
+    for (int i = 0; i < model2.NumItem(); ++i) {
+        for (int j = model2.NumItem()-1; j > i; --j) {
+            ASSERT_FLOAT_EQ(i+j, model2.Get(i, j));
         }
     }
     int rtn = remove("model.tmp");

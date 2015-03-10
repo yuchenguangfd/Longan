@@ -10,18 +10,6 @@
 
 namespace longan {
 
-void UserBasedTrain::Train() {
-    Log::I("recsys", "UserBasedTrain::Train()");
-    LoadConfig();
-    CreateTrainOption();
-    CreateParameter();
-    LoadTrainData();
-    InitModel();
-    ComputeModel();
-    SaveModel();
-    Cleanup();
-}
-
 void UserBasedTrain::CreateTrainOption() {
     Log::I("recsys", "UserBasedTrain::CreateTrainOption()");
     mTrainOption = new UserBased::TrainOption(mConfig["trainOption"]);
@@ -42,19 +30,19 @@ void UserBasedTrain::LoadTrainData() {
 
 void UserBasedTrain::InitModel() {
     Log::I("recsys", "UserBasedTrain::InitModel()");
-    mModel = new UserBased::ModelTrain(mParameter, mTrainData->NumUser());
+    mModel = new UserBased::Model(mParameter, mTrainData->NumUser());
 }
 
 void UserBasedTrain::ComputeModel() {
     Log::I("recsys", "UserBasedTrain::ComputeModel()");
-    UserBased::ModelComputation *computationDelegate = nullptr;
+    UserBased::ModelComputation *delegate = nullptr;
     if (mTrainOption->Accelerate()) {
-        computationDelegate = new UserBased::ModelComputationMT();
+        delegate = new UserBased::ModelComputationMT();
     } else {
-        computationDelegate = new UserBased::ModelComputationST();
+        delegate = new UserBased::ModelComputationST();
     }
-    computationDelegate->ComputeModel(mTrainOption, mTrainData, mModel);
-    delete computationDelegate;
+    delegate->ComputeModel(mTrainOption, mTrainData, mModel);
+    delete delegate;
 }
 
 void UserBasedTrain::SaveModel() {

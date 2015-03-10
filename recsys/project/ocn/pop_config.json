@@ -1,8 +1,7 @@
 {
 	"predictOption": {
-		"predictRatingBy": "itemAverage",
-		"predictRankingBy": "itemPopularity",
-		"roundIntRating": false
+		"predictRatingMethod": "itemAverage",
+		"predictRankingMethod": "itemPopularity"
 	},
 	"evaluateOption": {
 		"accelerate": true, 

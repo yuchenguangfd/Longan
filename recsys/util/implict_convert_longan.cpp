@@ -9,7 +9,7 @@
 #include <glog/logging.h>
 
 DEFINE_string(explictRatingTextFilepath, "./explict_rating.txt", "input text file of explict rating data.");
-DEFINE_int32(negativeToPositiveRatio, 5, "negative to positive sample ratio");
+DEFINE_double(negativeToPositiveRatio, 1.0, "negative to positive sample ratio");
 DEFINE_string(implictRatingTextFilepath, "./implict_rating.txt", "output text file of implict rating data.");
 
 int main(int argc, char **argv) {

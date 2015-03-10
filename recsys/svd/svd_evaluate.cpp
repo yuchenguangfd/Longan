@@ -34,7 +34,7 @@ RatingList* SVDEvaluate::LoadRatingData(const std::string& filename) {
 }
 
 void SVDEvaluate::LoadTrainData() {
-    if (mOption->EvaluateNovelty()) {
+    if (mEvaluateOption->EvaluateNovelty()) {
         Log::I("recsys", "SVDEvaluate::LoadTrainData()");
         Log::I("recsys", "train rating file = " + mRatingTrainFilepath);
         mTrainData = LoadRatingData(mRatingTrainFilepath);
@@ -42,8 +42,8 @@ void SVDEvaluate::LoadTrainData() {
 }
 
 void SVDEvaluate::LoadTestData() {
-    if (mOption->EvaluateRating() || mOption->EvaluateRanking()
-        || mOption->EvaluateCoverage() || mOption->EvaluateDiversity()) {
+    if (mEvaluateOption->EvaluateRating() || mEvaluateOption->EvaluateRanking()
+        || mEvaluateOption->EvaluateCoverage() || mEvaluateOption->EvaluateDiversity()) {
         Log::I("recsys", "SVDEvaluate::LoadTestData()");
         Log::I("recsys", "test rating file = " + mRatingTestFilepath);
         mTestData = LoadRatingData(mRatingTestFilepath);

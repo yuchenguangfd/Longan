@@ -5,11 +5,7 @@
  */
 
 #include "svd_model_computation.h"
-#include "common/lang/integer.h"
-#include "common/math/math.h"
-#include "common/util/random.h"
-#include "common/util/array_helper.h"
-#include "common/logging/logging.h"
+#include "common/common.h"
 
 namespace longan {
 
@@ -17,23 +13,30 @@ namespace SVD {
 
 /*
  * Optimize Function:
+ * for numercial:
  * E = sum{
  *         (Rating[uv] - inner_prod(P[u],Q[v]) - UserBias[u] - ItemBias[v] - RatingAverage)^2
  *       + lp*norm(P[u]) + lq*norm(Q[v]) + lub*norm(UserBias) + lib*norm(ItemBias)
- *     }
+ * }
+ * for binary:
+ * E = sum{
+ *         (Rating[uv] - sigmoid(inner_prod(P[u],Q[v])+UserBias[u]+ItemBias[v]))^2
+ *       + lp*norm(P[u]) + lq*norm(Q[v]) + lub*norm(UserBias) + lib*norm(ItemBias)
+ * }
  */
 void ModelComputation::SGDOneMatrix(int gridId) {
     const Matrix& mat = mTrainData->Get(gridId);
-    float ratingAverage = mTrainOption->UseRatingAverage() ? mModel->mRatingAverage : 0.0f;
+    float ratingAverage = mModel->mParameter->UseRatingAverage() ? mModel->mRatingAverage : 0.0f;
     bool enableUserBias = (mModel->mParameter->LambdaUserBias() >= 0.0f);
     bool enableItemBias = (mModel->mParameter->LambdaItemBias() >= 0.0f);
-    float learningRate = mTrainOption->LearningRate();
+    bool useSigmoid = mModel->mParameter->UseSigmoid();
     float *pUserBias, *pItemBias;
+    float lr = mTrainOption->LearningRate();
     float ge;
-    float glp = 1 - learningRate * (mModel->mParameter->LambdaUserFeature());
-    float glq = 1 - learningRate * (mModel->mParameter->LambdaItemFeature());
-    float glub = 1 - learningRate * (mModel->mParameter->LambdaUserBias());
-    float glib = 1 - learningRate * (mModel->mParameter->LambdaItemBias());
+    float glp = 1 - lr * (mModel->mParameter->LambdaUserFeature());
+    float glq = 1 - lr * (mModel->mParameter->LambdaItemFeature());
+    float glub = 1 - lr * (mModel->mParameter->LambdaUserBias());
+    float glib = 1 - lr * (mModel->mParameter->LambdaItemBias());
     int dim = mModel->mParameter->Dim();
     for (int i = 0; i < mat.NumRating(); ++i) {
         const Node& node = mat.Get(i);
@@ -48,7 +51,12 @@ void ModelComputation::SGDOneMatrix(int gridId) {
             pItemBias = &(mModel->mItemBiases[node.ItemId()]);
             predRating += *pItemBias;
         }
-        ge = (node.Rating() - predRating) * learningRate;
+        if (useSigmoid) {
+            predRating = Math::Sigmoid(predRating);
+            ge = (node.Rating() - predRating) * predRating * (1 - predRating) * lr;
+        } else {
+            ge = (node.Rating() - predRating) * lr;
+        }
         for (int d = 0; d < dim; d++) {
             float tmp = userFeature[d];
             userFeature[d] = ge * itemFeature[d] + glp * userFeature[d];
@@ -83,9 +91,10 @@ void ModelComputation::ComputeLoss(double *dataLoss, double *regLoss, double *va
 }
 
 double ModelComputation::ComputeDataLoss() {
-    float ratingAverage = mTrainOption->UseRatingAverage() ? mModel->mRatingAverage : 0.0f;
+    float ratingAverage = mModel->mParameter->UseRatingAverage() ? mModel->mRatingAverage : 0.0f;
     bool enableUserBias = (mModel->mParameter->LambdaUserBias() >= 0.0f);
     bool enableItemBias = (mModel->mParameter->LambdaItemBias() >= 0.0f);
+    bool useSigmoid = mModel->mParameter->UseSigmoid();
     double loss = 0.0;
     for (int gridId = 0; gridId < mTrainData->NumBlock(); ++gridId) {
         const Matrix& mat = mTrainData->Get(gridId);
@@ -99,6 +108,9 @@ double ModelComputation::ComputeDataLoss() {
             }
             if (enableItemBias) {
                 predRating += mModel->mItemBiases[node.ItemId()];
+            }
+            if (useSigmoid) {
+                predRating = Math::Sigmoid(predRating);
             }
             loss += Math::Sqr(node.Rating() - predRating);
         }
@@ -140,9 +152,10 @@ double ModelComputation::ComputeRegLoss() {
 }
 
 double ModelComputation::ComputeValidateLoss() {
-    float ratingAverage = mTrainOption->UseRatingAverage() ? mModel->mRatingAverage : 0.0f;
+    float ratingAverage = mModel->mParameter->UseRatingAverage() ? mModel->mRatingAverage : 0.0f;
     bool enableUserBias = (mModel->mParameter->LambdaUserBias() >= 0.0f);
     bool enableItemBias = (mModel->mParameter->LambdaItemBias() >= 0.0f);
+    bool useSigmoid = mModel->mParameter->UseSigmoid();
     double loss = 0.0;
     for (int gridId = 0; gridId < mValidateData->NumBlock(); ++gridId) {
         const Matrix& mat = mValidateData->Get(gridId);
@@ -156,6 +169,9 @@ double ModelComputation::ComputeValidateLoss() {
             }
             if (enableItemBias) {
                 predRating += mModel->mItemBiases[node.ItemId()];
+            }
+            if (useSigmoid) {
+                predRating = Math::Sigmoid(predRating);
             }
             loss += Math::Sqr(node.Rating() - predRating);
         }

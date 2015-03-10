@@ -7,8 +7,8 @@
 #include "evaluate_diversity_delegate.h"
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_list.h"
-#include "common/logging/logging.h"
-#include "common/time/stopwatch.h"
+#include "common/common.h"
+
 
 namespace longan {
 
@@ -105,7 +105,7 @@ void EvaluateDiversityDelegateMT::MonitorRun() {
                 mRunningDiversity.CurrentAverage(),
                 stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 

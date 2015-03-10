@@ -5,6 +5,7 @@ import os
 import sys
 
 CODE_FILE_EXTS = [".h", ".cpp", ".java", ".py", ".js", ".css", ".html"]
+CODE_FILE_NAMES = ["SConstruct", "SConscript"]
 
 def count_line(file):
     fp = open(file)
@@ -21,7 +22,7 @@ def count_code_lines_under(dir):
         if (path.find("external/") >= 0): continue
         for file in files:
             ext = os.path.splitext(file)[1]
-            if ext in CODE_FILE_EXTS:
+            if (ext in CODE_FILE_EXTS) or (file in CODE_FILE_NAMES) :
                 num_line += count_line(os.sep.join([path, file]))
                 num_file += 1
     return (num_line, num_file)

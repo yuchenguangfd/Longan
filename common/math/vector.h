@@ -69,7 +69,14 @@ public:
     friend T1 NormL2Sqr(const Vector<T1, Alloc1>& vec);
     template <class T1, class Alloc1>
     friend T1 NormL2(const Vector<T1, Alloc1>& vec);
-
+    template <class T1, class Alloc1>
+    friend T1 DistanceL1(const Vector<T1, Alloc1>& vec1, const Vector<T1, Alloc1>& vec2);
+    template <class T1, class Alloc1>
+    friend T1 DistanceL2(const Vector<T1, Alloc1>& vec1, const Vector<T1, Alloc1>& vec2);
+    template <class T1, class Alloc1>
+    friend T1 DistanceCosine(const Vector<T1, Alloc1>& vec1, const Vector<T1, Alloc1>& vec2);
+    template <class T1, class Alloc1>
+    friend T1 DistanceCorrelation(const Vector<T1, Alloc1>& vec1, const Vector<T1, Alloc1>& vec2);
     int Size() const { return mSize; }
 	T* Data() { return mData; }
 	const T* Data() const { return mData; }
@@ -354,6 +361,61 @@ T NormL2Sqr(const Vector<T, Alloc>& vec) {
 template <class T, class Alloc>
 T NormL2(const Vector<T, Alloc>& vec) {
     return Math::Sqrt(NormL2Sqr<T, Alloc>(vec));
+}
+
+template <class T, class Alloc>
+T DistanceL1(const Vector<T, Alloc>& vec1, const Vector<T, Alloc>& vec2) {
+    assert(vec1.mSize == vec2.mSize);
+    T sum = T();
+    for (int i = 0; i < vec1.mSize; ++i) {
+        sum += Math::Abs(vec1.mData[i] - vec2.mData[i]);
+    }
+    return sum;
+}
+
+template <class T, class Alloc>
+T DistanceL2(const Vector<T, Alloc>& vec1, const Vector<T, Alloc>& vec2) {
+    assert(vec1.mSize == vec2.mSize);
+    T sum = T();
+    for (int i = 0; i < vec1.mSize; ++i) {
+        sum += Math::Sqr(vec1.mData[i] - vec2.mData[i]);
+    }
+    return Math::Sqrt(sum);
+}
+
+template <class T, class Alloc>
+T DistanceCosine(const Vector<T, Alloc>& vec1, const Vector<T, Alloc>& vec2) {
+    assert(vec1.mSize == vec2.mSize);
+    T sum = T();
+    T norm1 = T();
+    T norm2 = T();
+    for (int i = 0; i < vec1.mSize; ++i) {
+        sum += vec1.mData[i] * vec2.mData[i];
+        norm1 += Math::Sqr(vec1.mData[i]);
+        norm2 += Math::Sqr(vec2.mData[i]);
+    }
+    T sim = sum / (Math::Sqrt(norm1)*Math::Sqrt(norm2));
+    return 1.0 - sim;
+}
+
+template <class T, class Alloc>
+T DistanceCorrelation(const Vector<T, Alloc>& vec1, const Vector<T, Alloc>& vec2) {
+    assert(vec1.mSize == vec2.mSize);
+    T avg1 = T(), avg2 = T();
+    for (int i = 0; i < vec1.mSize; ++i) {
+        avg1 += vec1.mData[i];
+        avg2 += vec2.mData[i];
+    }
+    avg1 /= vec1.mSize;
+    avg2 /= vec2.mSize;
+    T sum = T(), norm1 = T(), norm2 = T();
+    for (int i = 0; i < vec1.mSize; ++i) {
+        sum += (vec1.mData[i] - avg1) * (vec2.mData[i] - avg2);
+        norm1 += Math::Sqr(vec1.mData[i] - avg1);
+        norm2 += Math::Sqr(vec2.mData[i] - avg2);
+    }
+    T sim = sum / (Math::Sqrt(norm1) * Math::Sqrt(norm2));
+    return 1.0 - sim;
 }
 
 template <class T, class Alloc>

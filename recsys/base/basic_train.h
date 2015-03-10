@@ -17,12 +17,23 @@ class BasicTrain {
 public:
     BasicTrain(const std::string& ratingTrainFilepath, const std::string& configFilepath,
             const std::string& modelFilepath);
-    virtual ~BasicTrain();
-    virtual void Train() = 0;
+    BasicTrain(const std::string& ratingTrainFilepath, const std::string& ratingValidateFilepath,
+            const std::string& configFilepath, const std::string& modelFilepath);
+    virtual ~BasicTrain() { }
+    virtual void Train();
 protected:
     virtual void LoadConfig() final;
+    virtual void CreateTrainOption();
+    virtual void CreateParameter();
+    virtual void LoadTrainData();
+    virtual void LoadValidateData();
+    virtual void InitModel();
+    virtual void ComputeModel();
+    virtual void SaveModel();
+    virtual void Cleanup();
 protected:
     const std::string mRatingTrainFilepath;
+    const std::string mRatingValidateFilepath;
     const std::string mConfigFilepath;
     const std::string mModelFilepath;
     Json::Value mConfig;

@@ -33,13 +33,22 @@
 #include "common/util/running_statistic.h"
 #include "common/util/string_helper.h"
 #include "error.h"
-#include <algorithm>
-#include <fstream>
-#include <iostream>
+
 #include <utility>
+#include <algorithm>
+#include <memory>
+#include <limits>
 #include <string>
 #include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <fstream>
+#include <iostream>
+
 #include <cstdio>
+#include <cstdlib>
 #include <cassert>
 
 #endif /* COMMON_COMMON_H */

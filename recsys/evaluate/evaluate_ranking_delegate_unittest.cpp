@@ -6,7 +6,7 @@
 
 #include "evaluate_ranking_delegate.h"
 #include "recsys/base/basic_predict.h"
-#include "recsys/util/recsys_test_helper.h"
+#include "recsys/util/recsys_util.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -46,7 +46,7 @@ TEST(EvaluateRankingDelegateTest, EvaluateRankingSTOK) {
 }
 
 TEST(EvaluateRankingDelegateTest, EvaluateRankingSTAndMTResultSame) {
-    RatingList testData = RecsysTestHelper::CreateRandomRatingList(50000, 600, 1000000);
+    RatingList testData = RecsysUtil::RandomRatingList(50000, 600, 1000000);
     Json::Value config;
     config["accelerate"] = true;
     EvaluateOption option(config);

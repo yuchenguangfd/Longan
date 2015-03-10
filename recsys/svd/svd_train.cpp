@@ -11,23 +11,6 @@
 
 namespace longan {
 
-SVDTrain::SVDTrain(const std::string& ratingTrainFilepath,
-        const std::string& ratingValidateFilepath,
-        const std::string& configFilepath, const std::string& modelFilepath) :
-    BasicTrain(ratingTrainFilepath, configFilepath, modelFilepath),
-    mRatingValidateFilepath(ratingValidateFilepath) { }
-
-void SVDTrain::Train() {
-    LoadConfig();
-    CreateTrainOption();
-    CreateParameter();
-    InitModel();
-    LoadRatings();
-    ComputeModel();
-    SaveModel();
-    Cleanup();
-}
-
 void SVDTrain::CreateTrainOption() {
     Log::I("recsys", "SVDTrain::CreateTrainOption()");
     mTrainOption = new SVD::TrainOption(mConfig["trainOption"]);
@@ -38,10 +21,28 @@ void SVDTrain::CreateParameter() {
     mParameter = new SVD::Parameter(mConfig["parameter"]);
 }
 
+void SVDTrain::LoadTrainData() {
+    Log::I("recsys", "SVDTrain::LoadTrainData()");
+    Log::I("recsys", "train rating file = " + mRatingTrainFilepath);
+    SVD::Matrix meta = SVD::Matrix::LoadFromBinaryFile(mRatingTrainFilepath, true);
+    GenerateIdMapping(meta.NumUser(), &mUserIdMapping);
+    GenerateIdMapping(meta.NumItem(), &mItemIdMapping);
+    mTrainData = new SVD::GriddedMatrix(SVD::GriddedMatrix::LoadFromBinaryFile(mRatingTrainFilepath,
+            mTrainOption->NumUserBlock(), mTrainOption->NumItemBlock(),
+            mUserIdMapping, mItemIdMapping));
+}
+
+void SVDTrain::LoadValidateData() {
+    Log::I("recsys", "SVDTrain::LoadValidateData()");
+    Log::I("recsys", "validate rating file = " + mRatingValidateFilepath);
+    mValidateData = new SVD::GriddedMatrix(SVD::GriddedMatrix::LoadFromBinaryFile(mRatingValidateFilepath,
+            mTrainOption->NumUserBlock(), mTrainOption->NumItemBlock(),
+            mUserIdMapping, mItemIdMapping));
+}
+
 void SVDTrain::InitModel() {
     Log::I("recsys", "SVDTrain::InitModel()");
-    SVD::Matrix metaMat = SVD::Matrix::LoadFromBinaryFile(mRatingTrainFilepath, true);
-    mModel = new SVD::ModelTrain(mParameter, metaMat.NumUser(), metaMat.NumItem(), metaMat.RatingAverage());
+    mModel = new SVD::ModelTrain(mParameter, mTrainData->NumUser(), mTrainData->NumItem(), mTrainData->RatingAverage());
     if (mTrainOption->RandomInit()) {
         Log::I("recsys", "random init model");
         mModel->RandomInit();
@@ -49,20 +50,6 @@ void SVDTrain::InitModel() {
         Log::I("recsys", "init from existing model file = " + mModelFilepath);
         mModel->Load(mModelFilepath);
     }
-}
-
-void SVDTrain::LoadRatings() {
-    Log::I("recsys", "SVDTrain::LoadRatings()");
-    GenerateIdMapping(mModel->NumUser(), &mUserIdMapping);
-    GenerateIdMapping(mModel->NumItem(), &mItemIdMapping);
-    Log::I("recsys", "train rating file = " + mRatingTrainFilepath);
-    mTrainData = new SVD::GriddedMatrix(SVD::GriddedMatrix::LoadFromBinaryFile(mRatingTrainFilepath,
-            mTrainOption->NumUserBlock(), mTrainOption->NumItemBlock(),
-            mUserIdMapping, mItemIdMapping));
-    Log::I("recsys", "validate rating file = " + mRatingValidateFilepath);
-    mValidateData = new SVD::GriddedMatrix(SVD::GriddedMatrix::LoadFromBinaryFile(mRatingValidateFilepath,
-            mTrainOption->NumUserBlock(), mTrainOption->NumItemBlock(),
-            mUserIdMapping, mItemIdMapping));
 }
 
 void SVDTrain::GenerateIdMapping(int size, std::vector<int> *idMapping) {
@@ -75,14 +62,14 @@ void SVDTrain::GenerateIdMapping(int size, std::vector<int> *idMapping) {
 
 void SVDTrain::ComputeModel() {
     Log::I("recsys", "SVDTrain::ComputeModel()");
-    SVD::ModelComputation *modelComputationDelegate = nullptr;
+    SVD::ModelComputation *delegate = nullptr;
     if (mTrainOption->Accelerate()) {
-        modelComputationDelegate = new SVD::ModelComputationMT();
+        delegate = new SVD::ModelComputationMT();
     } else {
-        modelComputationDelegate = new SVD::ModelComputationST();
+        delegate = new SVD::ModelComputationST();
     }
-    modelComputationDelegate->ComputeModel(mTrainOption, mTrainData, mValidateData, mModel);
-    delete modelComputationDelegate;
+    delegate->ComputeModel(mTrainOption, mTrainData, mValidateData, mModel);
+    delete delegate;
 }
 
 void SVDTrain::SaveModel() {
@@ -94,6 +81,14 @@ void SVDTrain::SaveModel() {
     mModel->Save(mModelFilepath);
 }
 
+void SVDTrain::Cleanup() {
+    delete mTrainOption;
+    delete mParameter;
+    delete mTrainData;
+    delete mValidateData;
+    delete mModel;
+}
+
 void SVDTrain::InverseShuffleModel() {
     auto getInverseIdMaping = [] (const std::vector<int> &mapping)->std::vector<int> {
         std::vector<int> invMapping(mapping.size());
@@ -102,7 +97,7 @@ void SVDTrain::InverseShuffleModel() {
         }
         return std::move(invMapping);
     };
-    auto inverseShuffleFeatures = [] (std::vector<Vector<float>>& features, const std::vector<int>& mapping) {
+    auto inverseShuffleFeatures = [] (std::vector<Vector32F>& features, const std::vector<int>& mapping) {
         assert(features.size() == mapping.size());
         std::vector<Vector<float>> temp(mapping.size());
         for (int i = 0; i < mapping.size(); ++i) {
@@ -130,14 +125,6 @@ void SVDTrain::InverseShuffleModel() {
     if(mParameter->LambdaItemBias() >= 0.0f) {
         inverseShuffleBiases(mModel->mItemBiases, iidInvMapping);
     }
-}
-
-void SVDTrain::Cleanup() {
-    delete mTrainOption;
-    delete mParameter;
-    delete mModel;
-    delete mTrainData;
-    delete mValidateData;
 }
 
 } //~ namespace longan

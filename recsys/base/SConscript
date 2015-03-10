@@ -7,6 +7,7 @@ env_recsys.lib_objects.append(env_recsys.Object("basic_convert.cpp"))
 env_recsys.lib_objects.append(env_recsys.Object("basic_train.cpp"))
 env_recsys.lib_objects.append(env_recsys.Object("basic_predict.cpp"))
 env_recsys.lib_objects.append(env_recsys.Object("basic_evaluate.cpp"))
+env_recsys.lib_objects.append(env_recsys.Object("similarity_matrix.cpp"))
 
 build_env = env_recsys.Clone()
 # add gtest support

@@ -22,7 +22,7 @@ class ModelComputation {
 public:
     virtual ~ModelComputation() { };
     virtual void ComputeModel(const TrainOption *option, RatingMatItems *trainData,
-            ModelTrain *model) = 0;
+            Model *model) = 0;
 protected:
     void AdjustRating();
     float ComputeSimilarity(const ItemVec& iv1, const ItemVec& iv2) const;
@@ -32,19 +32,19 @@ protected:
 protected:
     const TrainOption *mTrainOption = nullptr;
     RatingMatItems *mTrainData = nullptr;
-    ModelTrain *mModel = nullptr;
+    Model *mModel = nullptr;
 };
 
 class ModelComputationST : public ModelComputation {
 public:
     virtual void ComputeModel(const TrainOption *option, RatingMatItems *trainData,
-            ModelTrain *model) override;
+            Model *model) override;
 };
 
 class ModelComputationMT : public ModelComputation, public PipelinedSchedulerClient {
 public:
     virtual void ComputeModel(const TrainOption *option, RatingMatItems *trainData,
-            ModelTrain *model) override;
+            Model *model) override;
     virtual std::thread* CreateProducerThread() {
         return new std::thread(&ModelComputationMT::ProducerRun, this);
     }
@@ -80,7 +80,7 @@ protected:
 class ModelComputationMTStaticSchedule : public ModelComputation {
 public:
     virtual void ComputeModel(const TrainOption *option, RatingMatItems *trainData,
-            ModelTrain *model) override;
+            Model *model) override;
 private:
     void ThreadRun(int64 taskIdBegin, int64 taskIdEnd);
 };

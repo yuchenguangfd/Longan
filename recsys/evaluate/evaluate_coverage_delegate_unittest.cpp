@@ -6,7 +6,7 @@
 
 #include "evaluate_coverage_delegate.h"
 #include "recsys/base/basic_predict.h"
-#include "recsys/util/recsys_test_helper.h"
+#include "recsys/util/recsys_util.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -40,7 +40,7 @@ TEST(EvaluateCoverageDelegateTest, EvaluateCoverageSTOK) {
 }
 
 TEST(EvaluateCoverageDelegateTest, EvaluateCoverageSTAndMTResultSame) {
-    RatingList testData = RecsysTestHelper::CreateRandomRatingList(50000, 600, 1000000);
+    RatingList testData = RecsysUtil::RandomRatingList(50000, 600, 1000000);
     BasicPredictStub predict;
     EvaluateCoverageDelegateST evaluate1;
     EvaluateCoverageDelegateMT evaluate2;

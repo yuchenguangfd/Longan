@@ -5,13 +5,13 @@
  */
 
 #include "rating_matrix_as_users.h"
-#include "recsys/util/recsys_test_helper.h"
+#include "recsys/util/recsys_util.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
 
 TEST(RatingMatrixAsUsersTest, InitFromRatingListOK) {
-    RatingList rlist = RecsysTestHelper::CreateRandomRatingList(50, 60, 1000);
+    RatingList rlist = RecsysUtil::RandomRatingList(50, 60, 1000);
     double checkResult1 = 0.0;
     for (int i = 0; i < rlist.Size(); ++i) {
         checkResult1 += rlist[i].ItemId() - rlist[i].UserId() + rlist[i].Rating();

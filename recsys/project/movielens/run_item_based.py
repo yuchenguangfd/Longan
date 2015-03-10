@@ -18,7 +18,7 @@ def run_item_based():
     run_command("../../neighbor/item_based_convert_longan "
               + "-ratingTextFilepath=./MovieLens/rating_test.txt "
               + "-ratingBinaryFilepath=./MovieLens/rating_test.bin")
-    
+
     run_command("../../neighbor/item_based_train_longan "
             + "-ratingTrainFilepath=./MovieLens/rating_train.bin "
             + "-configFilepath=./item_based_config.json "

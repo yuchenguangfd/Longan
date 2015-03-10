@@ -14,13 +14,25 @@ namespace longan {
 
 namespace SVD {
 
-Parameter::Parameter(const Json::Value& parameter) {
-    mDim = parameter["dim"].asInt();
+Parameter::Parameter(const Json::Value& param) {
+    if (param["ratingType"].asString() == "numerical") {
+        mRatingType = RatingType_Numerical;
+    } else if (param["ratingType"].asString() == "binary") {
+        mRatingType = RatingType_Binary;
+    } else {
+        throw LonganConfigError();
+    }
+    mDim = param["dim"].asInt();
     assert(mDim > 0);
-    mLambdaUserFeature = static_cast<float>(parameter["lambdaUserFeature"].asDouble());
-    mLambdaItemFeature = static_cast<float>(parameter["lambdaItemFeature"].asDouble());
-    mLambdaUserBias = static_cast<float>(parameter["lambdaUserBias"].asDouble());
-    mLambdaItemBias = static_cast<float>(parameter["lambdaItemBias"].asDouble());
+    mLambdaUserFeature = (float)(param["lambdaUserFeature"].asDouble());
+    mLambdaItemFeature = (float)(param["lambdaItemFeature"].asDouble());
+    mLambdaUserBias = (float)(param["lambdaUserBias"].asDouble());
+    mLambdaItemBias = (float)(param["lambdaItemBias"].asDouble());
+    mUseRatingAverage = param["useRatingAverage"].asBool();
+    mUseSigmoid = param["useSigmoid"].asBool();
+    if (mRatingType == RatingType_Numerical) {
+        assert(!mUseSigmoid);
+    }
 }
 
 TrainOption::TrainOption(const Json::Value& option) {
@@ -30,7 +42,6 @@ TrainOption::TrainOption(const Json::Value& option) {
     mLearningRate = static_cast<float>(option["learningRate"].asDouble());
     assert(mLearningRate > 0.0f);
     mUseRandomShuffle = option["useRandomShuffle"].asBool();
-    mUseRatingAverage = option["useRatingAverage"].asBool();
     mNumUserBlock = option["numUserBlock"].asInt();
     assert(mNumUserBlock > 0);
     mNumItemBlock = option["numItemBlock"].asInt();
@@ -52,6 +63,33 @@ TrainOption::TrainOption(const Json::Value& option) {
         if (mMonitorIterationStep <= 0) mMonitorIterationStep = 1;
     } else {
         mMonitorIterationStep = 0;
+    }
+}
+
+PredictOption::PredictOption(const Json::Value& option) {
+    if (option["predictRankingMethod"].asString() == "predictRating") {
+        mPredictRankingMethod = PredictRankingMethod_PredictRating;
+    } else if (option["predictRankingMethod"].asString() == "latentItemNeighbor") {
+        mPredictRankingMethod = PredictRankingMethod_LatentItemNeighbor;
+        mNeighborSize = option["neighborSize"].asInt();
+    } else if (option["predictRankingMethod"].asString() == "latentUserNeighbor") {
+        mPredictRankingMethod = PredictRankingMethod_LatentUserNeighbor;
+        mNeighborSize = option["neighborSize"].asInt();
+    } else {
+        throw LonganConfigError();
+    }
+    if (option["latentDistanceType"].asString() == "normL1") {
+        assert(mPredictRankingMethod != PredictRankingMethod_PredictRating);
+        mLatentDistanceType = LatentDistanceType_NormL1;
+    } else if (option["latentDistanceType"].asString() == "normL2") {
+        assert(mPredictRankingMethod != PredictRankingMethod_PredictRating);
+        mLatentDistanceType = LatentDistanceType_NormL2;
+    } else if (option["latentDistanceType"].asString() == "cosine") {
+        assert(mPredictRankingMethod != PredictRankingMethod_PredictRating);
+        mLatentDistanceType = LatentDistanceType_Cosine;
+    } else if(option["latentDistanceType"].asString() == "correlation") {
+        assert(mPredictRankingMethod != PredictRankingMethod_PredictRating);
+        mLatentDistanceType = LatentDistanceType_Correlation;
     }
 }
 

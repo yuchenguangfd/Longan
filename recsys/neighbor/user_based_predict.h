@@ -19,29 +19,25 @@ namespace longan {
 class UserBasedPredict : public BasicPredict {
 public:
     using BasicPredict::BasicPredict;
-    virtual void Init() override;
     virtual void Cleanup() override;
     virtual float PredictRating(int userId, int itemId) const override;
-    virtual ItemIdList PredictTopNItem(int userId, int listSize) const override;
-    virtual float ComputeItemSimilarity(int itemId1, int itemId2) const override;
+protected:
+    virtual void CreatePredictOption() override;
+    virtual void CreateParameter() override;
+    virtual void LoadTrainData() override;
+    virtual void LoadModel() override;
+    virtual float ComputeTopNItemScore(int userId, int itemId) const override;
 private:
-    void CreatePredictOption();
-    void CreateParameter();
-    void LoadTrainData();
-    void AdjustRating();
-    void LoadModel();
-    void InitCachedTopNItems();
-    float PredictRatingAllNeighbor(int userId, int itemId) const;
-    float PredictRatingFixedSizeNeighbor(int userId, int itemid) const;
-    ItemIdList PredictTopNItemFromCache(int userId, int listSize) const;
+    float PredictRatingByAllNeighbor(int userId, int itemId) const;
+    float PredictRatingByFixedSizeNeighbor(int userId, int itemId) const;
+    float ComputeTopNItemScoreByAllNeighbor(int userId, int itemId) const;
+    float ComputeTopNItemScoreByFixedSizeNeighbor(int userId, int itemId) const;
 private:
     const UserBased::PredictOption *mPredictOption = nullptr;
     const UserBased::Parameter *mParameter = nullptr;
-    RatingMatItems *mTrainDataItems = nullptr;
-    RatingMatUsers *mTrainDataUsers = nullptr;
     RatingTrait *mTrainDataTrait = nullptr;
-    UserBased::ModelPredict *mModel = nullptr;
-    mutable std::vector<ItemIdList> mCachedTopNItems;
+    UserBased::Model *mModel = nullptr;
+    RatingMatItems *mTrainDataItems = nullptr;
 };
 
 } //~ namespace longan

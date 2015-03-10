@@ -16,17 +16,17 @@ namespace ItemBased {
 class Parameter {
 public:
     enum RatingType {
-        RatingTypeNumerical,
-        RatingTypeBinary
+        RatingType_Numerical,
+        RatingType_Binary
     };
     enum SimType {
-        SimTypeCosine,
-        SimTypeAdjustedCosine,
-        SimTypeCorrelation,
-        SimTypeBinaryCosine,
-        SimTypeBinaryJaccard
+        SimType_Cosine,
+        SimType_AdjustedCosine,
+        SimType_Correlation,
+        SimType_BinaryCosine,
+        SimType_BinaryJaccard
     };
-    Parameter(const Json::Value& parameter);
+    Parameter(const Json::Value& param);
     int RatingType() const { return mRatingType; }
     int SimType() const { return mSimType; }
 private:
@@ -48,9 +48,15 @@ private:
 
 class PredictOption {
 public:
+    enum PredictRankingMethod {
+        PredictRankingMethod_PredictRating,
+        PredictRankingMethod_NeighborSimilarity
+    };
     PredictOption(const Json::Value& option);
+    int PredictRankingMethod() const { return mPredictRankingMethod; }
     int NeighborSize() const { return mNeighborSize; }
 private:
+    int mPredictRankingMethod;
     int mNeighborSize;
 };
 

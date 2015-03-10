@@ -5,42 +5,33 @@
  */
 
 #include "random_predict.h"
-#include "common/math/math.h"
-#include "common/util/random.h"
-#include "common/logging/logging.h"
+#include "common/common.h"
 
 namespace longan {
 
 RandomPredictOption::RandomPredictOption(const Json::Value& option) {
     mRatingRangeLow = option["ratingRangeLow"].asDouble();
     mRatingRangeHigh = option["ratingRangeHigh"].asDouble();
-    mRoundIntRating = option["roundIntRating"].asBool();
+    assert(mRatingRangeLow < mRatingRangeHigh);
 }
 
 void RandomPredict::Init() {
     Log::I("recsys", "RandomPredict::Init()");
     LoadConfig();
-    CreateOption();
+    CreatePredictOption();
     LoadTrainData();
 }
 
-void RandomPredict::CreateOption() {
-    Log::I("recsys", "RandomPredict::CreateOption()");
-    mOption = new RandomPredictOption(mConfig["predictOption"]);
-}
-
-void RandomPredict::LoadTrainData() {
-    Log::I("recsys", "RandomPredict::LoadTrainRating()");
-    Log::I("recsys", "rating train file = " + mRatingTrainFilepath);
-    RatingList rlist = RatingList::LoadFromBinaryFile(mRatingTrainFilepath);
-    mTrainData = new RatingMatUsers();
-    mTrainData->Init(rlist);
+void RandomPredict::CreatePredictOption() {
+    Log::I("recsys", "RandomPredict::CreatePredictOption()");
+    mPredictOption = new RandomPredictOption(mConfig["predictOption"]);
 }
 
 float RandomPredict::PredictRating(int userId, int itemId) const {
     std::unique_lock<std::mutex> lock(mMutex);
-    double predRating = Random::Instance().Uniform(mOption->RatingRangeLow(), mOption->RatingRangeHigh());
-    return mOption->RoundInt() ? Math::Round(predRating) : predRating;
+    double predRating = Random::Instance().Uniform(
+            mPredictOption->RatingRangeLow(), mPredictOption->RatingRangeHigh());
+    return (float)predRating;
 }
 
 ItemIdList RandomPredict::PredictTopNItem(int userId, int listSize) const {
@@ -74,7 +65,7 @@ ItemIdList RandomPredict::PredictTopNItem(int userId, int listSize) const {
 }
 
 void RandomPredict::Cleanup() {
-    delete mOption;
+    delete mPredictOption;
     delete mTrainData;
 }
 

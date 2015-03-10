@@ -15,14 +15,22 @@ namespace UserBased {
 
 class Parameter {
 public:
+    enum RatingType {
+        RatingType_Numerical,
+        RatingType_Binary
+    };
     enum SimType {
-        SimTypeCosine,
-        SimTypeAdjustedCosine,
-        SimTypeCorrelation
+        SimType_Cosine,
+        SimType_AdjustedCosine,
+        SimType_Correlation,
+        SimType_BinaryCosine,
+        SimType_BinaryJaccard
     };
     Parameter(const Json::Value& parameter);
+    int RatingType() const { return mRatingType; }
     int SimType() const { return mSimType; }
 private:
+    int mRatingType;
     int mSimType;
 };
 
@@ -40,9 +48,15 @@ private:
 
 class PredictOption {
 public:
+    enum PredicRankingMethod {
+        PredictRankingMethod_PredictRating,
+        PredictRankingMethod_NeighborSimilarity
+    };
     PredictOption(const Json::Value& option);
+    int PredictRankingMethod() const { return mPredictRankingMethod; }
     int NeighborSize() const { return mNeighborSize; }
 private:
+    int mPredictRankingMethod;
     int mNeighborSize;
 };
 

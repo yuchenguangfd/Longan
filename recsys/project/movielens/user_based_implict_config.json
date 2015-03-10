@@ -1,13 +1,22 @@
 {
+	"parameter": {
+		"ratingType": "binary",
+		"simType": "binaryCosine"
+	},
+	"trainOption": {
+		"accelerate": true,
+		"monitorProgress": true
+	},
 	"predictOption": {
-		"predictRatingMethod": "itemAverage",
-		"predictRankingMethod": "itemPopularity"
+		"predictRankingMethod": "neighborSimilarity",
+		"neighborSize": 0
 	},
 	"evaluateOption": {
 		"accelerate": true, 
 		"evaluateRating": false,
 		"evaluateRanking": true,
 		"evaluateCoverage": true,
+		"evaluateDiversity": true,
 		"evaluateNovelty": true,
 		"rankingListSizes": [10, 20, 40, 80, 100, 200, 400],
 		"monitorProgress": true

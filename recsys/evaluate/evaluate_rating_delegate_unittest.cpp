@@ -6,7 +6,7 @@
 
 #include "evaluate_rating_delegate.h"
 #include "recsys/base/basic_predict.h"
-#include "recsys/util/recsys_test_helper.h"
+#include "recsys/util/recsys_util.h"
 #include <gtest/gtest.h>
 
 using namespace longan;
@@ -14,8 +14,6 @@ using namespace longan;
 class BasicPredictStub : public BasicPredict {
 public:
     BasicPredictStub() : BasicPredict("", "", "") { }
-    virtual void Init() override { }
-    virtual void Cleanup() override { }
     virtual float PredictRating(int userId, int itemId) const {
         return 0.0f;
     }
@@ -39,7 +37,7 @@ TEST(EvaluateRatingDelegateTest, EvaluateRatingSTOK) {
 }
 
 TEST(EvaluateRatingDelegateTest, EvaluateRatingSTAndMTResultSame) {
-    RatingList rlist = RecsysTestHelper::CreateRandomRatingList(50000, 600, 1000000);
+    RatingList rlist = RecsysUtil::RandomRatingList(50000, 600, 1000000, false, 1.0f, 5.0f);
     BasicPredictStub predict;
     EvaluateRatingDelegateST evaluate1;
     EvaluateRatingDelegateMT evaluate2;
@@ -48,8 +46,8 @@ TEST(EvaluateRatingDelegateTest, EvaluateRatingSTAndMTResultSame) {
     EvaluateOption option(config);
     evaluate1.Evaluate(&predict, &rlist, &option);
     evaluate2.Evaluate(&predict, &rlist, &option);
-    ASSERT_DOUBLE_EQ(evaluate1.MAE(), evaluate2.MAE());
-    ASSERT_DOUBLE_EQ(evaluate1.RMSE(), evaluate2.RMSE());
+    ASSERT_LE(fabs(evaluate1.MAE() - evaluate2.MAE()), 1e-8);
+    ASSERT_LE(fabs(evaluate1.RMSE() - evaluate2.RMSE()), 1e-8);
 }
 
 int main(int argc, char **argv) {

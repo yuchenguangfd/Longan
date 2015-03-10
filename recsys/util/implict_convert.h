@@ -13,12 +13,12 @@ namespace longan {
 
 class ImplictConvert {
 public:
-    ImplictConvert(const std::string& explictRatingTextFilepath, int negativeToPositiveRatio,
+    ImplictConvert(const std::string& explictRatingTextFilepath, double negativeToPositiveRatio,
             const std::string& implictRatingTextFilepath);
     void Convert();
 private:
     const std::string mExplictRatingTextFilepath;
-    const int mNegativeToPositiveRatio;
+    const double mNegativeToPositiveRatio;
     const std::string mImplictRatingTextFilepath;
 
 };

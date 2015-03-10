@@ -1,8 +1,7 @@
 {
     "predictOption": {
         "ratingRangeLow": 1.0,
-        "ratingRangeHigh": 5.0,
-        "roundIntRating": false
+        "ratingRangeHigh": 5.0
     },
 	"evaluateOption": {
 		"accelerate": false, 

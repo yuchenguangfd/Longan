@@ -8,8 +8,8 @@
 #include "recsys/base/basic_predict.h"
 #include "recsys/base/rating_list.h"
 #include "recsys/base/rating_trait.h"
-#include "common/logging/logging.h"
-#include "common/time/stopwatch.h"
+#include "common/common.h"
+
 
 namespace longan {
 
@@ -108,7 +108,7 @@ void EvaluateNoveltyDelegateMT::MonitorRun() {
                 mRunningNovelty.CurrentAverage(),
                 stopwatch.Toc());
         if (mProcessedTask >= mTotoalTask) break;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
    }
 }
 
