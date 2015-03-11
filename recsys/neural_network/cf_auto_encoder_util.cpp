@@ -5,8 +5,7 @@
  */
 
 #include "cf_auto_encoder_util.h"
-#include "common/error.h"
-#include <cassert>
+#include "common/common.h"
 
 namespace longan {
 
@@ -47,7 +46,7 @@ TrainOption::TrainOption(const Json::Value& option) {
     mAccelerate = option["accelerate"].asBool();
     if (mAccelerate) {
         mNumThread = option["numThread"].asInt();
-        assert(mNumThread >= 1);
+        if (mNumThread <= 0) mNumThread = SystemInfo::GetNumCPUCore();
     } else {
         mNumThread = 1;
     }
@@ -73,9 +72,9 @@ PredictOption::PredictOption(const Json::Value& option) {
     }
     if (option["predictRankingMethod"].asString() == "predictRating") {
         mPredictRankingMethod = PredictRankingMethod_PredictRating;
-    }else if (option["predictRatingMethod"].asString() == "codeItemNeighbor") {
+    }else if (option["predictRankingMethod"].asString() == "codeItemNeighbor") {
         mPredictRankingMethod = PredictRankingMethod_CodeItemNeighbor;
-    } else if (option["predictRatingMethod"].asString() == "codeUserNeighbor") {
+    } else if (option["predictRankingMethod"].asString() == "codeUserNeighbor") {
         mPredictRankingMethod = PredictRankingMethod_CodeUserNeighbor;
     } else {
         throw LonganConfigError();

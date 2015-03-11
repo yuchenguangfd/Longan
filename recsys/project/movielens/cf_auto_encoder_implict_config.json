@@ -1,31 +1,33 @@
 {
-	"parameter": {
-		"ratingType": "binary",
-        "codeType": "item",
-		"architecture": [64]
-	},
+    "parameter": {
+        "ratingType": "binary",
+        "codeType": "user",
+        "architecture": [256]
+    },
     "trainOption": {
-    	"randomInit": true,
-        "iterations" : 50,
+        "randomInit": true,
+        "iterations" : 100,
         "lambda" : 0.001,
         "learningRate" : 0.01,
         "accelerate": true,
-        "numThread": 4,
         "monitorIteration": true,
         "monitorIterationStep": 4,
         "monitorProgress": true
     },
     "predictOption": {
-		"codeDistanceType": "hamming"
+        "predictRatingMethod": "reconstruct",
+        "predictRankingMethod": "codeUserNeighbor",
+        "codeDistanceType": "hamming",
+        "neighborSize": 20
     },
-   	"evaluateOption": {
-		"accelerate": true, 
-		"evaluateRating": false,
-		"evaluateRanking": true,
-		"evaluateCoverage": true,
-		"evaluateDiversity": true,
-		"evaluateNovelty": true,
-		"rankingListSizes": [400, 10, 20, 40, 80, 100, 200, 400],
-		"monitorProgress": true
-	}
+    "evaluateOption": {
+        "accelerate": true, 
+        "evaluateRating": false,
+        "evaluateRanking": true,
+        "evaluateCoverage": true,
+        "evaluateDiversity": true,
+        "evaluateNovelty": true,
+        "rankingListSizes": [10, 20, 40, 80, 100, 200, 400],
+        "monitorProgress": true
+    }
 }

@@ -95,6 +95,7 @@ class BinaryCode {
 public:
     BinaryCode(const Vector64F& vec) {
         mSize = (vec.Size() % 32 == 0) ? vec.Size() / 32 : vec.Size() / 32 + 1;
+        assert(mSize <= MAX_SIZE);
         std::fill(mValues, mValues + mSize, 0);
         for (int i = 0; i < vec.Size(); ++i) {
             int j = i / 32;
@@ -106,7 +107,7 @@ public:
     }
     friend int HammingDistance(const BinaryCode& code1, const BinaryCode& code2);
 private:
-    static const int MAX_SIZE = 4;
+    static const int MAX_SIZE = 16;
     uint32 mValues[MAX_SIZE];
     uint8 mSize;
 };
@@ -128,7 +129,7 @@ inline int HammingDistance(const BinaryCode& code1, const BinaryCode& code2) {
     assert(code1.mSize == code2.mSize);
     int dist = 0;
     for (int i = 0; i < code1.mSize; ++i) {
-        dist += BitCount(code1.mValues[i] ^ code1.mValues[i]);
+        dist += BitCount(code1.mValues[i] ^ code2.mValues[i]);
     }
     return dist;
 }

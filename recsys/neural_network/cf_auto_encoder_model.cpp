@@ -82,6 +82,7 @@ void Model::Load(const std::string& filename) {
     assert(numSample == mNumSample);
     int numLayer;
     bis >> numLayer;
+    assert(numLayer == mParameter->NumLayer());
     for (int i = 0; i < mParameter->NumLayer(); ++i) {
         int numLayerUnit;
         bis >> numLayerUnit;
@@ -101,19 +102,21 @@ void Model::Load(const std::string& filename) {
 }
 
 float Model::Reconstruct(int userId, int itemId) const {
+    const Matrix64F& decodeWeight = mDecodeWeights[0];
+    const Vector64F& decodeBias = mDecodeBiases[0];
     if (mParameter->CodeType() == Parameter::CodeType_User) {
         const Vector64F& code = mCodes[userId];
-        float output = mDecodeBiases[0][itemId];
+        float output = decodeBias[itemId];
         for (int j = 0; j < mCodeLength; ++j) {
-            output += mDecodeWeights[0][itemId][j] * code[j];
+            output += decodeWeight[itemId][j] * code[j];
         }
         output = Math::Sigmoid(output);
         return output;
     } else if (mParameter->CodeType() == Parameter::CodeType_Item) {
         const Vector64F& code = mCodes[itemId];
-        float output = mDecodeBiases[0][userId];
+        float output = decodeBias[userId];
         for (int j = 0; j < mCodeLength; ++j) {
-            output += mDecodeWeights[0][userId][j] * code[j];
+            output += decodeWeight[userId][j] * code[j];
         }
         output = Math::Sigmoid(output);
         return output;

@@ -26,12 +26,12 @@ private:
     void EncodeSamplesUser();
     void EncodeSamplesItem();
 protected:
-    const TrainOption *mTrainOption;
-    const RatingMatUsers *mTrainDataUsers;
-    const RatingMatUsers *mValidateDataUsers;
-    const RatingMatItems *mTrainDataItems;
-    const RatingMatItems *mValidateDataItems;
-    Model *mModel;
+    const TrainOption *mTrainOption = nullptr;
+    const RatingMatUsers *mTrainDataUsers = nullptr;
+    const RatingMatUsers *mValidateDataUsers = nullptr;
+    const RatingMatItems *mTrainDataItems = nullptr;
+    const RatingMatItems *mValidateDataItems = nullptr;
+    Model *mModel = nullptr;
 };
 
 class TrainSparseLayerDelegate {
@@ -136,38 +136,6 @@ public:
 };
 
 } //~ namespace CFAE
-
-//    void InitResource() {}
-//    void ProcessTask(int threadId, int sampleId, double *loss);
-//    void Forward(int threadId);
-//    void ForwardOneLayer(int inputUnit, int outputUnit, const double *inputAct,
-//            const double *weight, const double *bias, double *outputAct);
-//    void Backward(int threadId, double *loss);
-//    void BackwardOutputLayer(int targetUnit, const double *inputAct, const double *targetAct,
-//            double *outputDelta, double *loss);
-//    void BackwardOneLayer(int inputUnit, int outputUnit, const double *weight,
-//            const double *inputDelta, const double *inputAct, double *outputDelta);
-//    void ComputeGradient(int threadId);
-//    void ComputeGradientOneLayer(int inputUnit, int outputUnit, const double *delta,
-//            const double *act, double *weightGrad, double *biasGrad);
-//    void AdjustNetwork(int threadId);
-//    void AdjustNetworkOneLayer(int inputUnit, int outputUnit, const double *weightGrad,
-//            const double *biasGrad, double *weight, double *bias);
-//    void ComputeTotalLoss();
-//private:
-//
-
-//
-//    std::vector<Vector64F> mTarget;
-//    std::vector<std::vector<Vector64F>> mActivations;
-//    std::vector<std::vector<Vector64F>> mDeltas;
-//    std::vector<std::vector<Matrix64F>> mWeightGradients;
-//    std::vector<std::vector<Vector64F>> mBiasGradients;
-//    std::vector<double> mSampleLosses;
-//    double mDataLoss;
-//    double mRegLoss;
-//    double mTotalLoss;
-//};
 
 } //~ namespace longan
 

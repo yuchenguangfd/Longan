@@ -12,29 +12,29 @@ def run_command(cmd):
         sys.exit(-1)
         
 def run_cf_auto_encoder():
-#     run_command("../../util/implict_convert_longan "
-#               + "-explictRatingTextFilepath=./MovieLens/rating_train.txt " 
-#               + "-negativeToPositiveRatio=1 "
-#               + "-implictRatingTextFilepath=./MovieLens/implict_rating_train.txt")
-#     run_command("../../util/implict_convert_longan "
-#               + "-explictRatingTextFilepath=./MovieLens/rating_test.txt "
-#               + "-negativeToPositiveRatio=0 "
-#               + "-implictRatingTextFilepath=./MovieLens/implict_rating_test.txt")
-#    
-#     run_command("../../neural_network/cf_auto_encoder_convert_longan "
-#               + "-ratingTextFilepath=./MovieLens/implict_rating_train.txt "
-#               + "-needNormalize=false "
-#               + "-ratingBinaryFilepath=./MovieLens/implict_rating_train.bin")
-#     run_command("../../neural_network/cf_auto_encoder_convert_longan "
-#               + "-ratingTextFilepath=./MovieLens/implict_rating_test.txt "
-#               + "-needNormalize=false "
-#               + "-ratingBinaryFilepath=./MovieLens/implict_rating_test.bin")
-#       
-#     run_command("../../neural_network/cf_auto_encoder_train_longan "
-#             + "-ratingTrainFilepath=./MovieLens/implict_rating_train.bin "
-#             + "-ratingValidateFilepath=./MovieLens/implict_rating_test.bin "
-#             + "-configFilepath=./cf_auto_encoder_implict_config.json "
-#             + "-modelFilepath=./cf_auto_encoder_implict_model.dat") 
+    run_command("../../util/implict_convert_longan "
+              + "-explictRatingTextFilepath=./MovieLens/rating_train.txt " 
+              + "-negativeToPositiveRatio=1 "
+              + "-implictRatingTextFilepath=./MovieLens/implict_rating_train.txt")
+    run_command("../../util/implict_convert_longan "
+              + "-explictRatingTextFilepath=./MovieLens/rating_test.txt "
+              + "-negativeToPositiveRatio=0 "
+              + "-implictRatingTextFilepath=./MovieLens/implict_rating_test.txt")
+    
+    run_command("../../neural_network/cf_auto_encoder_convert_longan "
+              + "-ratingTextFilepath=./MovieLens/implict_rating_train.txt "
+              + "-needNormalize=false "
+              + "-ratingBinaryFilepath=./MovieLens/implict_rating_train.bin")
+    run_command("../../neural_network/cf_auto_encoder_convert_longan "
+              + "-ratingTextFilepath=./MovieLens/implict_rating_test.txt "
+              + "-needNormalize=false "
+              + "-ratingBinaryFilepath=./MovieLens/implict_rating_test.bin")
+       
+    run_command("../../neural_network/cf_auto_encoder_train_longan "
+            + "-ratingTrainFilepath=./MovieLens/implict_rating_train.bin "
+            + "-ratingValidateFilepath=./MovieLens/implict_rating_test.bin "
+            + "-configFilepath=./cf_auto_encoder_implict_config.json "
+            + "-modelFilepath=./cf_auto_encoder_implict_model.dat") 
 #          
     run_command("../../neural_network/cf_auto_encoder_evaluate_longan " 
               + "-ratingTrainFilepath=./MovieLens/implict_rating_train.bin "
