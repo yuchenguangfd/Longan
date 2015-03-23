@@ -58,6 +58,7 @@ TrainOption::TrainOption(const Json::Value& option) {
         mMonitorIterationStep = 0;
     }
     mMonitorProgress = option["monitorProgress"].asBool();
+    mNormalizeBackwardError = option["normalizeBackwardError"].asBool();
 }
 
 PredictOption::PredictOption(const Json::Value& option) {

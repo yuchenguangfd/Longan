@@ -16,6 +16,9 @@ build_env.Prepend(CPPPATH = "#/external/gtest/include",
 build_env.Program("recsys_util_unittest",
                  ["recsys_util_unittest.cpp"])
 
+build_env.Program("character_dataset_longan",
+                 ["character_dataset_longan.cpp",
+                  "character_dataset.cpp"])
 build_env.Program("implict_convert_longan", 
                  ["implict_convert_longan.cpp",
                   "implict_convert.cpp"])

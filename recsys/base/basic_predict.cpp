@@ -82,6 +82,7 @@ ItemIdList BasicPredict::PredictTopNItem(int userId, int listSize) const {
     scores.reserve(numItem);
     int begin = -1, end = -1;
     for (int i = 0; i < size; ++i) {
+        if (data[i].Rating() == 0.0f) continue; // skip negative sample
         begin = end + 1;
         end = data[i].ItemId();
         for (int iid = begin; iid < end; ++iid) {

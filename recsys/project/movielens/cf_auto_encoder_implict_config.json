@@ -12,7 +12,8 @@
         "accelerate": true,
         "monitorIteration": true,
         "monitorIterationStep": 4,
-        "monitorProgress": true
+        "monitorProgress": true,
+        "normalizeBackwardError": true
     },
     "predictOption": {
         "predictRatingMethod": "reconstruct",

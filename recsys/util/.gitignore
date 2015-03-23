@@ -4,3 +4,6 @@
 /recsys_util_unittest
 /recsys_util_unittest.o
 /recsys_util.o
+/character_dataset_longan
+/character_dataset_longan.o
+/character_dataset.o

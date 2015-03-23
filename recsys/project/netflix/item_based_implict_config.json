@@ -5,7 +5,6 @@
 	},
 	"trainOption": {
 		"accelerate": true,
-		"numThread": 4,
 		"monitorProgress": true
 	},
 	"predictOption": {

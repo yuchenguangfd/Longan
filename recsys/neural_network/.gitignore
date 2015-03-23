@@ -13,3 +13,5 @@
 /cf_auto_encoder_convert.o
 /cf_auto_encoder_model_computation.o
 /cf_auto_encoder_model.o
+/cf_auto_encoder_model_computation_unittest
+/cf_auto_encoder_model_computation_unittest.o

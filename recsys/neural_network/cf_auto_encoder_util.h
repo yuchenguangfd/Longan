@@ -48,6 +48,7 @@ public:
     bool MonitorIteration() const { return mMonitorIteration; }
     int MonitorIterationStep() const { return mMonitorIterationStep; }
     bool MonitorProgress() const { return mMonitorProgress; }
+    bool NormalizeBackwardError() const { return mNormalizeBackwardError; }
 private:
     bool mRandomInit;
     int mIterations;
@@ -58,6 +59,7 @@ private:
     bool mMonitorIteration;
     int mMonitorIterationStep;
     bool mMonitorProgress;
+    bool mNormalizeBackwardError;
 };
 
 class PredictOption {

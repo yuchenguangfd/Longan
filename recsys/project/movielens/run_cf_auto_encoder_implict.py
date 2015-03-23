@@ -11,7 +11,7 @@ def run_command(cmd):
         print "command failed."
         sys.exit(-1)
         
-def run_cf_auto_encoder():
+def run_cf_auto_encoder_implict():
     run_command("../../util/implict_convert_longan "
               + "-explictRatingTextFilepath=./MovieLens/rating_train.txt " 
               + "-negativeToPositiveRatio=1 "
@@ -35,7 +35,7 @@ def run_cf_auto_encoder():
             + "-ratingValidateFilepath=./MovieLens/implict_rating_test.bin "
             + "-configFilepath=./cf_auto_encoder_implict_config.json "
             + "-modelFilepath=./cf_auto_encoder_implict_model.dat") 
-#          
+          
     run_command("../../neural_network/cf_auto_encoder_evaluate_longan " 
               + "-ratingTrainFilepath=./MovieLens/implict_rating_train.bin "
               + "-configFilepath=./cf_auto_encoder_implict_config.json "
@@ -44,4 +44,4 @@ def run_cf_auto_encoder():
               + "-resultFilepath=./cf_auto_encoder_implict_result.json")
 
 if __name__=="__main__":
-    run_cf_auto_encoder()
+    run_cf_auto_encoder_implict()

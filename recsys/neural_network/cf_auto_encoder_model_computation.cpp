@@ -125,11 +125,15 @@ void TrainSparseLayerDelegate::BackwardUser(int sampleId, const Vector64F& activ
     const UserVec& uv = mTrainDataUsers->GetUserVector(sampleId);
     const ItemRating *data = uv.Data();
     int size = uv.Size();
+    float normCoff = 1.0f / Math::Sqrt((float)size);
     mSampleLoss[sampleId] = 0.0;
     for (int i = 0; i < size; ++i) {
         int itemId = data[i].ItemId();
         float target = data[i].Rating();
         double error = activation2[itemId] - target;
+        if (mTrainOption->NormalizeBackwardError()) {
+            error *= normCoff;
+        }
         delta2[itemId] = error * activation2[itemId] * (1.0 - activation2[itemId]);
         mSampleLoss[sampleId] += Math::Sqr(error);
     }
@@ -149,11 +153,15 @@ void TrainSparseLayerDelegate::BackwardItem(int sampleId, const Vector64F& activ
     const ItemVec& iv = mTrainDataItems->GetItemVector(sampleId);
     const UserRating *data = iv.Data();
     int size = iv.Size();
+    float normCoff = 1.0f / Math::Sqrt((float)size);
     mSampleLoss[sampleId] = 0.0;
     for (int i = 0; i < size; ++i) {
         int userId = data[i].UserId();
         float target = data[i].Rating();
         double error = activation2[userId] - target;
+        if (mTrainOption->NormalizeBackwardError()) {
+            error *= normCoff;
+        }
         delta2[userId] = error * activation2[userId] * (1.0 - activation2[userId]);
         mSampleLoss[sampleId] += Math::Sqr(error);
     }
@@ -288,6 +296,7 @@ double TrainSparseLayerDelegate::ComputeValidateLossUser() {
             }
             activation1[i] = Math::Sigmoid(sum);
         }
+        double normCoff = 1.0 / Math::Sqrt((double)size2);
         for (int i = 0; i < size2; ++i) {
             int itemId = data2[i].ItemId();
             double sum = decodeBias[itemId];
@@ -295,6 +304,9 @@ double TrainSparseLayerDelegate::ComputeValidateLossUser() {
                 sum += decodeWeight[itemId][j] * activation1[j];
             }
             double error = Math::Sigmoid(sum) - data2[i].Rating();
+            if (mTrainOption->NormalizeBackwardError()) {
+                error *= normCoff;
+            }
             loss += Math::Sqr(error);
         }
     }
@@ -329,6 +341,7 @@ double TrainSparseLayerDelegate::ComputeValidateLossItem() {
             }
             activation1[i] = Math::Sigmoid(sum);
         }
+        double normCoff = 1.0 / Math::Sqrt((double)size2);
         for (int i = 0; i < size2; ++i) {
             int userId = data2[i].UserId();
             double sum = decodeBias[userId];
@@ -336,6 +349,9 @@ double TrainSparseLayerDelegate::ComputeValidateLossItem() {
                 sum += decodeWeight[userId][j] * activation1[j];
             }
             double error = Math::Sigmoid(sum) - data2[i].Rating();
+            if (mTrainOption->NormalizeBackwardError()) {
+                error *= normCoff;
+            }
             loss += Math::Sqr(error);
         }
     }

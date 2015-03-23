@@ -11,6 +11,10 @@ build_env.Prepend(CPPPATH = "#/external/gtest/include",
                   LIBS = "gtest",
                   LINKFLAGS = "-pthread")
 
+build_env.Program("cf_auto_encoder_model_computation_unittest", 
+                 ["cf_auto_encoder_model_computation_unittest.cpp",
+                  "cf_auto_encoder_util.cpp"])
+
 build_env.Program("cf_auto_encoder_convert_longan", 
                  ["cf_auto_encoder_convert_longan.cpp",
                   "cf_auto_encoder_convert.cpp"])

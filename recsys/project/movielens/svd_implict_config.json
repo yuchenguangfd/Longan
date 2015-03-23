@@ -1,13 +1,13 @@
 {
 	"parameter": {
 		"ratingType": "binary",
-		"dim": 32,
-	    "lambdaUserFeature": 0.08,
-   		"lambdaItemFeature": 0.08,
+		"dim": 256,
+	    "lambdaUserFeature": 0.06,
+   		"lambdaItemFeature": 0.06,
 		"lambdaUserBias": 1e-6,
 		"lambdaItemBias": 1e-6,
 		"useRatingAverage": false,
-		"useSigmoid": true
+		"useSigmoid": false
 	},
 	"trainOption": {
 		"randomInit": true,
