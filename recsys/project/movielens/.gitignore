@@ -23,3 +23,5 @@
 /movielens_prepare_longan
 /movielens_prepare_longan.o
 /movielens_prepare.o
+/rating_test_character.json
+/rating_train_character.json

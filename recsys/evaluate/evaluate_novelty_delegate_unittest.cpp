@@ -39,7 +39,7 @@ TEST(EvaluateNoveltyDelegateTest, EvaluateNoveltySTOK) {
     EvaluateOption option(config);
     option.SetCurrentRankingListSize(5);
     evaluate.Evaluate(&predict, &trainData, &option);
-    ASSERT_DOUBLE_EQ(0.9574983485564091, evaluate.Novelty());
+    ASSERT_DOUBLE_EQ(0.69314718055994529, evaluate.Novelty());
 }
 
 TEST(EvaluateNoveltyDelegateTest, EvaluateNoveltySTAndMTResultSame) {

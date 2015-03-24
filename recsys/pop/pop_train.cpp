@@ -33,7 +33,7 @@ void PopTrain::Train() {
         bos << rtrait.UserAverage(uid);
     }
     for (int uid = 0; uid < rlist.NumUser(); ++uid) {
-        bos << rtrait.UserPopularity(uid);
+        bos << rtrait.UserActivity(uid);
     }
 }
 

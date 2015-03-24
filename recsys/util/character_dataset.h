@@ -22,6 +22,7 @@ private:
     void ReportMeta();
     void ReportUserActivity();
     void ReportItemPopularity();
+    void WriteResult();
 private:
     const std::string mRatingFilepath;
     const std::string mResultFilepath;

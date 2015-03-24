@@ -67,9 +67,9 @@ TEST_F(RatingTraitTest, ComputeAverageAndStdRatingOK) {
 TEST_F(RatingTraitTest, ComputePopularityAverageAndStdRatingEveryUserOK) {
     RatingTrait rtrait;
     rtrait.Init(CreateRatingList());
-    ASSERT_FLOAT_EQ(6.0f, rtrait.UserPopularity(0));
-    ASSERT_FLOAT_EQ(15.0f, rtrait.UserPopularity(1));
-    ASSERT_FLOAT_EQ(24.0f, rtrait.UserPopularity(2));
+    ASSERT_FLOAT_EQ(3.0f, rtrait.UserActivity(0));
+    ASSERT_FLOAT_EQ(3.0f, rtrait.UserActivity(1));
+    ASSERT_FLOAT_EQ(3.0f, rtrait.UserActivity(2));
     ASSERT_FLOAT_EQ(2.0f, rtrait.UserAverage(0));
     ASSERT_FLOAT_EQ(5.0f, rtrait.UserAverage(1));
     ASSERT_FLOAT_EQ(8.0f, rtrait.UserAverage(2));
@@ -81,9 +81,9 @@ TEST_F(RatingTraitTest, ComputePopularityAverageAndStdRatingEveryUserOK) {
 TEST_F(RatingTraitTest, ComputePopularityAverageAndStdRatingEveryItemOK) {
     RatingTrait rtrait;
     rtrait.Init(CreateRatingList());
-    ASSERT_FLOAT_EQ(12.0f, rtrait.ItemPopularity(0));
-    ASSERT_FLOAT_EQ(15.0f, rtrait.ItemPopularity(1));
-    ASSERT_FLOAT_EQ(18.0f, rtrait.ItemPopularity(2));
+    ASSERT_FLOAT_EQ(3.0f, rtrait.ItemPopularity(0));
+    ASSERT_FLOAT_EQ(3.0f, rtrait.ItemPopularity(1));
+    ASSERT_FLOAT_EQ(3.0f, rtrait.ItemPopularity(2));
     ASSERT_FLOAT_EQ(4.0f, rtrait.ItemAverage(0));
     ASSERT_FLOAT_EQ(5.0f, rtrait.ItemAverage(1));
     ASSERT_FLOAT_EQ(6.0f, rtrait.ItemAverage(2));

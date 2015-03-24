@@ -25,10 +25,10 @@ public:
     float ItemMax(int itemId) const { return mItemMaxs[itemId]; }
     float Average() const { return mAverage; }
     float Std() const { return mStd; }
-    float UserPopularity(int userId) const { return mUserPopularities[userId]; }
+    int UserActivity(int userId) const { return mUserActivities[userId]; }
     float UserAverage(int userId) const { return mUserAverages[userId]; }
     float UserStd(int userId) const { return mUserStds[userId]; }
-    float ItemPopularity(int itemId) const { return mItemPopularities[itemId]; }
+    int ItemPopularity(int itemId) const { return mItemPopularities[itemId]; }
     float ItemAverage(int itemId) const { return mItemAverages[itemId]; }
     float ItemStd(int itemId) const { return mItemStds[itemId]; }
 private:
@@ -45,10 +45,10 @@ private:
 
     float mAverage;
     float mStd;
-    std::vector<float> mUserPopularities;
+    std::vector<int> mUserActivities;
     std::vector<float> mUserAverages;
     std::vector<float> mUserStds;
-    std::vector<float> mItemPopularities;
+    std::vector<int> mItemPopularities;
     std::vector<float> mItemAverages;
     std::vector<float> mItemStds;
 };
