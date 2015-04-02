@@ -37,8 +37,8 @@ def run_user_based_implict():
               + "-ratingTrainFilepath=./MovieLens/implict_rating_train.bin "
               + "-configFilepath=./user_based_implict_config.json "
               + "-modelFilepath=./user_based_implict_model.dat "
-              + "-ratingTestFilepath=./MovieLens/implict_rating_test.bin " 
-              + "-resultFilepath=./user_based_implict_result.json")
+              + "-rankingResultFilepath=./user_based_implict_ranking_result.bin " 
+              + "-evaluateResultFilepath=./user_based_implict_evaluate_result.json")
 
 if __name__=="__main__":
     run_user_based_implict()

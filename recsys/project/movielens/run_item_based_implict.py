@@ -38,7 +38,8 @@ def run_item_based_implict():
               + "-configFilepath=./item_based_implict_config.json "
               + "-modelFilepath=./item_based_implict_model.dat "
               + "-ratingTestFilepath=./MovieLens/implict_rating_test.bin " 
-              + "-resultFilepath=./item_based_implict_result.json")
+              + "-rankingResultFilepath=./item_based_implict_ranking_result.bin " 
+              + "-evaluateResultFilepath=./item_based_implict_evaluate_result.json")
 
 if __name__=="__main__":
     run_item_based_implict()

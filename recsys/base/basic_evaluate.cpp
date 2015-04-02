@@ -10,10 +10,7 @@
 #include "recsys/evaluate/evaluate_coverage_delegate.h"
 #include "recsys/evaluate/evaluate_diversity_delegate.h"
 #include "recsys/evaluate/evaluate_novelty_delegate.h"
-#include "common/config/json_config_helper.h"
-#include "common/logging/logging.h"
-#include "common/error.h"
-#include <cassert>
+#include "common/common.h"
 
 namespace longan {
 
@@ -22,14 +19,14 @@ BasicEvaluate::BasicEvaluate(
     const std::string& configFilepath,
     const std::string& modelFilepath,
     const std::string& ratingTestFilepath,
-    const std::string& resultFilepath) :
+    const std::string& rankingResultFilepath,
+    const std::string& evaluateResultFilepath) :
     mRatingTrainFilepath(ratingTrainFilepath),
     mConfigFilepath(configFilepath),
     mModelFilepath(modelFilepath),
     mRatingTestFilepath(ratingTestFilepath),
-    mResultFilepath(resultFilepath) { }
-
-BasicEvaluate::~BasicEvaluate() { }
+    mRankingResultFilepath(rankingResultFilepath),
+    mEvaluateResultFilepath(evaluateResultFilepath) { }
 
 void BasicEvaluate::Evaluate() {
     Log::I("recsys", "BasicEvaluate::Evaluate()");
@@ -44,7 +41,8 @@ void BasicEvaluate::Evaluate() {
     if (mEvaluateOption->EvaluateCoverage()) EvaluateCoverage();
     if (mEvaluateOption->EvaluateNovelty()) EvaluateNovelty();
     if (mEvaluateOption->EvaluateDiversity()) EvaluateDiversity();
-    WriteResult();
+    WriteRankingResult();
+    WriteEvaluateResult();
     Cleanup();
 }
 
@@ -74,12 +72,9 @@ void BasicEvaluate::LoadTrainData() {
 }
 
 void BasicEvaluate::LoadTestData() {
-    if (mEvaluateOption->EvaluateRating() || mEvaluateOption->EvaluateRanking()
-     || mEvaluateOption->EvaluateCoverage() || mEvaluateOption->EvaluateDiversity()) {
-        Log::I("recsys", "BasicEvaluate::LoadTestData()");
-        Log::I("recsys", "test rating file = " + mRatingTestFilepath);
-        mTestData = new RatingList(RatingList::LoadFromBinaryFile(mRatingTestFilepath));
-    }
+    Log::I("recsys", "BasicEvaluate::LoadTestData()");
+    Log::I("recsys", "test rating file = " + mRatingTestFilepath);
+    mTestData = new RatingList(RatingList::LoadFromBinaryFile(mRatingTestFilepath));
 }
 
 void BasicEvaluate::EvaluateRating() {
@@ -173,11 +168,25 @@ void BasicEvaluate::EvaluateDiversity() {
     delete evaluate;
 }
 
-void BasicEvaluate::WriteResult() {
+void BasicEvaluate::WriteRankingResult() {
+    if (mEvaluateOption->EvaluateRanking() || mEvaluateOption->EvaluateCoverage()
+            || mEvaluateOption->EvaluateNovelty() || mEvaluateOption->EvaluateDiversity()) {
+        Log::I("recsys", "BasicEvaluate::WriteRankingResult()");
+        Log::I("recsys", "writing result to file = " + mRankingResultFilepath);
+        BinaryOutputStream bos(mRankingResultFilepath);
+        bos << mTestData->NumUser() << mEvaluateOption->CurrentRankingListSize();
+        for (int uid = 0; uid < mTestData->NumUser(); ++uid) {
+            ItemIdList itemList = mPredict->PredictTopNItem(uid, mEvaluateOption->CurrentRankingListSize());
+            bos.Write(itemList.data(), itemList.size());
+        }
+    }
+}
+
+void BasicEvaluate::WriteEvaluateResult() {
     Log::I("recsys", "BasicEvaluate::WriteResult()");
     Log::I("recsys", "result = \n" + mResult.toStyledString());
-    Log::I("recsys", "writing result to file = " + mResultFilepath);
-    JsonConfigHelper::WriteToFile(mResultFilepath, mResult);
+    Log::I("recsys", "writing result to file = " + mEvaluateResultFilepath);
+    JsonConfigHelper::WriteToFile(mEvaluateResultFilepath, mResult);
 }
 
 void BasicEvaluate::Cleanup() {

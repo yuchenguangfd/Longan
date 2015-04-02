@@ -20,8 +20,8 @@ class BasicEvaluate {
 public:
     BasicEvaluate(const std::string& ratingTrainFilepath, const std::string& configFilepath,
             const std::string& modelFilepath, const std::string& ratingTestFilepath,
-            const std::string& resultFilepath);
-    virtual ~BasicEvaluate();
+            const std::string& rankingResultFilepath, const std::string& evaluateResultFilepath);
+    virtual ~BasicEvaluate() { }
     virtual void Evaluate();
 protected:
     virtual void LoadConfig() final;
@@ -34,14 +34,16 @@ protected:
     virtual void EvaluateCoverage();
     virtual void EvaluateNovelty();
     virtual void EvaluateDiversity();
-    virtual void WriteResult();
+    virtual void WriteRankingResult();
+    virtual void WriteEvaluateResult();
     virtual void Cleanup();
 protected:
     const std::string mRatingTrainFilepath;
     const std::string mConfigFilepath;
     const std::string mModelFilepath;
     const std::string mRatingTestFilepath;
-    const std::string mResultFilepath;
+    const std::string mRankingResultFilepath;
+    const std::string mEvaluateResultFilepath;
     Json::Value mConfig;
     RatingList *mTrainData = nullptr;
     RatingList *mTestData = nullptr;

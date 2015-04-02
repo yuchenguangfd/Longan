@@ -28,8 +28,9 @@ def run_pop():
               + "-ratingTrainFilepath=./Netflix/rating_train.bin "
               + "-configFilepath=./pop_config.json "
               + "-modelFilepath=./pop_model.dat "
-              + "-ratingTestFilepath=./Netflix/rating_test.bin " 
-              + "-resultFilepath=./pop_result.json")
+              + "-ratingTestFilepath=./Netflix/rating_test.bin "
+              + "-rankingResultFilepath=./pop_ranking_result.bin "
+              + "-evaluateResultFilepath=./pop_evaluate_result.json")
 
 if __name__=="__main__":
     run_pop()

@@ -29,7 +29,8 @@ def run_pop():
               + "-configFilepath=./pop_config.json "
               + "-modelFilepath=./pop_model.dat "
               + "-ratingTestFilepath=./Ocn/rating_test.bin " 
-              + "-resultFilepath=./pop_result.json")
+              + "-rankingResultFilepath=./pop_ranking_result.bin " 
+              + "-evaluateResultFilepath=./pop_evaluate_result.json")
 
 if __name__=="__main__":
     run_pop()

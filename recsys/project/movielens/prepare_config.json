@@ -1,4 +1,5 @@
 {
 	"datasetType": "10m",
+	"splitMethod": "byUser",
 	"trainRatio": 0.8
 }

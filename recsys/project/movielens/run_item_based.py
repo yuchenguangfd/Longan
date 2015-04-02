@@ -29,7 +29,8 @@ def run_item_based():
               + "-configFilepath=./item_based_config.json "
               + "-modelFilepath=./item_based_model.dat "
               + "-ratingTestFilepath=./MovieLens/rating_test.bin " 
-              + "-resultFilepath=./item_based_result.json")
+              + "-rankingResultFilepath=./item_based_ranking_result.bin " 
+              + "-evaluateResultFilepath=./item_based_evaluate_result.json")
 
 if __name__=="__main__":
     run_item_based()

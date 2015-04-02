@@ -5,18 +5,8 @@
  */
 
 #include "movielens_prepare.h"
-#include "common/logging/logging.h"
-#include "common/config/json_config_helper.h"
-#include "common/util/string_helper.h"
-#include "common/util/array_helper.h"
-#include "common/lang/integer.h"
-#include "common/error.h"
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <utility>
-#include <cassert>
+#include "recsys/base/rating_matrix_as_users.h"
+#include "common/common.h"
 
 namespace longan {
 
@@ -109,6 +99,7 @@ void MovielensPrepare::PrepareDataset100K_ReadRatings() {
         std::istringstream iss(line);
         int userId, itemId, rating, timestamp;
         iss >> userId >> itemId >> rating >> timestamp;
+        assert(1 <= rating && rating <= 5);
         RatingRecordWithTime *rr = new RatingRecordWithTime(userId, itemId, rating, timestamp);
         mRatings.push_back(rr);
     }
@@ -185,6 +176,7 @@ void MovielensPrepare::PrepareDataset1M_ReadRatings(){
         int userId = Integer::ParseInt(lineFields[0]);
         int itemId = Integer::ParseInt(lineFields[1]);
         int rating = Integer::ParseInt(lineFields[2]);
+        assert(1 <= rating && rating <= 5);
         int timestamp = Integer::ParseInt(lineFields[3]);
         RatingRecordWithTime *rr = new RatingRecordWithTime(userId, itemId, rating, timestamp);
         mRatings.push_back(rr);
@@ -253,7 +245,8 @@ void MovielensPrepare::PrepareDataset10M_ReadRatings() {
         assert(lineFields.size() == 4);
         int userId = Integer::ParseInt(lineFields[0]);
         int itemId = Integer::ParseInt(lineFields[1]);
-        int rating = Integer::ParseInt(lineFields[2]);
+        double rating = Double::ParseDouble(lineFields[2]);
+        assert(0.0 <= rating && rating <= 5.0);
         int timestamp = Integer::ParseInt(lineFields[3]);
         RatingRecordWithTime *pRating = new RatingRecordWithTime(userId, itemId, rating, timestamp);
         mRatings.push_back(pRating);
@@ -335,6 +328,27 @@ void MovielensPrepare::GenerateMovieData() {
 
 void MovielensPrepare::GenerateRatingData() {
     Log::I("recsys", "MovielensPrepare::GenerateRatingData()");
+    std::string filenameRatingData = mOutputDirpath + "/rating.txt";
+    Log::I("recsys", "writing ratings to file = " + filenameRatingData);
+    std::ofstream fout(filenameRatingData.c_str());
+    assert(!fout.fail());
+    fout << mNumRating << "," << mNumUser << "," << mNumItem << std::endl;
+    for (int i = 0; i < mNumRating; ++i) {
+        RatingRecordWithTime& rating = *mRatings[i];
+        fout << mUserIdMap[rating.UserId()] << ","
+             << mItemIdMap[rating.ItemId()] << ","
+             << rating.Rating() << "," << rating.Timestamp() << std::endl;
+    }
+    if (mConfig["splitMethod"].asString() == "byAll") {
+        GenerateRatingDataBySplitAll();
+    } else if (mConfig["splitMethod"].asString() == "byUser") {
+        GenerateRatingDataBySplitUser();
+    } else {
+        throw LonganConfigError();
+    }
+}
+
+void MovielensPrepare::GenerateRatingDataBySplitAll() {
     ArrayHelper::RandomShuffle(&mRatings[0], mRatings.size());
     double trainRatio = mConfig["trainRatio"].asDouble();
     int splitPos = static_cast<int>(mNumRating * trainRatio);
@@ -377,6 +391,62 @@ void MovielensPrepare::GenerateRatingData() {
               << mItemIdMap[rating.ItemId()] << ","
               << rating.Rating() << "," 
               << rating.Timestamp() << std::endl;
+    }
+}
+
+void MovielensPrepare::GenerateRatingDataBySplitUser() {
+    QuickSortMT sort;
+    sort(mRatings.data(), mRatings.size(),
+            [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs)->int {
+        if (lhs->UserId() != rhs->UserId()) {
+            return lhs->UserId() - rhs->UserId();
+        } else {
+            return lhs->ItemId() - rhs->ItemId();
+        }
+    });
+    std::vector<RatingRecordWithTime*> trainRatings;
+    std::vector<RatingRecordWithTime*> testRatings;
+    double trainRatio = mConfig["trainRatio"].asDouble();
+    for (int i = 0; i < mNumRating; ++i) {
+        int begin = i;
+        while (i+1 < mNumRating && mRatings[i]->UserId() == mRatings[i+1]->UserId()) {
+            ++i;
+        }
+        RatingRecordWithTime **data = &mRatings[begin];
+        int size = i - begin + 1;
+        ArrayHelper::RandomShuffle(data, size);
+        int splitPos = static_cast<int>(size * trainRatio);
+        for (int j = 0; j < splitPos; ++j) {
+            trainRatings.push_back(data[j]);
+        }
+        for (int j = splitPos; j < size; ++j) {
+            testRatings.push_back(data[j]);
+        }
+    }
+    assert(trainRatings.size() + testRatings.size()  == mNumRating);
+
+    std::string filenameTrain = mOutputDirpath + "/rating_train.txt";
+    Log::I("recsys", "writing train ratings to file = " + filenameTrain);
+    std::ofstream fout1(filenameTrain.c_str());
+    assert(!fout1.fail());
+    fout1 << trainRatings.size() << "," << mNumUser << "," << mNumItem << std::endl;
+    for (int i = 0; i < trainRatings.size(); ++i) {
+        RatingRecordWithTime& rating = *trainRatings[i];
+        fout1 << mUserIdMap[rating.UserId()] << ","
+              << mItemIdMap[rating.ItemId()] << ","
+              << rating.Rating() << "," << rating.Timestamp() << std::endl;
+    }
+
+    std::string filenameTest = mOutputDirpath + "/rating_test.txt";
+    Log::I("recsys", "writing test ratings to file: " + filenameTest);
+    std::ofstream fout2(filenameTest.c_str());
+    assert(!fout2.fail());
+    fout2 << testRatings.size() << "," << mNumUser << "," << mNumItem << std::endl;
+    for (int i = 0; i < testRatings.size(); ++i) {
+        RatingRecordWithTime& rating = *testRatings[i];
+        fout2 << mUserIdMap[rating.UserId()] << ","
+              << mItemIdMap[rating.ItemId()] << ","
+              << rating.Rating() << "," << rating.Timestamp() << std::endl;
     }
 }
 

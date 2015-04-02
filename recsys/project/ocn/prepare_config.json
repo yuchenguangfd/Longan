@@ -2,5 +2,6 @@
 	"dateFrom": "20130101",
 	"dateTo": "20131231",
 	"watchTimeThreshold": 600,
+	"splitMethod": "byUser",
 	"trainRatio": 0.8
 }

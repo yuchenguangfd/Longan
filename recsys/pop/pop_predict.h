@@ -48,7 +48,7 @@ private:
     const Pop::PredictOption *mPredictOption = nullptr;
     std::vector<float> mUserAverages;
     std::vector<float> mItemAverages;
-    std::vector<float> mItemPopularities;
+    std::vector<int> mItemPopularities;
 };
 
 } //~ namespace longan

@@ -30,14 +30,18 @@ public:
     void Prepare();
 private:
     void LoadConfig();
-    void GenerateRatingData();
+    void ReadRatingData();
     void ReadSessionFile(const std::string& filename);
     int64 GetTimestamp(const std::string& time);
     void WriteUserIdMapping();
     void WriteItemIdMapping();
+    void WriteRatingData();
+    void GenerateRatingDataBySplitAll();
+    void GenerateRatingDataBySplitUser();
     void WriteTrainRatings(int splitPos);
     void WriteTestRatings(int splitPos);
     void Cleanup();
+
 private:
     const std::string mInputDirpath;
     const std::string mConfigFilepath;

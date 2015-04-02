@@ -1,4 +1,4 @@
 {
-	"testDataFrom": "randomSelect",
+	"splitMethod": "byUser",
 	"trainRatio": 0.8
 }

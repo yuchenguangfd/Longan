@@ -49,6 +49,8 @@ private:
     void GenerateItemIdMapping();
     void GenerateMovieData();
     void GenerateRatingData();
+    void GenerateRatingDataBySplitAll();
+    void GenerateRatingDataBySplitUser();
     void Cleanup();
 private:
     const std::string mInputDirpath;

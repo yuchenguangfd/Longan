@@ -29,7 +29,8 @@ def run_user_based():
               + "-configFilepath=./user_based_config.json "
               + "-modelFilepath=./user_based_model.dat "
               + "-ratingTestFilepath=./MovieLens/rating_test.bin " 
-              + "-resultFilepath=./user_based_result.json")
+              + "-rankingResultFilepath=./user_based_ranking_result.bin " 
+              + "-evaluateResultFilepath=./user_based_evaluate_result.json")
 
 if __name__=="__main__":
     run_user_based()

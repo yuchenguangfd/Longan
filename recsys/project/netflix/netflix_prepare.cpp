@@ -65,7 +65,7 @@ void NetflixPrepare::ReadAllRating() {
     std::vector<std::string> ratingFiles = lister.ListFilename();
     mRatings.clear();
     for (int i = 0; i < ratingFiles.size(); ++i) {
-        if (i % 1000 == 0) Log::I("recsys", "loading rating data file %d/%d...", i, ratingFiles.size());
+        if (i % 1000 == 0) Log::Console("recsys", "loading rating data file %d/%d...", i, ratingFiles.size());
         ReadRatingFile(ratingFiles[i]);
     }
     mNumRating = mRatings.size();
@@ -92,6 +92,7 @@ void NetflixPrepare::ReadRatingFile(const std::string& filename) {
         std::vector<std::string> lineFields = StringHelper::Split(line, ",");
         int userId = Integer::ParseInt(lineFields[0]);
         float rating = Integer::ParseInt(lineFields[1]);
+        assert(1.0f <= rating && rating <= 5.0f);
         int timestamp = GetTimestampFromDate(lineFields[2]);
         RatingRecordWithTime *pRating = new RatingRecordWithTime(userId, itemId, rating, timestamp);
         mRatings.push_back(pRating);
@@ -179,13 +180,26 @@ void NetflixPrepare::GenerateMovieData() {
 
 void NetflixPrepare::GenerateRatingData() {
     Log::I("recsys", "NetflixPrepare::GenerateRatingData()");
-    if (mConfig["testDataFrom"].asString() == "probe") {
+    std::string filenameRatingData = mOutputDirpath + "/rating.txt";
+    Log::I("recsys", "writing ratings to file = " + filenameRatingData);
+    std::ofstream fout(filenameRatingData.c_str());
+    assert(!fout.fail());
+    fout << mNumRating << "," << mNumUser << "," << mNumItem << std::endl;
+    for (int i = 0; i < mNumRating; ++i) {
+        RatingRecordWithTime& rating = *mRatings[i];
+        fout << mUserIdMap[rating.UserId()] << ","
+             << mItemIdMap[rating.ItemId()] << ","
+             << rating.Rating() << "," << rating.Timestamp() << std::endl;
+    }
+    if (mConfig["splitMethod"].asString() == "byProbe") {
         ReadTestRating();
         SetTrainOrTestFlag();
         GenerateTrainRatings();
         GenerateTestRatings();
-    } else if (mConfig["testDataFrom"].asString() == "randomSelect") {
-        GenerateTrainAndTestRatings();
+    } else if (mConfig["splitMethod"].asString() == "byAll") {
+        GenerateRatingDataBySplitAll();
+    } else if (mConfig["splitMethod"].asString() == "byUser") {
+        GenerateRatingDataBySplitUser();
     } else {
         throw LonganConfigError();
     }
@@ -265,8 +279,8 @@ void NetflixPrepare::GenerateTestRatings() {
     }
 }
 
-void NetflixPrepare::GenerateTrainAndTestRatings() {
-    Log::I("recsys", "NetflixPrepare::GenerateTrainAndTestRatings()");
+void NetflixPrepare::GenerateRatingDataBySplitAll() {
+    Log::I("recsys", "NetflixPrepare::GenerateRatingDataBySplitAll()");
     ArrayHelper::RandomShuffle(&mRatings[0], mRatings.size());
     double trainRatio = mConfig["trainRatio"].asDouble();
     assert(trainRatio > 0.0);
@@ -310,6 +324,63 @@ void NetflixPrepare::GenerateTrainAndTestRatings() {
               << mItemIdMap[rating.ItemId()] << ","
               << rating.Rating() << ","
               << rating.Timestamp() << std::endl;
+    }
+}
+
+void NetflixPrepare::GenerateRatingDataBySplitUser() {
+    Log::I("recsys", "NetflixPrepare::GenerateRatingDataBySplitUser()");
+    QuickSortMT sort;
+    sort(mRatings.data(), mRatings.size(),
+            [](const RatingRecordWithTime *lhs, const RatingRecordWithTime *rhs)->int {
+        if (lhs->UserId() != rhs->UserId()) {
+            return lhs->UserId() - rhs->UserId();
+        } else {
+            return lhs->ItemId() - rhs->ItemId();
+        }
+    });
+    std::vector<RatingRecordWithTime*> trainRatings;
+    std::vector<RatingRecordWithTime*> testRatings;
+    double trainRatio = mConfig["trainRatio"].asDouble();
+    for (int i = 0; i < mNumRating; ++i) {
+        int begin = i;
+        while (i+1 < mNumRating && mRatings[i]->UserId() == mRatings[i+1]->UserId()) {
+            ++i;
+        }
+        RatingRecordWithTime **data = &mRatings[begin];
+        int size = i - begin + 1;
+        ArrayHelper::RandomShuffle(data, size);
+        int splitPos = static_cast<int>(size * trainRatio);
+        for (int j = 0; j < splitPos; ++j) {
+            trainRatings.push_back(data[j]);
+        }
+        for (int j = splitPos; j < size; ++j) {
+            testRatings.push_back(data[j]);
+        }
+    }
+    assert(trainRatings.size() + testRatings.size()  == mNumRating);
+
+    std::string filenameTrain = mOutputDirpath + "/rating_train.txt";
+    Log::I("recsys", "writing train ratings to file = " + filenameTrain);
+    std::ofstream fout1(filenameTrain.c_str());
+    assert(!fout1.fail());
+    fout1 << trainRatings.size() << "," << mNumUser << "," << mNumItem << std::endl;
+    for (int i = 0; i < trainRatings.size(); ++i) {
+        RatingRecordWithTime& rating = *trainRatings[i];
+        fout1 << mUserIdMap[rating.UserId()] << ","
+              << mItemIdMap[rating.ItemId()] << ","
+              << rating.Rating() << "," << rating.Timestamp() << std::endl;
+    }
+
+    std::string filenameTest = mOutputDirpath + "/rating_test.txt";
+    Log::I("recsys", "writing test ratings to file: " + filenameTest);
+    std::ofstream fout2(filenameTest.c_str());
+    assert(!fout2.fail());
+    fout2 << testRatings.size() << "," << mNumUser << "," << mNumItem << std::endl;
+    for (int i = 0; i < testRatings.size(); ++i) {
+        RatingRecordWithTime& rating = *testRatings[i];
+        fout2 << mUserIdMap[rating.UserId()] << ","
+              << mItemIdMap[rating.ItemId()] << ","
+              << rating.Rating() << "," << rating.Timestamp() << std::endl;
     }
 }
 

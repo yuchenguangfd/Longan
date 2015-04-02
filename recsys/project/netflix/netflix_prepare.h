@@ -61,7 +61,8 @@ private:
     void SetTrainOrTestFlag();
     void GenerateTrainRatings();
     void GenerateTestRatings();
-    void GenerateTrainAndTestRatings();
+    void GenerateRatingDataBySplitAll();
+    void GenerateRatingDataBySplitUser();
     void Cleanup();
 private:
     const std::string mInputDirpath;

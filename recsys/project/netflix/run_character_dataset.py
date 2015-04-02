@@ -13,7 +13,7 @@ def run_command(cmd):
         
 def run_character_dataset():
     run_command("../../util/character_dataset_longan "
-              + "-ratingTextFilepath=./MovieLens/rating.txt "
+              + "-ratingTextFilepath=./Netflix/rating.txt "
               + "-resultFilepath=./character_result.json")
 
 if __name__=="__main__":
