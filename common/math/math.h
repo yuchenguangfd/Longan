@@ -123,6 +123,19 @@ const typename std::iterator_traits<Iterator>::value_type&
     return MinInRange(begin, end, minPos);
 }
 
+template <class Iterator>
+const typename std::iterator_traits<Iterator>::value_type
+	Average(Iterator begin, Iterator end) {
+	assert(begin != end);
+	typename std::iterator_traits<Iterator>::value_type sum = *begin;
+	int count = 1;
+	for (++begin; begin != end; ++begin) {
+		sum = sum + *begin;
+		++count;
+	}
+	return sum / count;
+}
+
 inline double RelativeError(double expect, double actual) {
     return Abs(actual - expect) / expect;
 }

@@ -10,5 +10,6 @@ build_env.Prepend(CPPPATH = "#/external/gtest/include",
 				  LIBS = "gtest",
 				  LINKFLAGS = "-pthread")
 	
+build_env.Program("modular_integer_unittest", ["modular_integer_unittest.cpp", "modular_integer.cpp"])
 build_env.Program("number_theory_unittest",["number_theory_unittest.cpp"])
 build_env.Program("prime_unittest", ["prime_unittest.cpp"])

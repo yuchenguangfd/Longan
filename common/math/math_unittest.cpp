@@ -55,6 +55,12 @@ TEST(MathTest, MaxMinInRangeOK) {
     ASSERT_EQ(vec.begin() + 3, p2);
 }
 
+TEST(MathTest, AverageOK) {
+	std::vector<double> values{100.00, 489.12, 12454.12, 1234.10, 823.05,
+		109.20, 5.27, 1542.25, 839.18, 83.99, 1295.01, 1.75};
+	ASSERT_DOUBLE_EQ(1581.42, Average(values.begin(), values.end()));
+}
+
 TEST(MathTest, RelativeErrorOK) {
     EXPECT_DOUBLE_EQ(0.0, RelativeError(100.2, 100.2));
     EXPECT_DOUBLE_EQ((101.2 - 99.0) / 99.0, RelativeError(99.0, 101.2));

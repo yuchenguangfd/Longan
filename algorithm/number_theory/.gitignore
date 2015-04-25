@@ -4,3 +4,6 @@
 /prime_unittest
 /prime_unittest.o
 /prime.o
+/modular_integer_unittest
+/modular_integer_unittest.o
+/modular_integer.o
