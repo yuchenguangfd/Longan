@@ -11,6 +11,7 @@ SConscript("data_structure/SConscript")
 SConscript("geometry/SConscript")
 SConscript("graph/SConscript")
 SConscript("number_theory/SConscript")
+SConscript("search/SConscript")
 SConscript("sort/SConscript")
 
 env_algorithm.StaticLibrary("algorithm", env_algorithm.lib_objects)
