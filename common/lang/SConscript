@@ -13,5 +13,6 @@ build_env.Prepend(CPPPATH = "#/external/gtest/include",
                   LIBS = "gtest",
                   LINKFLAGS = "-pthread")
 
+build_env.Program("array_unittest", ["array_unittest.cpp"])
 build_env.Program("integer_unittest", ["integer_unittest.cpp"])
 build_env.Program("double_unittest", ["double_unittest.cpp"])

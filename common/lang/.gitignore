@@ -8,3 +8,5 @@
 /binary_input_stream.o
 /text_output_stream.o
 /text_input_stream.o
+/array_unittest
+/array_unittest.o
