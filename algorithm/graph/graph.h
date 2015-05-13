@@ -124,6 +124,68 @@ private:
     int *mData;
 };
 
+template <class Alloc = std::allocator<int>>
+class DirectedGraphAsAdjList {
+public:
+    DirectedGraphAsAdjList(int numVertex, int maxNumEdge) : mNumVertex(numVertex), mMaxNumEdge(maxNumEdge),
+            mNumEdge(0) {
+        Alloc alloc;
+        mHeads = alloc.allocate(mNumVertex);
+        std::fill(mHeads, mHeads + mNumVertex, NIL);
+        mEdges = alloc.allocate(mMaxNumEdge);
+        mNexts = alloc.allocate(mMaxNumEdge);
+    }
+    ~DirectedGraphAsAdjList() {
+        Alloc alloc;
+        alloc.deallocate(mHeads, mNumVertex);
+        alloc.deallocate(mEdges, mMaxNumEdge);
+        alloc.deallocate(mNexts, mMaxNumEdge);
+    }
+    int NumVertex() const  { return mNumVertex; }
+    int NumEdge() const { return mNumEdge; }
+    void AddEdge(const Edge &edge)  {
+        mEdges[mNumEdge] = edge.v;
+        mNexts[mNumEdge] = mHeads[edge.u];
+        mHeads[edge.u] = mNumEdge;
+        ++mNumEdge;
+    }
+    int DegreeOutOfVertex(int u) const {
+        int p = mHeads[u];
+        int count = 0;
+        while (p != NIL) {
+            p = mNexts[p];
+            ++count;
+        }
+        return count;
+    }
+
+    class EdgeIterator {
+    public:
+        EdgeIterator(const DirectedGraphAsAdjList *graph, int vertex) : mGraph(graph), mCurrPtr(graph->mHeads[vertex]) { }
+        bool HasNext() { return mCurrPtr != NIL; }
+        int Next() {
+            int v = mGraph->mEdges[mCurrPtr];
+            mCurrPtr = mGraph->mNexts[mCurrPtr];
+            return v;
+        }
+    private:
+        const DirectedGraphAsAdjList *mGraph;
+        int mCurrPtr;
+    };
+
+    EdgeIterator GetEdgeIteraror(int vertex) const {
+        return EdgeIterator(this, vertex);
+    }
+private:
+    static const int NIL = -1;
+    int mNumVertex;
+    int mNumEdge;
+    int mMaxNumEdge;
+    int *mHeads;
+    int *mEdges;
+    int *mNexts;
+};
+
 } //~ namespace longan
 
 #endif /* ALGORITHM_GRAPH_GRAPH_H */
