@@ -4,8 +4,8 @@
  * Author: chenguangyu
  */
 
-#include "next_combination.h"
 #include <gtest/gtest.h>
+#include "next.h"
 
 using namespace longan;
 
@@ -15,6 +15,14 @@ TEST(NextCombinationTest, TotalNumOK) {
     int count = 1;
     while (NextCombination(array, n, r)) ++count;
     ASSERT_EQ(10, count);
+}
+
+TEST(NextPermutationTest, TotalNumOK) {
+    int n = 5;
+    int array[] = {0, 1, 2, 3, 4};
+    int count = 1;
+    while (NextPermutation(array, n)) ++count;
+    ASSERT_EQ(120, count);
 }
 
 int main(int argc, char **argv) {

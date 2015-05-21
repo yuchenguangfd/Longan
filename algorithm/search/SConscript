@@ -7,6 +7,6 @@ build_env.Prepend(CPPPATH = "#/external/gtest/include",
 				  LIBS = "gtest",
 				  LINKFLAGS = "-pthread")
 	
-build_env.Program("next_combination_unittest", 
-				 ["next_combination_unittest.cpp",
-				  "next_combination.cpp"])
+build_env.Program("next_unittest", 
+				 ["next_unittest.cpp",
+				  "next.cpp"])

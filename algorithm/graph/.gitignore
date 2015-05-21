@@ -6,3 +6,5 @@
 /graph_unittest.o
 /euler_path_unittest
 /euler_path_unittest.o
+/dijkstra_unittest
+/dijkstra_unittest.o
