@@ -8,7 +8,7 @@
 #define ALGORITHM_GRAPH_GRAPH_H
 
 #include "common/lang/defines.h"
-#include <memory>
+#include <vector>
 #include <algorithm>
 
 namespace longan {
@@ -124,7 +124,7 @@ private:
     int *mData;
 };
 
-template <class T, class Alloc = std::allocator<T> >
+template <class T, class Alloc = std::allocator<T>>
 class WeightedDirectedGraphAsAdjMatrix {
 public:
     WeightedDirectedGraphAsAdjMatrix(int numVertex, T initWeight = T()) : mNumVertex(numVertex) {
@@ -208,6 +208,23 @@ private:
     int *mHeads;
     int *mEdges;
     int *mNexts;
+};
+
+template <class T>
+class WeightedDirectedGraphAsEdgeList {
+public:
+    WeightedDirectedGraphAsEdgeList(int numVertex, int maxNumEdge = 0) :
+        mNumVertex(numVertex) {
+        mEdgeList.reserve(maxNumEdge);
+    }
+    int NumVertex() const { return mNumVertex; }
+    int NumEdge() const { return mEdgeList.size(); }
+    void AddEdge(int u, int v, T weight) { AddEdge(WeightedEdge<T>(u, v, weight)); }
+    void AddEdge(const WeightedEdge<T>& edge) { mEdgeList.push_back(edge); }
+    const WeightedEdge<T>& GetEdge(int i) const { return mEdgeList[i]; }
+protected:
+    int mNumVertex;
+    std::vector<WeightedEdge<T>> mEdgeList;
 };
 
 } //~ namespace longan

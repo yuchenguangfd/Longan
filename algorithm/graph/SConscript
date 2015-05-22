@@ -7,8 +7,9 @@ build_env.Prepend(CPPPATH = "#/external/gtest/include",
                   LIBS = "gtest",
                   LINKFLAGS = "-pthread")
 
-build_env.Program("graph_unittest", ["graph_unittest.cpp"])
-build_env.Program("euler_path_unittest", ["euler_path_unittest.cpp"])
+build_env.Program("bellmanford_unittest", ["bellmanford_unittest.cpp"])
 build_env.Program("bipartite_max_match_unittest", ["bipartite_max_match_unittest.cpp"])
-build_env.Program("weighted_bipartite_max_match_unittest", ["weighted_bipartite_max_match_unittest.cpp"])
 build_env.Program("dijkstra_unittest", ["dijkstra_unittest.cpp"])
+build_env.Program("euler_path_unittest", ["euler_path_unittest.cpp"])
+build_env.Program("graph_unittest", ["graph_unittest.cpp"])
+build_env.Program("weighted_bipartite_max_match_unittest", ["weighted_bipartite_max_match_unittest.cpp"])

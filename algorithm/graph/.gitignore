@@ -8,3 +8,6 @@
 /euler_path_unittest.o
 /dijkstra_unittest
 /dijkstra_unittest.o
+/dijkstra_unittest.cpp
+/bellmanford_unittest
+/bellmanford_unittest.o
