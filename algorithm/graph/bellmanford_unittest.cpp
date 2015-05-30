@@ -15,7 +15,7 @@ TEST(BellmanFordTest, FindNegativeCycleOK) {
     graph1.AddEdge(0, 2, 4);graph1.AddEdge(2, 0, 4);
     graph1.AddEdge(1, 2, 1);graph1.AddEdge(2, 1, 1);
     graph1.AddEdge(2, 0, -3);
-    BellmanFord<int> SSSP1(&graph1, 0);
+    BellmanFord<int, int> SSSP1(&graph1, 0);
     SSSP1.Compute();
     ASSERT_FALSE(SSSP1.ExistNegativeCycle());
 
@@ -23,7 +23,7 @@ TEST(BellmanFordTest, FindNegativeCycleOK) {
     graph2.AddEdge(0, 1, 3);graph2.AddEdge(1, 0, 3);
     graph2.AddEdge(1, 2, 4);graph2.AddEdge(2, 1, 4);
     graph2.AddEdge(2, 0, -8);
-    BellmanFord<int> SSSP2(&graph2, 0);
+    BellmanFord<int, int> SSSP2(&graph2, 0);
     SSSP2.Compute();
     ASSERT_TRUE(SSSP2.ExistNegativeCycle());
 }

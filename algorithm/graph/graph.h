@@ -148,66 +148,46 @@ protected:
     T *mData;
 };
 
-template <class Alloc = std::allocator<int>>
 class DirectedGraphAsAdjList {
 public:
-    DirectedGraphAsAdjList(int numVertex, int maxNumEdge) : mNumVertex(numVertex), mMaxNumEdge(maxNumEdge),
-            mNumEdge(0) {
-        Alloc alloc;
-        mHeads = alloc.allocate(mNumVertex);
-        std::fill(mHeads, mHeads + mNumVertex, NIL);
-        mEdges = alloc.allocate(mMaxNumEdge);
-        mNexts = alloc.allocate(mMaxNumEdge);
-    }
-    ~DirectedGraphAsAdjList() {
-        Alloc alloc;
-        alloc.deallocate(mHeads, mNumVertex);
-        alloc.deallocate(mEdges, mMaxNumEdge);
-        alloc.deallocate(mNexts, mMaxNumEdge);
-    }
-    int NumVertex() const  { return mNumVertex; }
-    int NumEdge() const { return mNumEdge; }
-    void AddEdge(const Edge &edge)  {
-        mEdges[mNumEdge] = edge.v;
-        mNexts[mNumEdge] = mHeads[edge.u];
-        mHeads[edge.u] = mNumEdge;
-        ++mNumEdge;
-    }
-    int DegreeOutOfVertex(int u) const {
-        int p = mHeads[u];
-        int count = 0;
-        while (p != NIL) {
-            p = mNexts[p];
-            ++count;
+    DirectedGraphAsAdjList(int numVertex, int maxNumEdge = 0) :
+        mHeads(numVertex) {
+        mEdges.reserve(maxNumEdge);
+        mNexts.reserve(maxNumEdge);
+        for (int i = 0; i < numVertex; ++i) {
+            mHeads[i] = NIL;
         }
-        return count;
     }
-
+    virtual ~DirectedGraphAsAdjList() { }
+    int NumVertex() const  { return mHeads.size(); }
+    int NumEdge() const { return mEdges.size(); }
+    void AddEdge(const Edge &edge)  {
+        mNexts.push_back(mHeads[edge.u]);
+        mEdges.push_back(edge.v);
+        mHeads[edge.u] = mEdges.size() - 1;
+    }
     class EdgeIterator {
     public:
-        EdgeIterator(const DirectedGraphAsAdjList *graph, int vertex) : mGraph(graph), mCurrPtr(graph->mHeads[vertex]) { }
-        bool HasNext() { return mCurrPtr != NIL; }
-        int Next() {
-            int v = mGraph->mEdges[mCurrPtr];
-            mCurrPtr = mGraph->mNexts[mCurrPtr];
-            return v;
+        EdgeIterator(const DirectedGraphAsAdjList *graph, int vertex) :
+            mGraph(graph), mCurrentPtr(graph->mHeads[vertex]) { }
+        bool HasNext() { return mCurrentPtr != NIL; }
+        int NextVertex() {
+            int next = mGraph->mEdges[mCurrentPtr];
+            mCurrentPtr = mGraph->mNexts[mCurrentPtr];
+            return next;
         }
     private:
         const DirectedGraphAsAdjList *mGraph;
-        int mCurrPtr;
+        int mCurrentPtr;
     };
-
     EdgeIterator GetEdgeIteraror(int vertex) const {
         return EdgeIterator(this, vertex);
     }
 private:
     static const int NIL = -1;
-    int mNumVertex;
-    int mNumEdge;
-    int mMaxNumEdge;
-    int *mHeads;
-    int *mEdges;
-    int *mNexts;
+    std::vector<int> mHeads;
+    std::vector<int> mEdges;
+    std::vector<int> mNexts;
 };
 
 template <class T>

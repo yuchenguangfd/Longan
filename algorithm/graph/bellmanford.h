@@ -12,24 +12,22 @@
 
 namespace longan {
 
-template <class T>
+template <class WeightType, class DistanceType>
 class BellmanFord {
 public:
-    BellmanFord(const WeightedDirectedGraphAsEdgeList<T>* graph, int source,
-            T infDistanceValue = std::numeric_limits<T>::max()) :
-        mGraph(graph), mSource(source), mInfDistanceValue(infDistanceValue),
-        mDistances(graph->NumVertex()), mExistNegativeCycle(false) { }
+    BellmanFord(const WeightedDirectedGraphAsEdgeList<WeightType>* graph, int source) :
+        mGraph(graph), mSource(source), mDistances(graph->NumVertex()), mExistNegativeCycle(false) { }
+    virtual ~BellmanFord() { }
     void Compute() {
+        DistanceType initDist = GetInitDistance();
         for (int i = 0; i < mGraph->NumVertex(); ++i) {
-            mDistances[i] = mInfDistanceValue;
+            mDistances[i] = initDist;
         }
-        mDistances[mSource] = 0;
+        mDistances[mSource] = GetSourceDistance();
         for (int i = 1; i < mGraph->NumVertex(); ++i) {
             bool relaxed = false;
             for (int j = 0; j < mGraph->NumEdge(); ++j) {
-                const WeightedEdge<T>& edge = mGraph->GetEdge(j);
-                if (mDistances[edge.u] < mDistances[edge.v] - edge.weight) {
-                    mDistances[edge.v] = mDistances[edge.u] + edge.weight;
+                if (Relax(mGraph->GetEdge(j))) {
                     relaxed = true;
                 }
             }
@@ -37,19 +35,32 @@ public:
         }
         mExistNegativeCycle = false;
         for (int j = 0; j < mGraph->NumEdge(); ++j) {
-            const WeightedEdge<T>& edge = mGraph->GetEdge(j);
-            if (mDistances[edge.u] < mDistances[edge.v] - edge.weight) {
+            if (Relax(mGraph->GetEdge(j))) {
                 mExistNegativeCycle = true;
                 break;
             }
         }
     }
+    virtual DistanceType GetInitDistance() const {
+        return std::numeric_limits<DistanceType>::max();
+    }
+    virtual DistanceType GetSourceDistance() const {
+        return 0;
+    }
+    virtual bool Relax(const WeightedEdge<WeightType>& edge) {
+        if (mDistances[edge.u] < mDistances[edge.v] - edge.weight) {
+            mDistances[edge.v] = mDistances[edge.u] + edge.weight;
+            return true;
+        } else {
+            return false;
+        }
+    }
     bool ExistNegativeCycle() const { return mExistNegativeCycle; }
-private:
-    const WeightedDirectedGraphAsEdgeList<T> *mGraph;
+    DistanceType Distance(int v) const { return mDistances[v]; }
+protected:
+    const WeightedDirectedGraphAsEdgeList<WeightType> *mGraph;
     int mSource;
-    T mInfDistanceValue;
-    std::vector<T> mDistances;
+    std::vector<DistanceType> mDistances;
     bool mExistNegativeCycle;
 };
 
