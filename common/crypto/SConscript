@@ -1,0 +1,11 @@
+Import("env_common")
+env_common.lib_objects.append(env_common.Object("aes_cryption.cpp"))
+
+build_env = env_common.Clone()
+# add gtest support
+build_env.Prepend(CPPPATH = "#/external/gtest/include",
+                  LIBPATH = "#/external/gtest",
+                  LIBS = "gtest",
+                  LINKFLAGS = "-pthread")
+
+build_env.Program("aes_cryption_unittest", ["aes_cryption_unittest.cpp"])
