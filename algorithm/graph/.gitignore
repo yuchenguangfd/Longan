@@ -2,8 +2,6 @@
 /weighted_bipartite_max_match_unittest.o
 /bipartite_max_match_unittest
 /bipartite_max_match_unittest.o
-/graph_unittest
-/graph_unittest.o
 /euler_path_unittest
 /euler_path_unittest.o
 /dijkstra_unittest
@@ -11,3 +9,5 @@
 /dijkstra_unittest.cpp
 /bellmanford_unittest
 /bellmanford_unittest.o
+/prim_unittest
+/prim_unittest.o

@@ -84,7 +84,6 @@ void AESCryption::ExpanKey(const std::string& key) {
 }
 
 std::string AESCryption::Encrypt(const std::string& content) {
-	int padding = (content.length() % 16 == 0) ? 0 : 16 - content.length() % 16;
 	std::string result;
 	for (int begin = 0; begin < content.length(); begin += 16) {
 		uint8 bytes[16];
@@ -99,6 +98,7 @@ std::string AESCryption::Encrypt(const std::string& content) {
 			result += ((low < 10) ? low + '0' : low - 10 + 'A');
 		}
 	}
+	int padding = (content.length() % 16 == 0) ? 0 : 16 - content.length() % 16;
 	result += ((padding < 10) ? padding + '0' : padding - 10 + 'A');
 	return result;
 }
@@ -127,8 +127,6 @@ void AESCryption::Encrypt16Byte(uint8* bytes) {
 }
 
 std::string AESCryption::Decrypt(const std::string& content) {
-	char ch = content[content.length() - 1];
-	int padding = ((ch >= 'A') ? ch - 'A' + 10 : ch - '0');
 	std::string result;
 	for (int begin = 0; begin < content.length() - 1; begin += 32) {
 		uint8 bytes[16];
@@ -139,13 +137,11 @@ std::string AESCryption::Decrypt(const std::string& content) {
 			bytes[i] = (((high << 4) | low) & 0xFF);
 		}
 		Decrypt16Byte(bytes);
-		result.append(std::string(bytes, bytes + 16));
+		result += std::string(bytes, bytes + 16);
 	}
-	if (padding > 0) {
-		return result.substr(0, result.length() - padding);
-	} else {
-		return result;
-	}
+	char ch = content[content.length() - 1];
+	int padding = ((ch >= 'A') ? ch - 'A' + 10 : ch - '0');
+	return result.substr(0, result.length() - padding);
 }
 
 void AESCryption::Decrypt16Byte(uint8 *bytes) {
@@ -263,18 +259,4 @@ void AESCryption::InvMixColumns(uint8 state[][4]) {
 	}
 }
 
-
-//
-//void* AES::InvCipher(void* input, int length)
-//{
-//    unsigned char* in = (unsigned char*) input;
-//    int i;
-//    for(i=0; i<length; i+=16)
-//    {
-//        InvCipher(in+i);
-//    }
-//    return input;
-//}
-
 } //~ namespace longan
-

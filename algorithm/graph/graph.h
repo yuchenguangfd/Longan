@@ -124,28 +124,22 @@ private:
     int *mData;
 };
 
-template <class T, class Alloc = std::allocator<T>>
+template <class T>
 class WeightedDirectedGraphAsAdjMatrix {
 public:
-    WeightedDirectedGraphAsAdjMatrix(int numVertex, T initWeight = T()) : mNumVertex(numVertex) {
-        int size = mNumVertex * mNumVertex;
-        Alloc alloc;
-        mData = alloc.allocate(size);
-        for (int i = 0; i < size; ++i) {
-            mData[i] = initWeight;
+	WeightedDirectedGraphAsAdjMatrix(int numVertex, T initWeight = T()) : mNumVertex(numVertex),
+		mWeights(numVertex * numVertex) {
+        for (int i = 0; i < mWeights.size(); ++i) {
+        	mWeights[i] = initWeight;
         }
     }
-    virtual ~WeightedDirectedGraphAsAdjMatrix() {
-        int size = mNumVertex * mNumVertex;
-        Alloc alloc;
-        alloc.deallocate(mData, size);
-    }
     int NumVertex() const { return mNumVertex; }
-    T GetWeight(int u, int v) const { return mData[u * mNumVertex + v]; }
-    virtual void AddEdge(int u, int v, T weight) { mData[u * mNumVertex + v] = weight; }
+    T GetWeight(int u, int v) const { return mWeights[u * mNumVertex + v]; }
+    void AddEdge(const WeightedEdge<T>& edge) { mWeights[edge.u * mNumVertex + edge.v] = edge.weight; }
+    void AddEdge(int u, int v, T weight) { mWeights[u * mNumVertex + v] = weight; }
 protected:
     int mNumVertex;
-    T *mData;
+    std::vector<T> mWeights;
 };
 
 class DirectedGraphAsAdjList {

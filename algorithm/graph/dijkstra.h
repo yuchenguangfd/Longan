@@ -12,20 +12,20 @@
 
 namespace longan {
 
-template <class T, class Alloc = std::allocator<T>>
+template <class GraphType, class WeightType>
 class Dijkstra {
 public:
-    Dijkstra(const WeightedDirectedGraphAsAdjMatrix<T, Alloc>* graph, int source) :
+    Dijkstra(const GraphType* graph, int source) :
         mGraph(graph), mSource(source), mDistances(graph->NumVertex()), mStates(graph->NumVertex()) { }
     void Compute() {
         for (int u = 0; u < mGraph->NumVertex(); ++u) {
             mDistances[u] = mGraph->GetWeight(mSource, u);
             mStates[u] = false;
         }
-        mDistances[mSource] = T();
+        mDistances[mSource] = 0;
         mStates[mSource] = true;
         for (int i = 1; i < mGraph->NumVertex(); ++i) {
-            T min = std::numeric_limits<T>::max();
+        	WeightType min = std::numeric_limits<WeightType>::max();
             int k;
             for (int j = 0; j < mGraph->NumVertex(); ++j) {
                 if (!mStates[j] && min > mDistances[j]) {
@@ -41,12 +41,12 @@ public:
             }
         }
     }
-    T Distance(int v) const { return mDistances[v]; }
+    WeightType Distance(int v) const { return mDistances[v]; }
 private:
-    const WeightedDirectedGraphAsAdjMatrix<T, Alloc> *mGraph;
+    const GraphType *mGraph;
     int mSource;
-    std::vector<T, Alloc> mDistances;
-    std::vector<bool, Alloc> mStates;
+    std::vector<WeightType> mDistances;
+    std::vector<bool> mStates;
 };
 
 } //~ namespace longan

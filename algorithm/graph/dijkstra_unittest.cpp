@@ -17,7 +17,7 @@ TEST(DijkstraTest, ShortestDistanceOK) {
     graph.AddEdge(3, 4, 20);
     graph.AddEdge(4, 5, 20);
     graph.AddEdge(1, 5, 100);
-    Dijkstra<int> SSSP(&graph, 1);
+    Dijkstra<WeightedDirectedGraphAsAdjMatrix<int>, int> SSSP(&graph, 1);
     SSSP.Compute();
     ASSERT_EQ(90, SSSP.Distance(5));
 }

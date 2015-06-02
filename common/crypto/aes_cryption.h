@@ -18,9 +18,9 @@ public:
 	std::string Encrypt(const std::string& content);
 	std::string Decrypt(const std::string& content);
 private:
+	void ExpanKey(const std::string& key);
 	void Encrypt16Byte(uint8* bytes);
 	void Decrypt16Byte(uint8* bytes);
-	void ExpanKey(const std::string& key);
 	void AddRoundKey(uint8 state[][4], uint8 k[][4]);
 	void SubBytes(uint8 state[][4]);
 	void ShiftRows(uint8 state[][4]);
